@@ -1,0 +1,1 @@
+--> Vistas o pantallas completas (Home, Login, Reservas, etc.)

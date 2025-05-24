@@ -1,0 +1,1 @@
+--> Variables globales o configuraciones estáticas
