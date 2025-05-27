@@ -18,9 +18,10 @@ public class User {
     @Column(name = "last_name")
     private String lastName;
 
-    @Column(name = "national_id")
+    @Column(name = "national_id", unique = true)
     private String nationalId;
 
+    @Column(unique = true)
     private String email;
     private String location;
     private LocalDateTime birthday;
