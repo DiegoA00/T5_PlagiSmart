@@ -2,7 +2,7 @@ package com.anecacao.authentication.data.dto;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 public class UserRegistrationResponseDTO {
@@ -17,5 +17,5 @@ public class UserRegistrationResponseDTO {
 
     private String location;
 
-    private LocalDateTime birthday;
+    private LocalDate birthday;
 }

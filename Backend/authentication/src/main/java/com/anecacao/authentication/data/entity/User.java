@@ -2,7 +2,8 @@ package com.anecacao.authentication.data.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDateTime;
+
+import java.time.LocalDate;
 
 @Entity
 @Data
@@ -24,7 +25,6 @@ public class User {
     @Column(unique = true)
     private String email;
     private String location;
-    private LocalDateTime birthday;
+    private LocalDate birthday;
     private String rol;
-
 }

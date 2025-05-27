@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -17,6 +18,7 @@ public class UserRegistrationRequestDTO {
     private String lastName;
 
     @NotBlank
+    @Pattern(regexp = "^\\d{10}$")
     private String nationalId;
 
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$")
@@ -28,6 +30,6 @@ public class UserRegistrationRequestDTO {
 
     private String location;
 
-    @JsonFormat(pattern = "yyyy-mm-dd")
-    private LocalDateTime birthday;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate birthday;
 }
