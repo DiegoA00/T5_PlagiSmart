@@ -1,12 +1,10 @@
 package com.anecacao.authentication.data.entity;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
 @Data
-
 @Table(name = "user_password")
 public class UserPassword {
     @Id
@@ -19,5 +17,4 @@ public class UserPassword {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
 }

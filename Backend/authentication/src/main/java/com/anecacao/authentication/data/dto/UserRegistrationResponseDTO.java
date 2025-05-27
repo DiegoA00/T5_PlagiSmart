@@ -1,5 +1,6 @@
 package com.anecacao.authentication.data.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -17,5 +18,6 @@ public class UserRegistrationResponseDTO {
 
     private String location;
 
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate birthday;
 }
