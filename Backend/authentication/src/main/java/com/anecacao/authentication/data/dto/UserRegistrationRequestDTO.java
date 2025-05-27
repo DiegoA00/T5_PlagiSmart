@@ -28,6 +28,6 @@ public class UserRegistrationRequestDTO {
 
     private String location;
 
-    @JsonFormat(pattern = "yyyy:MM-dd")
+    @JsonFormat(pattern = "yyyy-mm-dd")
     private LocalDateTime birthday;
 }

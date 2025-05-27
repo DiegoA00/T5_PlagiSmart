@@ -1,8 +1,5 @@
 package com.anecacao.authentication.data.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -19,6 +16,6 @@ public class UserRegistrationResponseDTO {
     private String email;
 
     private String location;
-    
+
     private LocalDateTime birthday;
 }
