@@ -17,6 +17,8 @@ public class UserRegistrationResponseDTO {
 
     private String email;
 
+    private String role;
+
     private String location;
 
     @JsonFormat(pattern = "dd-MM-yyyy")
