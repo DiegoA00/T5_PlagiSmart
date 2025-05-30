@@ -3,10 +3,11 @@ import { IoIosNotificationsOutline } from "react-icons/io";
 
 function Header() {
   return (
-    <header className="bg-white text-black p-4 flex justify-between items-center">
+    <header className="bg-white text-black p-4 flex justify-between items-center shadow">
       <div className="flex items-center">
         {/* Replace with actual logo image */}
         <img src="/path/to/anecacao-logo.png" alt="Anecacao Logo" className="h-8" />
+        
       </div>
       <div className="flex items-center space-x-6">
         <div className="relative">
