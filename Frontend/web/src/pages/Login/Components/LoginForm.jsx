@@ -1,8 +1,19 @@
 import { useState } from "react";
+import { useEffect } from "react";
 import { login } from "../../../services/auth/loginService";
 import { Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const LoginForm = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
+
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -38,8 +49,7 @@ const LoginForm = () => {
       console.log("Successfully logged in. Token saved:", token);
       setError("");
 
-      // TODO: navigate to /home/dashboard
-      // navigate("/dashboard");
+      navigate("/dashboard");
 
     } catch (err) {
       console.error("Login failed:", err);
