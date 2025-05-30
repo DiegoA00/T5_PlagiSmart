@@ -32,17 +32,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler (UserNotFoundException.class)
     public ResponseEntity<ErrorResponseDTO> handleUserNotFoundException (UserNotFoundException ex) {
-        return new ResponseEntity <> (buildResponse(ex.getMessage()), HttpStatus.CONFLICT);
+        return new ResponseEntity <> (buildResponse(ex.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler (RoleNotFoundException.class)
     public ResponseEntity<ErrorResponseDTO> handleRoleNotFoundException (RoleNotFoundException ex) {
-        return new ResponseEntity <> (buildResponse(ex.getMessage()), HttpStatus.CONFLICT);
+        return new ResponseEntity <> (buildResponse(ex.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler (UsernameNotFoundException.class)
     public ResponseEntity<ErrorResponseDTO> handleUsernameNotFoundException (UsernameNotFoundException ex) {
-        return new ResponseEntity <> (buildResponse(ex.getMessage()), HttpStatus.CONFLICT);
+        return new ResponseEntity <> (buildResponse(ex.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     private ErrorResponseDTO buildResponse (String message) {
