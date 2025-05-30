@@ -1,5 +1,6 @@
 package com.anecacao.authentication.data.mapper;
 
+import com.anecacao.authentication.data.dto.UserDTO;
 import com.anecacao.authentication.data.dto.UserRegistrationRequestDTO;
 import com.anecacao.authentication.data.dto.UserRegistrationResponseDTO;
 import com.anecacao.authentication.data.entity.User;
@@ -12,4 +13,5 @@ public interface UserMapper {
 
      User userRegistrationRequestDTOToUser(UserRegistrationRequestDTO user);
 
+    UserDTO userToUserDTO(User user);
 }

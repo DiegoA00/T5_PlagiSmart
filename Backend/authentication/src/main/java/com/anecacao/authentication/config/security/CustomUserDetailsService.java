@@ -1,5 +1,6 @@
 package com.anecacao.authentication.config.security;
 
+import com.anecacao.authentication.data.dto.UserDTO;
 import com.anecacao.authentication.data.entity.User;
 import com.anecacao.authentication.data.entity.UserPassword;
 import com.anecacao.authentication.data.mapper.UserMapper;
@@ -36,5 +37,10 @@ public class CustomUserDetailsService implements UserDetailsService {
                 password.getHashedPassword(),
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE" + role))
         );
+    }
+
+    public UserDTO loadUserBasicDTOByUsername (String nationalId) {
+        return userMapper.userToUserDTO(userRepository.findByNationalId(nationalId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found.")));
     }
 }
