@@ -22,10 +22,13 @@ spring:
       repositories:
         enabled: true
 
-security:
-  constant: ${SECURITY_CONSTANT}
-
 server:
   port: ${SERVER_PORT}
   servlet:
     context-path: /api
+
+security:
+  constant: ${SECURITY_CONSTANT}
+
+frontend:
+  url: ${FRONTEND_URL}
