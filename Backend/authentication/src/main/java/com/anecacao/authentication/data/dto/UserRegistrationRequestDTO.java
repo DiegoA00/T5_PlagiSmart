@@ -11,21 +11,21 @@ import java.time.LocalDate;
 @Data
 public class UserRegistrationRequestDTO {
     @NotBlank
+    @Pattern(regexp = "^\\d{10}$")
+    private String nationalId;
+
+    @NotBlank
     private String firstName;
 
     @NotBlank
     private String lastName;
 
     @NotBlank
-    @Pattern(regexp = "^\\d{10}$")
-    private String nationalId;
+    @Email
+    private String email;
 
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$")
     private String password;
-
-    @NotBlank
-    @Email
-    private String email;
 
     private String location;
 

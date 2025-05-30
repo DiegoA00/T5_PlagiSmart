@@ -7,12 +7,13 @@ import java.time.LocalDate;
 
 @Data
 public class UserRegistrationResponseDTO {
+    private Long id;
+
+    private String nationalId;
 
     private String firstName;
 
     private String lastName;
-
-    private String nationalId;
 
     private String email;
 
