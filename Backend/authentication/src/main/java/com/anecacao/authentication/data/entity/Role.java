@@ -1,19 +1,18 @@
 package com.anecacao.authentication.data.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@Table(name = "user_password")
-public class UserPassword {
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "roles")
+public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String hashedPassword;
-
-    @ManyToOne
-    @JoinColumn(nullable = false)
-    private User user;
+    private String name;
 }
