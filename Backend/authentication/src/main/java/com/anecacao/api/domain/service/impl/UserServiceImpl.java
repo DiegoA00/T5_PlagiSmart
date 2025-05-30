@@ -1,0 +1,57 @@
+package com.anecacao.api.domain.service.impl;
+
+import com.anecacao.api.data.dto.UserRegistrationRequestDTO;
+import com.anecacao.api.data.dto.UserRegistrationResponseDTO;
+import com.anecacao.api.data.entity.Role;
+import com.anecacao.api.data.entity.RoleName;
+import com.anecacao.api.data.entity.User;
+import com.anecacao.api.data.mapper.UserMapper;
+import com.anecacao.api.data.repository.RoleRepository;
+import com.anecacao.api.data.repository.UserRepository;
+import com.anecacao.api.domain.exception.RoleNotFoundException;
+import com.anecacao.api.domain.exception.UserAlreadyExistsException;
+import com.anecacao.api.domain.service.UserPasswordService;
+import com.anecacao.api.domain.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.Set;
+
+@Service
+@RequiredArgsConstructor
+public class UserServiceImpl implements UserService {
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final UserMapper userMapper;
+    private final UserPasswordService userPasswordService;
+
+    @Override
+    public UserRegistrationResponseDTO registerUser(UserRegistrationRequestDTO userRequestDTO) {
+        boolean credentialsAreAvailable = areUserCredentialsAvailable(userRequestDTO);
+
+        if(!credentialsAreAvailable) throw new UserAlreadyExistsException();
+
+        Role defaultRole = roleRepository.findByName(RoleName.ROLE_USER)
+                        .orElseThrow(() -> new RoleNotFoundException(RoleName.ROLE_USER));
+
+        User newUser = buildNewUser(userRequestDTO, Set.of(defaultRole));
+
+        userRepository.save(newUser);
+        userPasswordService.savePassword(newUser, userRequestDTO.getPassword());
+
+        return userMapper.userToUserRegistrationResponseDTO(newUser);
+    }
+
+    private User buildNewUser (UserRegistrationRequestDTO userDTO, Set<Role> roles) {
+        User newUser = userMapper.userRegistrationRequestDTOToUser(userDTO);
+        newUser.setRoles(roles);
+        return newUser;
+    }
+
+    private boolean areUserCredentialsAvailable(UserRegistrationRequestDTO userRequestDTO){
+        boolean nationalIdIsAvailable = !userRepository.existsUserByNationalId(userRequestDTO.getNationalId());
+        boolean emailIsAvailable = !userRepository.existsUserByEmail(userRequestDTO.getEmail());
+
+        return nationalIdIsAvailable && emailIsAvailable;
+    }
+}
