@@ -28,4 +28,4 @@ security:
 server:
   port: ${SERVER_PORT}
   servlet:
-    context-path: /auth-api
+    context-path: /api
