@@ -13,33 +13,41 @@ const LoginForm = () => {
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value, type, checked } = e.target;
+
+    setForm((prevForm) => ({
+      ...prevForm,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.email || !form.password) {
+    const { email, password } = form;
+
+    if (!email || !password) {
       setError("Please enter both email and password.");
-    } else {
-      const email = form.email;
-      const password = form.password;
+      return;
+    }
 
-      try {
-        const token = await login(email, password);
+    try {
+      const token = await login(email, password);
 
-        localStorage.setItem("token", token);
-        console.log("Successfully login. Token saved:", token);
-        setError("");
+      localStorage.setItem("token", token);
+      console.log("Successfully logged in. Token saved:", token);
+      setError("");
 
-        // TODO: navigate to /home/dashboard
-        // navigate("/dashboard");
-      } catch (err) {
-        console.error("Login failed:", err.message);
-        setError(err.message);
+      // TODO: navigate to /home/dashboard
+      // navigate("/dashboard");
+
+    } catch (err) {
+      console.error("Login failed:", err);
+
+      if (err.status === 401) {
+        setError("Incorrect email or password.");
+      } else {
+        setError("Something went wrong. Please try again later.");
       }
     }
   };
@@ -96,9 +104,7 @@ const LoginForm = () => {
             type="checkbox"
             name="rememberMe"
             checked={form.rememberMe}
-            onChange={(e) =>
-              setForm({ ...form, rememberMe: e.target.checked })
-            }
+            onChange={handleChange}
             className="accent-[#9E896A] cursor-pointer"
           />
           Remember me

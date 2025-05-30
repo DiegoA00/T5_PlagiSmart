@@ -1,23 +1,22 @@
+const url = import.meta.env.VITE_BACKEND_URL;
+
 export async function login(email, password) {
-  try {
-    // TODO: replace with actual backend URL
-    const response = await fetch("http://localhost", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+  const response = await fetch(`${url}/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password }),
+  });
 
-    if (!response.ok) {
-      throw new Error("Login failed");
-    }
+  const data = await response.json();
 
-    const data = await response.json();
-
-    const { token } = data;
-    return token;
-  } catch (error) {
+  if (!response.ok) {
+    const error = new Error("Login failed");
+    error.status = response.status;
     throw error;
   }
+
+  const { token } = data;
+  return token;
 }
