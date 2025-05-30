@@ -1,8 +1,8 @@
 package com.anecacao.api;
 
-import com.anecacao.api.data.entity.Role;
-import com.anecacao.api.data.entity.RoleName;
-import com.anecacao.api.data.repository.RoleRepository;
+import com.anecacao.api.auth.data.entity.Role;
+import com.anecacao.api.auth.data.entity.RoleName;
+import com.anecacao.api.auth.data.repository.RoleRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
