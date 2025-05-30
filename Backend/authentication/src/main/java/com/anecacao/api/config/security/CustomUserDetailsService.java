@@ -7,6 +7,7 @@ import com.anecacao.api.data.entity.UserPassword;
 import com.anecacao.api.data.mapper.UserMapper;
 import com.anecacao.api.data.repository.UserPasswordRepository;
 import com.anecacao.api.data.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,15 +28,16 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserMapper userMapper;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByNationalId(username).orElseThrow(() -> new UsernameNotFoundException("User with username: " + username + " not found"));
+    @Transactional
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User with email: " + email + " not found"));
         UserPassword password = userPasswordRepository.findUserPasswordByUser(user)
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("No valid password found for user"));
 
         return new org.springframework.security.core.userdetails.User(
-                user.getNationalId(),
+                user.getEmail(),
                 password.getHashedPassword(),
                 mapToAuthorities(user.getRoles())
         );
@@ -47,8 +49,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .collect(Collectors.toSet());
      }
 
-    public UserDTO loadUserBasicDTOByUsername (String nationalId) {
-        return userMapper.userToUserDTO(userRepository.findByNationalId(nationalId)
+    public UserDTO loadUserBasicDTOByEmail (String email) {
+        return userMapper.userToUserDTO(userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found.")));
     }
 }

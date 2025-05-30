@@ -1,6 +1,7 @@
 package com.anecacao.api.data.repository;
 
 import com.anecacao.api.data.entity.User;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,4 +14,7 @@ public interface UserRepository extends JpaRepository <User, Long> {
     Boolean existsUserByNationalId (String username);
 
     Boolean existsUserByEmail (String email);
+
+    @EntityGraph(attributePaths = "roles")
+    Optional<User> findByEmail(String email);
 }

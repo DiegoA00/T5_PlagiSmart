@@ -1,8 +1,11 @@
 package com.anecacao.api.domain.service;
 
-import com.anecacao.api.data.dto.UserRegistrationRequestDTO;
-import com.anecacao.api.data.dto.UserRegistrationResponseDTO;
+import com.anecacao.api.data.dto.*;
 
 public interface UserService {
-    public UserRegistrationResponseDTO registerUser(UserRegistrationRequestDTO userRequestDTO);
+    UserRegistrationResponseDTO registerUser(UserRegistrationRequestDTO userRequestDTO);
+
+    UserLoginResponseDTO loginUser (UserLoginRequestDTO userLoginRequestDTO);
+
+    UserDTO getUserInfo();
 }

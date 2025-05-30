@@ -1,6 +1,5 @@
 package com.anecacao.api.config.security;
 
-import com.anecacao.api.data.entity.User;
 import com.anecacao.api.data.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -43,14 +42,17 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
         if (StringUtils.hasText(token)) {
             try {
                 jwtProvider.validateToken(token);
-                String nationalId = jwtProvider.getUsernameFromJWT(token);
-                UserDetails userDetails = customUserDetailsService.loadUserByUsername(nationalId);
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                String email = jwtProvider.getEmailFromJWT(token);
+
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             } catch (ExpiredJwtException ex) {
-                String nationalId = ex.getClaims().getSubject();
-                User user = userRepository.findByNationalId(nationalId)
+                String email = ex.getClaims().getSubject();
+                userRepository.findByEmail(email)
                         .orElseThrow(() -> new UsernameNotFoundException("User not found."));
 
                 throw new BadCredentialsException("Credentials are incorrect.");

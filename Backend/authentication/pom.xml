@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.anecacao</groupId>
-	<artifactId>authentication</artifactId>
+	<artifactId>anecacao_api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>authentication-api</name>
+	<name>anecacaoApi</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>

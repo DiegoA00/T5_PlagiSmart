@@ -27,17 +27,18 @@ public class JwtProvider {
     }
 
     public String generateToken (Authentication authentication) {
-        String username = authentication.getName();
-        UserDTO user = customUserDetailsService.loadUserBasicDTOByUsername(username);
+        String email = authentication.getName();
+        UserDTO user = customUserDetailsService.loadUserBasicDTOByEmail(email);
         Date currentTime = new Date ();
         Date expirationTime = new Date (currentTime.getTime() + EXPIRATION_TIME);
 
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(email)
                 .setIssuedAt(currentTime)
                 .setExpiration(expirationTime)
                 .claim("id", user.getId())
                 .claim("nationalId", user.getNationalId())
+                .claim("email", user.getEmail())
                 .claim("name", user.getFirstName())
                 .claim("lastName", user.getLastName())
                 .claim("email", user.getEmail())
@@ -46,7 +47,7 @@ public class JwtProvider {
                 .compact();
     }
 
-    public String getUsernameFromJWT (String token) {
+    public String getEmailFromJWT (String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()

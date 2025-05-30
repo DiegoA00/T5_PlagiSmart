@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,7 +20,7 @@ public class UserDTO {
 
     private String email;
 
-    private String role;
-
     private String location;
+
+    private Set<RoleDTO> roles;
 }
