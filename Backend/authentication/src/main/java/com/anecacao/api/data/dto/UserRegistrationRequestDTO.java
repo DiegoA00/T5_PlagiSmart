@@ -10,21 +10,24 @@ import java.time.LocalDate;
 
 @Data
 public class UserRegistrationRequestDTO {
-    @NotBlank
-    @Pattern(regexp = "^\\d{10}$")
+    @NotBlank(message = "National ID is required")
+    @Pattern(regexp = "^\\d{10}$", message = "National ID must be 10 digits")
     private String nationalId;
 
-    @NotBlank
+    @NotBlank(message = "First name is required")
     private String firstName;
 
-    @NotBlank
+    @NotBlank(message = "Last name is required")
     private String lastName;
 
-    @NotBlank
-    @Email
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
     private String email;
 
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$")
+    @Pattern(
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$",
+            message = "Password must be at least 8 characters, with upper, lower case and a number"
+    )
     private String password;
 
     private String location;
