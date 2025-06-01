@@ -1,6 +1,6 @@
 package com.anecacao.api.request.creation.controller;
 
-import com.anecacao.api.request.creation.data.entity.dto.FumigationApplicationDTO;
+import com.anecacao.api.request.creation.data.dto.FumigationApplicationDTO;
 import com.anecacao.api.request.creation.entity.service.FumigationApplicationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
