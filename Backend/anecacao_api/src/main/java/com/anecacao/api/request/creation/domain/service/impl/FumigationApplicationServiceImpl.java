@@ -1,7 +1,7 @@
-package com.anecacao.api.request.creation.entity.service.impl;
+package com.anecacao.api.request.creation.domain.service.impl;
 
 import com.anecacao.api.request.creation.data.dto.FumigationApplicationDTO;
-import com.anecacao.api.request.creation.entity.service.FumigationApplicationService;
+import com.anecacao.api.request.creation.domain.service.FumigationApplicationService;
 import org.springframework.stereotype.Service;
 
 @Service

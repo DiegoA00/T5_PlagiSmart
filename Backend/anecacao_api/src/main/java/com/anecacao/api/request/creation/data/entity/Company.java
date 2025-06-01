@@ -1,7 +1,6 @@
-package com.anecacao.api.enterprise.data.entity;
+package com.anecacao.api.request.creation.data.entity;
 
 import com.anecacao.api.auth.data.entity.User;
-import com.anecacao.api.request.creation.data.entity.FumigationApplication;
 import jakarta.persistence.*;
 import lombok.Data;
 

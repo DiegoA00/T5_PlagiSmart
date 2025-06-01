@@ -1,6 +1,5 @@
 package com.anecacao.api.request.creation.data.mapper;
 
-import com.anecacao.api.enterprise.data.mapper.CompanyMapper;
 import com.anecacao.api.request.creation.data.dto.FumigationApplicationDTO;
 import com.anecacao.api.request.creation.data.dto.FumigationCreationRequestDTO;
 import com.anecacao.api.request.creation.data.entity.Fumigation;

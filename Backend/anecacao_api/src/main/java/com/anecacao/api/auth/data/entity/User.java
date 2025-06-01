@@ -1,6 +1,6 @@
 package com.anecacao.api.auth.data.entity;
 
-import com.anecacao.api.enterprise.data.entity.Company;
+import com.anecacao.api.request.creation.data.entity.Company;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -16,7 +16,6 @@ public class User {
     private Long id;
 
     private String firstName;
-
     private String lastName;
 
     @Column(unique = true)
@@ -24,6 +23,7 @@ public class User {
 
     @Column(unique = true)
     private String email;
+
     private String location;
     private LocalDate birthday;
 
@@ -35,6 +35,6 @@ public class User {
     )
     private Set<Role> roles;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "legalRepresentative", cascade = CascadeType.ALL)
     private Set<Company> companies;
 }

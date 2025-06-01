@@ -30,7 +30,11 @@ public class Fumigation {
     @Column(nullable = false)
     private LocalDateTime dateTime;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "fumigation_application_id")
+    @JoinColumn(name = "fumigation_application_id", nullable = false)
     private FumigationApplication fumigationApplication;
 }

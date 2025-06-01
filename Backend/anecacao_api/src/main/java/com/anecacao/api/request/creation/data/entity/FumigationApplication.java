@@ -1,6 +1,5 @@
 package com.anecacao.api.request.creation.data.entity;
 
-import com.anecacao.api.enterprise.data.entity.Company;
 import jakarta.persistence.*;
 import lombok.Data;
 

@@ -1,6 +1,6 @@
-package com.anecacao.api.enterprise.data.mapper;
+package com.anecacao.api.request.creation.data.mapper;
 
-import com.anecacao.api.enterprise.data.entity.Company;
+import com.anecacao.api.request.creation.data.entity.Company;
 import com.anecacao.api.request.creation.data.dto.CompanyRequestDTO;
 import org.mapstruct.Mapper;
 

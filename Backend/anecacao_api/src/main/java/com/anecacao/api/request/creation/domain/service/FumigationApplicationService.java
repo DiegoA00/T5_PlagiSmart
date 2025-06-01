@@ -1,4 +1,4 @@
-package com.anecacao.api.request.creation.entity.service;
+package com.anecacao.api.request.creation.domain.service;
 
 import com.anecacao.api.request.creation.data.dto.FumigationApplicationDTO;
 
