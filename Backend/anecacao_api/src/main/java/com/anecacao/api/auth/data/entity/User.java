@@ -1,5 +1,6 @@
 package com.anecacao.api.auth.data.entity;
 
+import com.anecacao.api.enterprise.data.entity.Company;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -33,4 +34,7 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Company> companies;
 }
