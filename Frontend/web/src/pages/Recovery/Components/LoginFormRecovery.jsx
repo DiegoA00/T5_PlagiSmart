@@ -26,6 +26,10 @@ const LoginForm = () => {
     }));
   };
 
+  const nextPage = () => {
+    navigate('/login/coderecovery')
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -79,6 +83,7 @@ const LoginForm = () => {
 
       <div className="text-center">
         <button
+          onClick={nextPage}
           type="submit"
           className="bg-[#9E896A] text-white px-15 py-2 rounded-full hover:bg-[#826f56] transition-colors w-full sm:w-auto cursor-pointer"
         >

@@ -14,9 +14,9 @@ export default function AppRouter() {
     <Router>
       <Routes>
         <Route path='/login' element={<Login />} />
-        <Route path='/mailrecovery' element={<MailRecovery />} />
-        <Route path='/coderecovery' element={<CodeRecovery />} />
-        <Route path='/passwordrecovery' element={<PasswordRecovery />} />
+        <Route path='/login/mailrecovery' element={<MailRecovery />} />
+        <Route path='/login/coderecovery' element={<CodeRecovery />} />
+        <Route path='/login/passwordrecovery' element={<PasswordRecovery />} />
         <Route path='*' element={<Navigate to='/Login' />} />
       </Routes>
     </Router>

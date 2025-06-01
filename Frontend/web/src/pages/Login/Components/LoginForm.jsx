@@ -13,6 +13,10 @@ const LoginForm = () => {
     }
   }, [navigate]);
 
+  const nextPage = () => {
+    navigate('/login/mailrecovery')
+  }
+
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -118,7 +122,7 @@ const LoginForm = () => {
           />
           Remember me
         </label>
-        <button type="button" className="cursor-pointer text-[#9E896A] hover:underline">
+        <button type="button" className="cursor-pointer text-[#9E896A] hover:underline" onClick={nextPage}>
           Forgot Password?
         </button>
       </div>

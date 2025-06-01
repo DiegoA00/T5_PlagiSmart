@@ -11,19 +11,19 @@ const CodeFormRecovery = () => {
     }
   }, [navigate]);
 
-  // Estado para guardar cada dígito del código
   const [code, setCode] = useState(new Array(6).fill(""));
 
-  // Estado para errores
   const [error, setError] = useState("");
 
-  // Referencias para inputs para controlar el foco
   const inputsRef = useRef([]);
-
 
   const [form, setForm] = useState({
     email: "",
   });
+
+  const nextPage = () => {
+    navigate('/login/passwordrecovery')
+  }
 
   const handleChange = (e, index) => {
     const val = e.target.value;
@@ -112,6 +112,7 @@ const CodeFormRecovery = () => {
 
       <div className="text-center">
         <button
+          onClick={nextPage}
           type="submit"
           className="bg-[#9E896A] text-white px-15 py-2 rounded-full hover:bg-[#826f56] transition-colors w-full sm:w-auto cursor-pointer"
         >
