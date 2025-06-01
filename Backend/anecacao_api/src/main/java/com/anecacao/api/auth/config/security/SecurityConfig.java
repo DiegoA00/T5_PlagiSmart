@@ -1,10 +1,12 @@
 package com.anecacao.api.auth.config.security;
 
 import com.anecacao.api.auth.data.repository.UserRepository;
+import io.swagger.v3.oas.models.PathItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -74,6 +76,12 @@ public class SecurityConfig {
                                 "/swagger-resources",
                                 "/swagger-ui/**"
                         ).permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/fumigation-applications").hasRole("CLIENT")
+                        .requestMatchers(HttpMethod.PUT, "/fumigations/{id}/status").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/fumigation-applications/{id}").hasAnyRole("CLIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/fumigations/{id}").hasAnyRole("CLIENT", "ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());

@@ -40,8 +40,8 @@ public class UserServiceImpl implements UserService {
 
         if(!credentialsAreAvailable) throw new UserAlreadyExistsException();
 
-        Role defaultRole = roleRepository.findByName(RoleName.ROLE_USER)
-                        .orElseThrow(() -> new RoleNotFoundException(RoleName.ROLE_USER));
+        Role defaultRole = roleRepository.findByName(RoleName.ROLE_CLIENT)
+                        .orElseThrow(() -> new RoleNotFoundException(RoleName.ROLE_CLIENT));
 
         User newUser = buildNewUser(userRequestDTO, Set.of(defaultRole));
 
