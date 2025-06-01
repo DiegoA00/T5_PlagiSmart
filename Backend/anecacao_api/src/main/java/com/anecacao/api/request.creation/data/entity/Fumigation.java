@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-
 public class Fumigation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,17 +16,21 @@ public class Fumigation {
     @Column(nullable = false)
     private BigDecimal ton;
 
-    @OneToOne
-    @JoinColumn(name = "port_destination_id", referencedColumnName = "id")
-    private PortDestination portDestination;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PortName portDestination;
 
     @Column(nullable = false)
     private Long sacks;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Integer grade;
+    private Grade grade;
 
     @Column(nullable = false)
     private LocalDateTime dateTime;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fumigation_application_id")
+    private FumigationApplication fumigationApplication;
 }
