@@ -1,11 +1,10 @@
 import './App.css'
+import AdminHome from './pages/AdminHome'
 
 function App() {
 
   return (
-    <>
-      APP
-    </>
+    <AdminHome />
   )
 }
 
