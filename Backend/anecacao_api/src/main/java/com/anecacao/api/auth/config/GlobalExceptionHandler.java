@@ -4,6 +4,7 @@ import com.anecacao.api.auth.data.dto.ErrorResponseDTO;
 import com.anecacao.api.auth.domain.exception.RoleNotFoundException;
 import com.anecacao.api.auth.domain.exception.UserAlreadyExistsException;
 import com.anecacao.api.auth.domain.exception.UserNotFoundException;
+import com.anecacao.api.request.creation.domain.exception.CompanyNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -42,6 +43,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler (UsernameNotFoundException.class)
     public ResponseEntity<ErrorResponseDTO> handleUsernameNotFoundException (UsernameNotFoundException ex) {
+        return new ResponseEntity <> (buildResponse(ex.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler (CompanyNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleCompanyNotFoundException (CompanyNotFoundException ex) {
         return new ResponseEntity <> (buildResponse(ex.getMessage()), HttpStatus.NOT_FOUND);
     }
 
