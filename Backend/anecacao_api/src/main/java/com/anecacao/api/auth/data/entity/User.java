@@ -3,6 +3,7 @@ package com.anecacao.api.auth.data.entity;
 import com.anecacao.api.request.creation.data.entity.Company;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -10,9 +11,11 @@ import java.util.Set;
 @Entity
 @Data
 @Table(name = "users_anecacao")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     private String firstName;

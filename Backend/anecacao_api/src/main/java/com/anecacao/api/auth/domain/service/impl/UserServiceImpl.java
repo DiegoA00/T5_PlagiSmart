@@ -79,6 +79,12 @@ public class UserServiceImpl implements UserService {
         return userMapper.userToUserDTO(user);
     }
 
+    @Override
+    public User getUserReferenceById (String token) {
+        jwtProvider.validateToken(token);
+        return userRepository.getReferenceById(jwtProvider.getUserIdFromJWT(token));
+    }
+
     private User buildNewUser (UserRegistrationRequestDTO userDTO, Set<Role> roles) {
         User newUser = userMapper.userRegistrationRequestDTOToUser(userDTO);
         newUser.setRoles(roles);
