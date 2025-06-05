@@ -2,6 +2,7 @@ package com.anecacao.api.request.creation.data.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -36,5 +37,6 @@ public class Fumigation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fumigation_application_id", nullable = false)
+    @ToString.Exclude
     private FumigationApplication fumigationApplication;
 }

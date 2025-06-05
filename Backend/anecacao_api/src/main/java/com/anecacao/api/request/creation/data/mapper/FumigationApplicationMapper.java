@@ -9,12 +9,11 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Mapper(componentModel = "spring", uses = {CompanyMapper.class})
 public interface FumigationApplicationMapper {
-    @Mapping(target = "company", source = "company")
-    @Mapping(target = "fumigations", source = "fumigation")
     FumigationApplication toEntity(FumigationApplicationDTO dto);
 
     @Mapping(target = "fumigationApplication", ignore = true)
@@ -25,7 +24,10 @@ public interface FumigationApplicationMapper {
     @AfterMapping
     default void linkFumigationApplication(@MappingTarget FumigationApplication entity) {
         if (entity.getFumigations() != null) {
-            entity.getFumigations().forEach(f -> f.setFumigationApplication(entity));
+            List<Fumigation> fumigationCopy = new ArrayList<>(entity.getFumigations());
+            for (Fumigation f : fumigationCopy) {
+                f.setFumigationApplication(entity);
+            }
         }
     }
 }
