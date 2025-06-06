@@ -1,4 +1,4 @@
-package com.anecacao.api.request.creation.data.dto;
+package com.anecacao.api.request.creation.data.dto.request;
 
 import com.anecacao.api.request.creation.data.entity.Status;
 import jakarta.validation.constraints.NotNull;

@@ -1,8 +1,8 @@
 package com.anecacao.api.request.creation.domain.service;
 
-import com.anecacao.api.common.data.dto.MessageDTO;
 import com.anecacao.api.request.creation.data.dto.FumigationApplicationDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
 
 public interface FumigationApplicationService {
-    MessageDTO createFumigationApplication(FumigationApplicationDTO dto, String jwt);
+    FumigationApplicationResponseDTO createFumigationApplication(FumigationApplicationDTO dto, String jwt);
 }

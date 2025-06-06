@@ -1,6 +1,7 @@
 package com.anecacao.api.request.creation.data.mapper;
 
 import com.anecacao.api.request.creation.data.dto.FumigationApplicationDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
 import com.anecacao.api.request.creation.data.dto.FumigationCreationRequestDTO;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
 import com.anecacao.api.request.creation.data.entity.FumigationApplication;
@@ -20,6 +21,8 @@ public interface FumigationApplicationMapper {
     Fumigation toFumigationEntity(FumigationCreationRequestDTO dto);
 
     List<Fumigation> toFumigationEntityList(List<FumigationCreationRequestDTO> dtoList);
+
+    FumigationApplicationResponseDTO toFumigationApplicationResponseDTO (FumigationApplication fumigationApplication);
 
     @AfterMapping
     default void linkFumigationApplication(@MappingTarget FumigationApplication entity) {

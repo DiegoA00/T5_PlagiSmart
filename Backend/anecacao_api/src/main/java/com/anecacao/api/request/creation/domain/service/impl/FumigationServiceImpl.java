@@ -1,6 +1,6 @@
 package com.anecacao.api.request.creation.domain.service.impl;
 
-import com.anecacao.api.request.creation.data.dto.UpdateStatusRequestDTO;
+import com.anecacao.api.request.creation.data.dto.request.UpdateStatusRequestDTO;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
 import com.anecacao.api.request.creation.data.entity.Status;
 import com.anecacao.api.request.creation.data.repository.FumigationRepository;

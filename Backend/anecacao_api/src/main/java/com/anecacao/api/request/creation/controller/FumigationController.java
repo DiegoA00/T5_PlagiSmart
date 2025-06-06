@@ -1,6 +1,6 @@
 package com.anecacao.api.request.creation.controller;
 
-import com.anecacao.api.request.creation.data.dto.UpdateStatusRequestDTO;
+import com.anecacao.api.request.creation.data.dto.request.UpdateStatusRequestDTO;
 import com.anecacao.api.request.creation.domain.service.FumigationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

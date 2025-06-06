@@ -2,8 +2,8 @@ package com.anecacao.api.request.creation.domain.service.impl;
 
 import com.anecacao.api.auth.data.entity.User;
 import com.anecacao.api.auth.domain.service.UserService;
-import com.anecacao.api.common.data.dto.MessageDTO;
 import com.anecacao.api.request.creation.data.dto.FumigationApplicationDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
 import com.anecacao.api.request.creation.data.entity.Company;
 import com.anecacao.api.request.creation.data.entity.FumigationApplication;
 import com.anecacao.api.request.creation.data.entity.Status;
@@ -23,10 +23,11 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
     private final FumigationApplicationMapper mapper;
 
     @Override
-    public MessageDTO createFumigationApplication(FumigationApplicationDTO dto, String jwt) {
+    public FumigationApplicationResponseDTO createFumigationApplication(FumigationApplicationDTO dto, String jwt) {
         Company company = findCompany(jwt, dto.getCompany().getId());
-        saveNewFumigationApplication(dto, company, Status.PENDING);
-        return new MessageDTO("Fumigation application created successfully.");
+        FumigationApplication newFumigation = saveNewFumigationApplication(dto, company, Status.PENDING);
+
+        return mapper.toFumigationApplicationResponseDTO(newFumigation);
     }
 
     private Company findCompany (String jwt, Long id) {
