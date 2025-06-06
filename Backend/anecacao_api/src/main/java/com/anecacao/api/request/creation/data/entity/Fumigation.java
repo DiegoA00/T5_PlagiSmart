@@ -35,6 +35,8 @@ public class Fumigation {
     @Column(nullable = false)
     private Status status;
 
+    private String message;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fumigation_application_id", nullable = false)
     @ToString.Exclude
