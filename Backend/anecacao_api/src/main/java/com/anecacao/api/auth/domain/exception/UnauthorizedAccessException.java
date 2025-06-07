@@ -1,4 +1,4 @@
-package com.anecacao.api.request.creation.domain.service.exception;
+package com.anecacao.api.auth.domain.exception;
 
 public class UnauthorizedAccessException extends RuntimeException {
 

@@ -4,10 +4,10 @@ import com.anecacao.api.request.creation.data.dto.FumigationDTO;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
 import com.anecacao.api.auth.domain.service.UserService;
 import com.anecacao.api.request.creation.data.repository.FumigationRepository;
-import com.anecacao.api.request.creation.domain.service.FumigationService;
 import com.anecacao.api.request.creation.data.entity.FumigationApplication;
-import com.anecacao.api.request.creation.domain.service.exception.FumigationNotFoundException;
-import com.anecacao.api.request.creation.domain.service.exception.UnauthorizedAccessException;
+import com.anecacao.api.request.creation.domain.exception.FumigationNotFoundException;
+import com.anecacao.api.auth.domain.exception.UnauthorizedAccessException;
+import com.anecacao.api.request.creation.domain.service.FumigationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

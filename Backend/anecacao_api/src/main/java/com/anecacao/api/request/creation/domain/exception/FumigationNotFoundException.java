@@ -1,4 +1,4 @@
-package com.anecacao.api.request.creation.domain.service.exception;
+package com.anecacao.api.request.creation.domain.exception;
 
 public class FumigationNotFoundException extends RuntimeException {
 
