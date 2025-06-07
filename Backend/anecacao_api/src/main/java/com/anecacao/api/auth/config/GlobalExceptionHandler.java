@@ -4,6 +4,9 @@ import com.anecacao.api.auth.data.dto.ErrorResponseDTO;
 import com.anecacao.api.auth.domain.exception.RoleNotFoundException;
 import com.anecacao.api.auth.domain.exception.UserAlreadyExistsException;
 import com.anecacao.api.auth.domain.exception.UserNotFoundException;
+import com.anecacao.api.request.creation.domain.service.exception.FumigationApplicationNotFoundException;
+import com.anecacao.api.request.creation.domain.service.exception.FumigationNotFoundException;
+import com.anecacao.api.request.creation.domain.service.exception.UnauthorizedAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -49,5 +52,20 @@ public class GlobalExceptionHandler {
         ErrorResponseDTO error = new ErrorResponseDTO();
         error.setMessage(message);
         return error;
+    }
+
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<String> handleUnauthorizedAccessException(UnauthorizedAccessException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(FumigationNotFoundException.class)
+    public ResponseEntity<String> handleFumigationNotFoundException(FumigationNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(FumigationApplicationNotFoundException.class)
+    public ResponseEntity<String> handleFumigationApplicationNotFoundException(FumigationApplicationNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 }

@@ -37,4 +37,5 @@ public class Fumigation {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fumigation_application_id", nullable = false)
     private FumigationApplication fumigationApplication;
+
 }

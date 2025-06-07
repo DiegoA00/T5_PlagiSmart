@@ -19,5 +19,7 @@ public interface FumigationApplicationMapper {
     @Mapping(target = "fumigationApplication", ignore = true)
     Fumigation toFumigationEntity(FumigationCreationRequestDTO dto);
 
+
+
     Set<Fumigation> toFumigationEntityList(Set<FumigationCreationRequestDTO> dtoList);
 }
