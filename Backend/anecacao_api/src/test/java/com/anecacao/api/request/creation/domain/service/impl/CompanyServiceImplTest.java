@@ -7,17 +7,24 @@ import com.anecacao.api.request.creation.domain.exception.CompanyNotFoundExcepti
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@DisplayName("Tests for getCompanyOwnedByLegalRepresentative: returns company if user is legal representative, throws if not found")
-public class CompanyServiceImplTest {
+@ExtendWith(MockitoExtension.class)
+class CompanyServiceImplTest {
+
+    @Mock
     private CompanyRepository repository;
+
+    @InjectMocks
     private CompanyServiceImpl subject;
 
     private Company company;
@@ -25,9 +32,6 @@ public class CompanyServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        repository = mock(CompanyRepository.class);
-        subject = new CompanyServiceImpl(repository);
-
         user = new User();
         user.setId(1L);
         user.setFirstName("Test User");
