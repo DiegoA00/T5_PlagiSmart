@@ -3,7 +3,7 @@ package com.anecacao.api.request.creation.data.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Set;
+import java.util.List;
 
 @Entity
 @Data
@@ -16,5 +16,5 @@ public class FumigationApplication {
     private Company company;
 
     @OneToMany(mappedBy = "fumigationApplication", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Fumigation> fumigations;
+    private List<Fumigation> fumigations;
 }

@@ -1,9 +1,7 @@
 package com.anecacao.api.request.creation.domain.exception;
 
 public class FumigationNotFoundException extends RuntimeException {
-
-    public FumigationNotFoundException(Long fumigationId) {
-        super(String.format("Fumigation not found with ID: %d", fumigationId));
+    public FumigationNotFoundException(Long id) {
+        super ("Fumigation with id: " + id + " was not found.");
     }
 }
-

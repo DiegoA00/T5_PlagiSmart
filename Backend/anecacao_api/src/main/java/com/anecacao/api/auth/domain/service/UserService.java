@@ -10,7 +10,7 @@ public interface UserService {
 
     UserDTO getUserInfo();
 
-    public boolean hasRole(String userId, String roleName);
-
-    public User getUserReferenceById(String token);
+    User getUserReferenceById (String token);
+  
+    boolean hasRole(String userId, String roleName);
 }

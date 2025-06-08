@@ -64,7 +64,7 @@ public class JwtProvider {
                 .parseClaimsJws(token)
                 .getBody();
 
-        return claims.get("id", Long.class);  // Extraemos el ID que se guardó en el claim "id"
+        return claims.get("id", Long.class);
     }
 
     public boolean validateToken (String token) {

@@ -6,6 +6,7 @@ import com.anecacao.api.request.creation.data.dto.response.FumigationApplication
 import com.anecacao.api.request.creation.domain.service.FumigationApplicationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,11 +19,11 @@ public class FumigationApplicationController {
     private final UserService userService;
 
     @PostMapping
-    public void createFumigationApplication (
+    public ResponseEntity<FumigationApplicationResponseDTO> createFumigationApplication (
             @RequestBody @Valid FumigationApplicationDTO fumigationRequestDTO,
             @RequestHeader("Authorization") String jwt
     ) {
-        fumigationApplicationService.createFumigationApplication(fumigationRequestDTO, jwt);
+        return new ResponseEntity<>(fumigationApplicationService.createFumigationApplication(fumigationRequestDTO, jwt), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")

@@ -1,5 +1,15 @@
 package com.anecacao.api.request.creation.domain.service.impl;
 
+import com.anecacao.api.auth.data.entity.User;
+import com.anecacao.api.auth.domain.service.UserService;
+import com.anecacao.api.request.creation.data.dto.FumigationApplicationDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
+import com.anecacao.api.request.creation.data.entity.Company;
+import com.anecacao.api.request.creation.data.entity.FumigationApplication;
+import com.anecacao.api.request.creation.data.entity.Status;
+import com.anecacao.api.request.creation.data.mapper.FumigationApplicationMapper;
+import com.anecacao.api.request.creation.data.repository.FumigationApplicationRepository;
+import com.anecacao.api.request.creation.domain.service.CompanyService;
 import com.anecacao.api.auth.domain.service.UserService;
 import com.anecacao.api.request.creation.data.dto.CompanyRequestDTO;
 import com.anecacao.api.request.creation.data.dto.FumigationApplicationDTO;
@@ -19,17 +29,36 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class FumigationApplicationServiceImpl implements FumigationApplicationService {
-    @Override
-    public void createFumigationApplication(FumigationApplicationDTO fumigationRequestDTO, String jwt) {
-    }
-    private final FumigationApplicationRepository fumigationApplicationRepository;
+    private final FumigationApplicationRepository repository;
     private final UserService userService;
+    private final CompanyService companyService;
     private final FumigationApplicationMapper mapper;
+
+    @Override
+    public FumigationApplicationResponseDTO createFumigationApplication(FumigationApplicationDTO dto, String jwt) {
+        Company company = findCompany(jwt, dto.getCompany().getId());
+        FumigationApplication newFumigation = saveNewFumigationApplication(dto, company, Status.PENDING);
+
+        return mapper.toFumigationApplicationResponseDTO(newFumigation);
+    }
+
+    private Company findCompany (String jwt, Long id) {
+        User legalRepresentative = userService.getUserReferenceById(jwt);
+        return companyService.getCompanyOwnedByLegalRepresentative(id, legalRepresentative);
+    }
+
+    private FumigationApplication saveNewFumigationApplication (FumigationApplicationDTO dto, Company company, Status status) {
+        FumigationApplication newApplication = mapper.toEntity(dto);
+        newApplication.setCompany(company);
+        newApplication.getFumigations().forEach(f -> f.setStatus(status));
+
+        return repository.save(newApplication);
+    }
 
     @Override
     public FumigationApplicationResponseDTO getFumigationApplicationById(Long id, String token) {
 
-        FumigationApplication fumigationApplication = fumigationApplicationRepository.findById(id)
+        FumigationApplication fumigationApplication = repository.findById(id)
                 .orElseThrow(() -> new FumigationApplicationNotFoundException(id));
 
         validateUserPermission(fumigationApplication, id, token);
