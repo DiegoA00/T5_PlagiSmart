@@ -12,6 +12,5 @@ import lombok.NoArgsConstructor;
 public class UpdateStatusRequestDTO {
     @NotNull
     private Status status;
-
     private String message;
 }

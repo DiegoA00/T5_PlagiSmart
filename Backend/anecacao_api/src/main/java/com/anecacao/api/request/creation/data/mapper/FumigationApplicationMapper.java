@@ -1,18 +1,18 @@
 package com.anecacao.api.request.creation.data.mapper;
 
-import com.anecacao.api.request.creation.data.dto.FumigationApplicationDTO;
+import com.anecacao.api.request.creation.data.dto.request.FumigationApplicationDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
-import com.anecacao.api.request.creation.data.dto.FumigationCreationRequestDTO;
-import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
+import com.anecacao.api.request.creation.data.dto.request.FumigationCreationRequestDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationResponseDTO;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
 import com.anecacao.api.request.creation.data.entity.FumigationApplication;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Mapper(componentModel = "spring", uses = {CompanyMapper.class})
 public interface FumigationApplicationMapper {

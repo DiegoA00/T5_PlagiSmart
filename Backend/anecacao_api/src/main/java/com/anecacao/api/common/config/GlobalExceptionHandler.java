@@ -1,4 +1,4 @@
-package com.anecacao.api.auth.config;
+package com.anecacao.api.common.config;
 
 import com.anecacao.api.auth.data.dto.ErrorResponseDTO;
 import com.anecacao.api.auth.domain.exception.RoleNotFoundException;
@@ -10,7 +10,6 @@ import com.anecacao.api.request.creation.domain.exception.FumigationValidationEx
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.anecacao.api.request.creation.domain.exception.FumigationApplicationNotFoundException;
-import com.anecacao.api.request.creation.domain.exception.FumigationNotFoundException;
 import com.anecacao.api.auth.domain.exception.UnauthorizedAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -105,29 +104,24 @@ public class GlobalExceptionHandler {
         return new ResponseEntity <> (buildResponse(ex.getMessage()), HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler (FumigationNotFoundException.class)
-    public ResponseEntity<ErrorResponseDTO> handleFumigationNotFoundException (FumigationNotFoundException ex) {
-        return new ResponseEntity <> (buildResponse(ex.getMessage()), HttpStatus.NOT_FOUND);
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<ErrorResponseDTO> handleUnauthorizedAccessException(UnauthorizedAccessException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(buildResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(FumigationNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleFumigationNotFoundException(FumigationNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(buildResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(FumigationApplicationNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleFumigationApplicationNotFoundException(FumigationApplicationNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(buildResponse(ex.getMessage()));
     }
 
     private ErrorResponseDTO buildResponse (String message) {
         ErrorResponseDTO error = new ErrorResponseDTO();
         error.setMessage(message);
         return error;
-    }
-
-    @ExceptionHandler(UnauthorizedAccessException.class)
-    public ResponseEntity<String> handleUnauthorizedAccessException(UnauthorizedAccessException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(FumigationNotFoundException.class)
-    public ResponseEntity<String> handleFumigationNotFoundException(FumigationNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(FumigationApplicationNotFoundException.class)
-    public ResponseEntity<String> handleFumigationApplicationNotFoundException(FumigationApplicationNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 }

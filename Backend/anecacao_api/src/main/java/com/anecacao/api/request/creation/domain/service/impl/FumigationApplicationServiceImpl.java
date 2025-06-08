@@ -1,8 +1,9 @@
 package com.anecacao.api.request.creation.domain.service.impl;
 
+import com.anecacao.api.auth.data.entity.RoleName;
 import com.anecacao.api.auth.data.entity.User;
 import com.anecacao.api.auth.domain.service.UserService;
-import com.anecacao.api.request.creation.data.dto.FumigationApplicationDTO;
+import com.anecacao.api.request.creation.data.dto.request.FumigationApplicationDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
 import com.anecacao.api.request.creation.data.entity.Company;
 import com.anecacao.api.request.creation.data.entity.FumigationApplication;
@@ -10,21 +11,11 @@ import com.anecacao.api.request.creation.data.entity.Status;
 import com.anecacao.api.request.creation.data.mapper.FumigationApplicationMapper;
 import com.anecacao.api.request.creation.data.repository.FumigationApplicationRepository;
 import com.anecacao.api.request.creation.domain.service.CompanyService;
-import com.anecacao.api.auth.domain.service.UserService;
-import com.anecacao.api.request.creation.data.dto.CompanyRequestDTO;
-import com.anecacao.api.request.creation.data.dto.FumigationApplicationDTO;
-import com.anecacao.api.request.creation.data.dto.FumigationCreationRequestDTO;
-import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
-import com.anecacao.api.request.creation.data.entity.FumigationApplication;
-import com.anecacao.api.request.creation.data.mapper.FumigationApplicationMapper;
-import com.anecacao.api.request.creation.data.repository.FumigationApplicationRepository;
 import com.anecacao.api.request.creation.domain.exception.FumigationApplicationNotFoundException;
 import com.anecacao.api.auth.domain.exception.UnauthorizedAccessException;
 import com.anecacao.api.request.creation.domain.service.FumigationApplicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,19 +33,6 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
         return mapper.toFumigationApplicationResponseDTO(newFumigation);
     }
 
-    private Company findCompany (String jwt, Long id) {
-        User legalRepresentative = userService.getUserReferenceById(jwt);
-        return companyService.getCompanyOwnedByLegalRepresentative(id, legalRepresentative);
-    }
-
-    private FumigationApplication saveNewFumigationApplication (FumigationApplicationDTO dto, Company company, Status status) {
-        FumigationApplication newApplication = mapper.toEntity(dto);
-        newApplication.setCompany(company);
-        newApplication.getFumigations().forEach(f -> f.setStatus(status));
-
-        return repository.save(newApplication);
-    }
-
     @Override
     public FumigationApplicationResponseDTO getFumigationApplicationById(Long id, String token) {
 
@@ -70,11 +48,23 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
         String userIdFromToken = userService.getUserReferenceById(token).getId().toString();
 
         Long companyOwnerId = fumigationApplication.getCompany().getLegalRepresentative().getId();
-
-        boolean isAuthorized = userIdFromToken.equals(companyOwnerId.toString());
+        boolean isAuthorized = userIdFromToken.equals(companyOwnerId.toString()) || userService.hasRole(userIdFromToken, RoleName.ROLE_ADMIN);
 
         if (!isAuthorized) {
             throw new UnauthorizedAccessException("FumigationApplication", id, Long.parseLong(userIdFromToken));
         }
+    }
+
+    private Company findCompany (String jwt, Long id) {
+        User legalRepresentative = userService.getUserReferenceById(jwt);
+        return companyService.getCompanyOwnedByLegalRepresentative(id, legalRepresentative);
+    }
+
+    private FumigationApplication saveNewFumigationApplication (FumigationApplicationDTO dto, Company company, Status status) {
+        FumigationApplication newApplication = mapper.toEntity(dto);
+        newApplication.setCompany(company);
+        newApplication.getFumigations().forEach(f -> f.setStatus(status));
+
+        return repository.save(newApplication);
     }
 }

@@ -1,4 +1,4 @@
-package com.anecacao.api.request.creation.data.dto;
+package com.anecacao.api.request.creation.data.dto.request;
 
 import com.anecacao.api.request.creation.data.entity.Grade;
 import com.anecacao.api.request.creation.data.entity.PortName;

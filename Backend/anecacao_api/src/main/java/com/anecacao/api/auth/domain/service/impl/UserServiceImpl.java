@@ -99,21 +99,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserReferenceById(String token) {
-        // Validar el token y obtener el ID del usuario
-        Long userId = jwtProvider.getUserIdFromJWT(token);
-
-        // Obtener la referencia del usuario por su ID
-        return userRepository.getReferenceById(userId);
-    }
-
-    @Override
-    public boolean hasRole(String userId, String roleName) {
+    public boolean hasRole(String userId, RoleName roleName) {
         User user = userRepository.findById(Long.parseLong(userId))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return user.getRoles().stream()
-                .anyMatch(role -> role.getName().name().equals(roleName));
+                .anyMatch(role -> role.getName().equals(roleName));
     }
 
 }

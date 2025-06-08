@@ -1,4 +1,4 @@
-package com.anecacao.api.request.creation.data.dto;
+package com.anecacao.api.request.creation.data.dto.request;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;

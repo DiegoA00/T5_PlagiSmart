@@ -1,6 +1,7 @@
 package com.anecacao.api.auth.domain.service;
 
 import com.anecacao.api.auth.data.dto.*;
+import com.anecacao.api.auth.data.entity.RoleName;
 import com.anecacao.api.auth.data.entity.User;
 
 public interface UserService {
@@ -12,5 +13,5 @@ public interface UserService {
 
     User getUserReferenceById (String token);
   
-    boolean hasRole(String userId, String roleName);
+    boolean hasRole(String userId, RoleName roleName);
 }
