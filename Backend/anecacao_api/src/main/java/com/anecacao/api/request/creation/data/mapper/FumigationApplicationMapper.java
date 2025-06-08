@@ -2,6 +2,8 @@ package com.anecacao.api.request.creation.data.mapper;
 
 import com.anecacao.api.request.creation.data.dto.FumigationApplicationDTO;
 import com.anecacao.api.request.creation.data.dto.FumigationCreationRequestDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationResponseDTO;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
 import com.anecacao.api.request.creation.data.entity.FumigationApplication;
 import org.mapstruct.Mapper;
@@ -19,7 +21,9 @@ public interface FumigationApplicationMapper {
     @Mapping(target = "fumigationApplication", ignore = true)
     Fumigation toFumigationEntity(FumigationCreationRequestDTO dto);
 
+    FumigationApplicationResponseDTO toFumigationApplicationResponseDTO (FumigationApplication fumigationApplication);
 
+    FumigationResponseDTO toFumigationResponseDTO(Fumigation fumigation);
 
     Set<Fumigation> toFumigationEntityList(Set<FumigationCreationRequestDTO> dtoList);
 }

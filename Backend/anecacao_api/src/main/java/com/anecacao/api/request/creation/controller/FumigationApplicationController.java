@@ -2,6 +2,7 @@ package com.anecacao.api.request.creation.controller;
 
 import com.anecacao.api.auth.domain.service.UserService;
 import com.anecacao.api.request.creation.data.dto.FumigationApplicationDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
 import com.anecacao.api.request.creation.domain.service.FumigationApplicationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +26,12 @@ public class FumigationApplicationController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<FumigationApplicationDTO> getFumigationApplicationById(@PathVariable Long id,
+    public ResponseEntity<FumigationApplicationResponseDTO> getFumigationApplicationById(@PathVariable Long id,
                                                                                  @RequestHeader("Authorization") String token) {
 
-        FumigationApplicationDTO fumigationApplicationDTO = fumigationApplicationService.getFumigationApplicationById(id, token);
+        FumigationApplicationResponseDTO fumigationApplicationResponseDTO = fumigationApplicationService.getFumigationApplicationById(id, token);
 
-        return ResponseEntity.ok(fumigationApplicationDTO);
+        return ResponseEntity.ok(fumigationApplicationResponseDTO);
     }
 
 

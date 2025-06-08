@@ -1,8 +1,10 @@
 package com.anecacao.api.request.creation.domain.service.impl;
 
 import com.anecacao.api.request.creation.data.dto.FumigationDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationResponseDTO;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
 import com.anecacao.api.auth.domain.service.UserService;
+import com.anecacao.api.request.creation.data.mapper.FumigationApplicationMapper;
 import com.anecacao.api.request.creation.data.repository.FumigationRepository;
 import com.anecacao.api.request.creation.data.entity.FumigationApplication;
 import com.anecacao.api.request.creation.domain.exception.FumigationNotFoundException;
@@ -17,9 +19,10 @@ public class FumigationServiceImpl implements FumigationService {
 
     private final FumigationRepository fumigationRepository;
     private final UserService userService;
+    private final FumigationApplicationMapper mapper;
 
     @Override
-    public FumigationDTO  updateFumigation(Long fumigationId, FumigationDTO fumigationDTO, String token) {
+    public FumigationResponseDTO updateFumigation(Long fumigationId, FumigationDTO fumigationDTO, String token) {
 
         Fumigation fumigation = fumigationRepository.findById(fumigationId)
                 .orElseThrow(() -> new FumigationNotFoundException(fumigationId));
@@ -30,15 +33,8 @@ public class FumigationServiceImpl implements FumigationService {
 
         fumigation = fumigationRepository.save(fumigation);
 
+        return mapper.toFumigationResponseDTO(fumigation);
 
-        return new FumigationDTO(
-                fumigation.getId(),
-                fumigation.getTon(),
-                fumigation.getPortDestination(),
-                fumigation.getSacks(),
-                fumigation.getGrade(),
-                fumigation.getDateTime()
-        );
     }
 
     public void validateUserPermission(Fumigation fumigation, String token) {
@@ -65,6 +61,7 @@ public class FumigationServiceImpl implements FumigationService {
 
     @Override
     public Fumigation getFumigationById(Long fumigationId) {
+
         return fumigationRepository.findById(fumigationId)
                 .orElseThrow(() -> new FumigationNotFoundException(fumigationId));
     }

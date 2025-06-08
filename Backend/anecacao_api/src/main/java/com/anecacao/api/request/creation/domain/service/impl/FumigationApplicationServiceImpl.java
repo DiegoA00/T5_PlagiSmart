@@ -4,7 +4,9 @@ import com.anecacao.api.auth.domain.service.UserService;
 import com.anecacao.api.request.creation.data.dto.CompanyRequestDTO;
 import com.anecacao.api.request.creation.data.dto.FumigationApplicationDTO;
 import com.anecacao.api.request.creation.data.dto.FumigationCreationRequestDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
 import com.anecacao.api.request.creation.data.entity.FumigationApplication;
+import com.anecacao.api.request.creation.data.mapper.FumigationApplicationMapper;
 import com.anecacao.api.request.creation.data.repository.FumigationApplicationRepository;
 import com.anecacao.api.request.creation.domain.exception.FumigationApplicationNotFoundException;
 import com.anecacao.api.auth.domain.exception.UnauthorizedAccessException;
@@ -22,29 +24,17 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
     }
     private final FumigationApplicationRepository fumigationApplicationRepository;
     private final UserService userService;
+    private final FumigationApplicationMapper mapper;
 
     @Override
-    public FumigationApplicationDTO getFumigationApplicationById(Long id, String token) {
+    public FumigationApplicationResponseDTO getFumigationApplicationById(Long id, String token) {
 
         FumigationApplication fumigationApplication = fumigationApplicationRepository.findById(id)
                 .orElseThrow(() -> new FumigationApplicationNotFoundException(id));
 
         validateUserPermission(fumigationApplication, id, token);
 
-        return new FumigationApplicationDTO(
-                new CompanyRequestDTO(
-                        fumigationApplication.getCompany().getId()
-                ),
-                fumigationApplication.getFumigations().stream()
-                        .map(fumigation -> new FumigationCreationRequestDTO(
-                                fumigation.getTon(),
-                                fumigation.getPortDestination(),
-                                fumigation.getSacks(),
-                                fumigation.getGrade(),
-                                fumigation.getDateTime()
-                        ))
-                        .collect(Collectors.toList())
-        );
+        return mapper.toFumigationApplicationResponseDTO(fumigationApplication);
     }
 
     private void validateUserPermission(FumigationApplication fumigationApplication, Long id, String token) {
