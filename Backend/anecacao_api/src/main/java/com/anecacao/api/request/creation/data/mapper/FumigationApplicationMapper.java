@@ -2,14 +2,15 @@ package com.anecacao.api.request.creation.data.mapper;
 
 import com.anecacao.api.request.creation.data.dto.FumigationApplicationDTO;
 import com.anecacao.api.request.creation.data.dto.FumigationCreationRequestDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationResponseDTO;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
 import com.anecacao.api.request.creation.data.entity.FumigationApplication;
-import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper(componentModel = "spring", uses = {CompanyMapper.class})
 public interface FumigationApplicationMapper {
@@ -20,12 +21,9 @@ public interface FumigationApplicationMapper {
     @Mapping(target = "fumigationApplication", ignore = true)
     Fumigation toFumigationEntity(FumigationCreationRequestDTO dto);
 
-    List<Fumigation> toFumigationEntityList(List<FumigationCreationRequestDTO> dtoList);
+    FumigationApplicationResponseDTO toFumigationApplicationResponseDTO (FumigationApplication fumigationApplication);
 
-    @AfterMapping
-    default void linkFumigationApplication(@MappingTarget FumigationApplication entity) {
-        if (entity.getFumigations() != null) {
-            entity.getFumigations().forEach(f -> f.setFumigationApplication(entity));
-        }
-    }
+    FumigationResponseDTO toFumigationResponseDTO(Fumigation fumigation);
+
+    Set<Fumigation> toFumigationEntityList(Set<FumigationCreationRequestDTO> dtoList);
 }
