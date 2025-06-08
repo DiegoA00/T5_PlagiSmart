@@ -41,4 +41,5 @@ public class Fumigation {
     @JoinColumn(name = "fumigation_application_id", nullable = false)
     @ToString.Exclude
     private FumigationApplication fumigationApplication;
+
 }

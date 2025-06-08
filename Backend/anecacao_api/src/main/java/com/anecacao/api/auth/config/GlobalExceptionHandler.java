@@ -9,6 +9,9 @@ import com.anecacao.api.request.creation.domain.exception.FumigationNotFoundExce
 import com.anecacao.api.request.creation.domain.exception.FumigationValidationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.anecacao.api.request.creation.domain.exception.FumigationApplicationNotFoundException;
+import com.anecacao.api.request.creation.domain.exception.FumigationNotFoundException;
+import com.anecacao.api.auth.domain.exception.UnauthorizedAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -111,5 +114,20 @@ public class GlobalExceptionHandler {
         ErrorResponseDTO error = new ErrorResponseDTO();
         error.setMessage(message);
         return error;
+    }
+
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<String> handleUnauthorizedAccessException(UnauthorizedAccessException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(FumigationNotFoundException.class)
+    public ResponseEntity<String> handleFumigationNotFoundException(FumigationNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(FumigationApplicationNotFoundException.class)
+    public ResponseEntity<String> handleFumigationApplicationNotFoundException(FumigationApplicationNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 }

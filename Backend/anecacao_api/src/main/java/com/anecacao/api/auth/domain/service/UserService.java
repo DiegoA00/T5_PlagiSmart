@@ -11,4 +11,6 @@ public interface UserService {
     UserDTO getUserInfo();
 
     User getUserReferenceById (String token);
+  
+    boolean hasRole(String userId, String roleName);
 }
