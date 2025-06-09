@@ -27,6 +27,8 @@ import java.util.Optional;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FumigationServiceImplTest {
@@ -53,7 +55,7 @@ class FumigationServiceImplTest {
     @BeforeEach
     void setUpEntities() {
         user = new User();
-        user.setId(1L);
+        user.setId(100L);
 
         company = new Company();
         company.setId(10L);
