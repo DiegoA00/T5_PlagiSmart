@@ -4,6 +4,8 @@ import com.anecacao.api.auth.data.entity.RoleName;
 import com.anecacao.api.auth.data.entity.User;
 import com.anecacao.api.auth.domain.exception.UnauthorizedAccessException;
 import com.anecacao.api.auth.domain.service.UserService;
+import com.anecacao.api.request.creation.data.dto.request.CompanyRequestDTO;
+import com.anecacao.api.request.creation.data.dto.request.FumigationApplicationDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
 import com.anecacao.api.request.creation.data.entity.Company;
 import com.anecacao.api.request.creation.data.entity.FumigationApplication;
@@ -23,9 +25,9 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FumigationApplicationServiceImplTest {
@@ -47,6 +49,7 @@ class FumigationApplicationServiceImplTest {
     private final Long applicationId = 1L;
     private final String token = "someToken";
     private FumigationApplication application;
+    private FumigationApplicationDTO fumigationApplicationDTO;
     private User user;
     private Company company;
 
@@ -58,11 +61,18 @@ class FumigationApplicationServiceImplTest {
         company = new Company();
         company.setId(1L);
         company.setLegalRepresentative(user);
+        company.setName("CriolloCorp.");
+        company.setBusinessName("CriolloS.A");
+        company.setPhoneNumber("0980783625");
+        company.setAddress("VLC Puerto Seymour");
+        company.setRuc("1105327702");
 
         application = new FumigationApplication();
         application.setId(applicationId);
         application.setCompany(company);
         application.setFumigations(Collections.emptyList());
+        fumigationApplicationDTO = new FumigationApplicationDTO();
+        fumigationApplicationDTO.setCompany(new CompanyRequestDTO(1L));
     }
 
     @Test

@@ -65,10 +65,17 @@ public class FumigationServiceImpl implements FumigationService {
 
     private void validateUserPermission(Fumigation fumigation, String token) {
         String userIdFromToken = userService.getUserReferenceById(token).getId().toString();
-
         FumigationApplication fumigationApplication = fumigation.getFumigationApplication();
         Long companyOwnerId = fumigationApplication.getCompany().getLegalRepresentative().getId();
+
+        // Agregar logs para depuración
+        System.out.println("User ID from Token: " + userIdFromToken);
+        System.out.println("Company Owner ID: " + companyOwnerId);
+
         boolean isAuthorized = userIdFromToken.equals(companyOwnerId.toString()) || userService.hasRole(userIdFromToken, RoleName.ROLE_ADMIN);
+
+        // Imprimir la validación de autorización
+        System.out.println("Is User Authorized: " + isAuthorized);
 
         if (!isAuthorized) {
             throw new UnauthorizedAccessException("Fumigation", fumigation.getId(), Long.parseLong(userIdFromToken));
