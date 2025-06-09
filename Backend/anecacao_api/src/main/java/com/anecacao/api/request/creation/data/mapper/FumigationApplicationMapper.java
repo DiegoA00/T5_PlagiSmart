@@ -17,7 +17,6 @@ import java.util.List;
 @Mapper(componentModel = "spring", uses = {CompanyMapper.class})
 public interface FumigationApplicationMapper {
     @Mapping(target = "company", source = "company")
-    @Mapping(target = "fumigations", ignore = false)
     FumigationApplication toEntity(FumigationApplicationDTO dto);
 
     @Mapping(target = "fumigationApplication", ignore = true)

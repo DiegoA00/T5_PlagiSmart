@@ -50,10 +50,6 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
         Long companyOwnerId = fumigationApplication.getCompany().getLegalRepresentative().getId();
         boolean isAuthorized = userIdFromToken.equals(companyOwnerId.toString()) || userService.hasRole(userIdFromToken, RoleName.ROLE_ADMIN);
 
-        System.out.println("User ID from token: " + userIdFromToken);
-        System.out.println("Company Owner ID: " + companyOwnerId);
-        System.out.println("Is Authorized: " + isAuthorized);
-
         if (!isAuthorized) {
             throw new UnauthorizedAccessException("FumigationApplication", id, Long.parseLong(userIdFromToken));
         }
@@ -65,12 +61,7 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
     }
 
     private FumigationApplication saveNewFumigationApplication (FumigationApplicationDTO dto, Company company, Status status) {
-
         FumigationApplication newApplication = mapper.toEntity(dto);
-
-        if (newApplication == null) {
-            throw new IllegalStateException("FumigationApplication mapping failed, newApplication is null");
-        }
         newApplication.setCompany(company);
         newApplication.getFumigations().forEach(f -> f.setStatus(status));
 
