@@ -9,6 +9,7 @@ import Register from "../pages/Register/Register";
 import PrivacyPolicy from "../pages/Register/PrivacyPolicy";
 import TermsAndConditions from "../pages/Register/TermsAndConditions";
 import RegisterSuccess from "../pages/Register/RegisterSuccess";
+import CompleteProfile from "../pages/Register/CompleteProfile";
 
 export default function AppRouter() {
   return (
@@ -19,6 +20,7 @@ export default function AppRouter() {
         <Route path='/register/privacy-policy' element={<PrivacyPolicy />} />
         <Route path='/register/terms-and-conditions' element={<TermsAndConditions />} />
         <Route path='/register/success' element={<RegisterSuccess />} />
+        <Route path='/register/complete-profile' element={<CompleteProfile />} />
         <Route path='*' element={<Navigate to='/Login' />} />
       </Routes>
     </Router>

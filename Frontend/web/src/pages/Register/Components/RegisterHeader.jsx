@@ -1,6 +1,6 @@
 import LoginSwitcher from './LoginSwitcher';
 
-const LoginHeader = () => {
+const RegisterHeader = () => {
     return (
         <header className='space-y-5'>
             <h1 className='text-3xl font-bold text-center'>Welcome to PlagiSmart!</h1>
@@ -11,4 +11,4 @@ const LoginHeader = () => {
     )
 }
 
-export default LoginHeader;
+export default RegisterHeader;
