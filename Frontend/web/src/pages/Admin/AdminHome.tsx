@@ -13,13 +13,21 @@ import { OverlayContent } from "@/pages/Admin/Components/OverlayContent";
 import { RequestsTable } from "@/pages/Admin/Components/RequestsTable";
 import { REQUESTS } from "@/constants/exampleRequests";
 import { Request } from "@/types/request";
+import { Calendar } from "@/components/ui/calendar";
 
 export default function AdminHome() {
   const [search, setSearch] = useState("");
+  const [searchDate, setSearchDate] = useState<Date | undefined>(undefined);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
-  const filtered = REQUESTS.filter((r) =>
-    r.client.toLowerCase().includes(search.toLowerCase())
-  );
+
+  // Filtrado por cliente y fecha
+  const filtered = REQUESTS.filter((r) => {
+    const matchesClient = r.client.toLowerCase().includes(search.toLowerCase());
+    const matchesDate = searchDate
+      ? new Date(r.date).toDateString() === searchDate.toDateString()
+      : true;
+    return matchesClient && matchesDate;
+  });
 
   return (
     <div className="flex h-screen">
@@ -28,7 +36,9 @@ export default function AdminHome() {
         <header className="flex justify-between items-start mb-8">
           <div>
             <h2 className="text-3xl font-bold mb-1">Solicitudes</h2>
-            <p className="text-gray-500">Gestiona las solicitudes de servicio entrantes</p>
+            <p className="text-gray-500">
+              Gestiona las solicitudes de servicio entrantes
+            </p>
           </div>
           <div className="w-10 h-10 rounded-full overflow-hidden">
             <img
@@ -47,19 +57,36 @@ export default function AdminHome() {
             onChange={(e) => setSearch(e.target.value)}
             className="max-w-md"
           />
-          <DropdownMenu>
+          {/* <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">Fecha</Button>
+              <Button variant="outline">
+                {searchDate
+                  ? searchDate.toLocaleDateString()
+                  : "Fecha de solicitud"}
+              </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {/* Opciones de filtro */}
+            <DropdownMenuContent className="p-2">
+              <Calendar
+                mode="single"
+                selected={searchDate}
+                onSelect={setSearchDate}
+              />
+              {searchDate && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-2 w-full"
+                  onClick={() => setSearchDate(undefined)}
+                >
+                  Limpiar filtro
+                </Button>
+              )}
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu> */}
         </div>
 
         <RequestsTable data={filtered} onViewMore={setSelectedRequest} />
 
-        {/* Pagination */}
         <div className="flex justify-center items-center gap-2 mt-6">
           <Button variant="ghost" size="icon" className="w-8 h-8">
             &lt;
@@ -70,12 +97,16 @@ export default function AdminHome() {
           </Button>
         </div>
 
-        {/* Overlay */}
         <Overlay
           open={!!selectedRequest}
           onClose={() => setSelectedRequest(null)}
         >
-          {selectedRequest && <OverlayContent request={selectedRequest} />}
+          {selectedRequest && (
+            <OverlayContent
+              request={selectedRequest}
+              onClose={() => setSelectedRequest(null)}
+            />
+          )}
         </Overlay>
       </main>
     </div>
