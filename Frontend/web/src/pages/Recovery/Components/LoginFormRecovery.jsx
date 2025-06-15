@@ -67,17 +67,17 @@ const LoginForm = () => {
     >
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-          Enter Email
+        <label htmlFor="email" className="block text-sm font-medium text-[#003595] mb-1">
+          Ingresa tu correo electrónico
         </label>
         <input
           type="email"
           name="email"
-          placeholder="Enter your email"
+          placeholder="Ingresa tu correo electrónico"
           value={form.email}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9E896A]"
+          className="w-full px-4 py-2 border border-[#003595] rounded-md focus:outline-none focus:ring-2 focus:ring-[#003595]"
         />
       </div>
 
@@ -85,9 +85,9 @@ const LoginForm = () => {
         <button
           onClick={nextPage}
           type="submit"
-          className="bg-[#9E896A] text-white px-15 py-2 rounded-full hover:bg-[#826f56] transition-colors w-full sm:w-auto cursor-pointer"
+          className="bg-[#003595] text-white px-15 py-2 rounded-full hover:bg-[#002060] transition-colors w-full sm:w-auto cursor-pointer"
         >
-          Submit
+          Enviar
         </button>
       </div>
 

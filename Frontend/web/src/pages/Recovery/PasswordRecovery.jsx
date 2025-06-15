@@ -20,7 +20,9 @@ const PasswordRecovery = () => {
 
       <div className="w-1/2 flex items-center justify-center">
         <div className="w-full max-w-md p-10 bg-white rounded-lg shadow-lg">
-          <p className='text-sm text-gray-600 max-w-md mx-auto text-left mt-10 mb-10'> Lorem Ipsum is simply Lorem Ipsum is simplyLorem Ipsum is simply Lorem Ipsum is simply</p>
+          <p className='text-sm text-gray-600 max-w-md mx-auto text-left mt-10 mb-10'> 
+            Ingresa la nueva contraseña que deseas utilizar para tu cuenta. Recuerda que debe ser segura y fácil de recordar.
+          </p>
           <PasswordFormRecovery />
         </div>
       </div>

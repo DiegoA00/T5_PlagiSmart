@@ -73,38 +73,38 @@ const LoginForm = () => {
     >
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-          Email
+        <label htmlFor="email" className="block text-sm font-medium text-[#003595] mb-1">
+          Correo electrónico
         </label>
         <input
           type="email"
           name="email"
-          placeholder="Enter your email"
+          placeholder="Ingresa tu correo electrónico"
           value={form.email}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9E896A]"
+          className="w-full px-4 py-2 border border-[#003595] rounded-md focus:outline-none focus:ring-2 focus:ring-[#003595]"
         />
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-          Password
+        <label htmlFor="password" className="block text-sm font-medium text-[#003595] mb-1">
+          Contraseña
         </label>
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
             name="password"
-            placeholder="Enter your password"
+            placeholder="Ingresa tu contraseña"
             value={form.password}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-[#9E896A]"
+            className="w-full px-4 py-2 border border-[#003595] rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-[#003595]"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-2 flex items-center text-gray-500 cursor-pointer"
+            className="absolute inset-y-0 right-2 flex items-center text-[#003595] cursor-pointer"
             tabIndex={-1}
           >
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -112,28 +112,28 @@ const LoginForm = () => {
         </div>
       </div>
 
-      <div className="flex justify-between items-center text-sm text-gray-600">
+      <div className="flex justify-between items-center text-sm text-[#003595]">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             name="rememberMe"
             checked={form.rememberMe}
             onChange={handleChange}
-            className="accent-[#9E896A] cursor-pointer"
+            className="accent-[#003595] cursor-pointer"
           />
-          Remember me
+          Recuérdame
         </label>
-        <button type="button" className="cursor-pointer text-[#9E896A] hover:underline" onClick={nextPage}>
-          Forgot Password?
+        <button type="button" className="cursor-pointer text-[#003595] hover:underline" onClick={nextPage}>
+          ¿Olvidaste tu contraseña?
         </button>
       </div>
 
       <div className="text-right">
         <button
           type="submit"
-          className="bg-[#9E896A] text-white px-6 py-2 rounded-full hover:bg-[#826f56] transition-colors w-full sm:w-auto cursor-pointer"
+          className="bg-[#003595] text-white px-6 py-2 rounded-full hover:bg-[#002060] transition-colors w-full sm:w-auto cursor-pointer"
         >
-          Login
+          Iniciar sesión
         </button>
       </div>
 

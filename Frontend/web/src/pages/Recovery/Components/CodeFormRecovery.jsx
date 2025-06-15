@@ -87,8 +87,8 @@ const CodeFormRecovery = () => {
     >
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Enter Code
+        <label className="block text-sm font-medium text-[#003595] mb-1">
+          Ingresa el código
         </label>
 
         <div className="pt-2 flex flex-row gap-4 justify-center">
@@ -102,7 +102,7 @@ const CodeFormRecovery = () => {
               onChange={(e) => handleChange(e, idx)}
               onKeyDown={(e) => handleKeyDown(e, idx)}
               ref={(el) => (inputsRef.current[idx] = el)}
-              className=" w-9 h-14 text-center text-2xl border border-[#a1866f] rounded-[30px] focus:outline-none focus:border-2"
+              className="w-9 h-14 text-center text-2xl border border-[#003595] rounded-[30px] focus:outline-none focus:ring-2 focus:ring-[#003595] text-[#003595]"
               inputMode="numeric"
               autoComplete="one-time-code"
             />
@@ -114,9 +114,9 @@ const CodeFormRecovery = () => {
         <button
           onClick={nextPage}
           type="submit"
-          className="bg-[#9E896A] text-white px-15 py-2 rounded-full hover:bg-[#826f56] transition-colors w-full sm:w-auto cursor-pointer"
+          className="bg-[#003595] text-white px-15 py-2 rounded-full hover:bg-[#002060] transition-colors w-full sm:w-auto cursor-pointer"
         >
-          Submit
+          Enviar
         </button>
       </div>
 

@@ -20,7 +20,9 @@ const CodeRecovery = () => {
 
       <div className="w-1/2 flex items-center justify-center">
         <div className="w-full max-w-md p-10 bg-white rounded-lg shadow-lg">
-          <p className='text-sm text-gray-600 max-w-md mx-auto text-left mt-10 mb-10'> Lorem Ipsum is simply Lorem Ipsum is simplyLorem Ipsum is simply Lorem Ipsum is simply</p>
+          <p className='text-sm text-gray-600 max-w-md mx-auto text-left mt-10 mb-10'>
+            Hemos enviado un código de verificación a tu correo electrónico. Por favor, ingresa el código recibido para continuar con el proceso de recuperación de tu contraseña.
+          </p>
           <CodeFormRecovery />
         </div>
       </div>
