@@ -9,8 +9,8 @@ export const RequestsTable: FC<{ data: Request[]; onViewMore: (request: Request)
           <th className="px-4 py-3">ID</th>
           <th className="px-4 py-3">Servicio</th>
           <th className="px-4 py-3">Cliente</th>
-          <th className="px-4 py-3">Fecha</th>
-          <th className="px-4 py-3">Toneladas</th>
+          <th className="px-4 py-3">Fecha Solicitud</th>
+          <th className="px-4 py-3">Total Toneladas</th>
           <th className="px-4 py-3">Acciones</th>
         </tr>
       </thead>
@@ -18,7 +18,7 @@ export const RequestsTable: FC<{ data: Request[]; onViewMore: (request: Request)
         {data.map((r) => (
           <tr key={r.id} className="border-t border-[#003595] hover:bg-[#E6ECF7]">
             <td className="px-4 py-2">{r.id}</td>
-            <td className="px-4 py-2 text-[#003595] cursor-pointer">{r.service}</td>
+            <td className="px-4 py-2">{r.service}</td>
             <td className="px-4 py-2">{r.client}</td>
             <td className="px-4 py-2">{r.date}</td>
             <td className="px-4 py-2">{r.tons}</td>
