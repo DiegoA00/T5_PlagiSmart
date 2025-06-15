@@ -1,1 +1,0 @@
---> Estructuras de página (Navbar, Sidebar, Footer, etc.)
