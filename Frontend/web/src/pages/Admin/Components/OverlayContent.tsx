@@ -32,7 +32,7 @@ export const OverlayContent: FC<{ request: Request }> = ({ request }) => {
       <div className="bg-[#003595] text-white rounded-t-lg px-8 py-5 text-lg font-semibold">
         Revisión de Solicitud de Servicio de Fumigación
       </div>
-      <div className="overflow-y-auto px-8 py-6" style={{ maxHeight: "75vh" }}>
+      <div className="overflow-y-auto px-8 py-6" style={{ maxHeight: "70vh" }}>
         <div>
           <div className="text-base font-semibold mb-2 border-b pb-2 border-[#003595]">
             Datos Generales del Cliente
@@ -90,7 +90,7 @@ export const OverlayContent: FC<{ request: Request }> = ({ request }) => {
                   />
                 </label>
               </div>
-              <div className="border rounded bg-white">
+              <div className="border rounded bg-[#E6ECF7]">
                 <div className="grid grid-cols-2 md:grid-cols-5 text-xs font-semibold text-[#003595] border-b border-[#003595] px-4 py-2">
                   <div className="col-span-2">DETALLE</div>
                   <div className="col-span-3">VALOR</div>
