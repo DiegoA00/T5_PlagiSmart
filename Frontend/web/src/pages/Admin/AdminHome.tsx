@@ -7,10 +7,10 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sidebar } from "@/components/Sidebar";
-import { Overlay } from "@/components/Overlay";
-import { OverlayContent } from "@/components/OverlayContent";
-import { RequestsTable } from "@/components/RequestsTable";
+import { Sidebar } from "@/layouts/Sidebar";
+import { Overlay } from "@/layouts/Overlay";
+import { OverlayContent } from "@/pages/Admin/Components/OverlayContent";
+import { RequestsTable } from "@/pages/Admin/Components/RequestsTable";
 import { REQUESTS } from "@/constants/exampleRequests";
 import { Request } from "@/types/request";
 

@@ -8,7 +8,7 @@ export const Overlay: FC<{ open: boolean; onClose: () => void; children: ReactNo
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-[#000000]/30 flex items-center justify-center z-50"
       onClick={onClose}
       aria-modal="true"
       role="dialog"
@@ -19,7 +19,7 @@ export const Overlay: FC<{ open: boolean; onClose: () => void; children: ReactNo
         onClick={e => e.stopPropagation()}
       >
         <button
-          className="absolute top-4 right-4 text-2xl text-white"
+          className="absolute top-4 right-4 text-2xl text-[#003595] hover:text-[#002060] transition-colors"
           onClick={onClose}
           aria-label="Cerrar"
         >
