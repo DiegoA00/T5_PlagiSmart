@@ -29,12 +29,12 @@ export const OverlayContent: FC<{ request: Request }> = ({ request }) => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="bg-blue-900 text-white rounded-t-lg px-8 py-5 text-lg font-semibold">
+      <div className="bg-[#003595] text-white rounded-t-lg px-8 py-5 text-lg font-semibold">
         Revisión de Solicitud de Servicio de Fumigación
       </div>
       <div className="overflow-y-auto px-8 py-6" style={{ maxHeight: "75vh" }}>
         <div>
-          <div className="text-base font-semibold mb-2 border-b pb-2 border-blue-900">
+          <div className="text-base font-semibold mb-2 border-b pb-2 border-[#003595]">
             Datos Generales del Cliente
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 mb-6">
@@ -73,7 +73,7 @@ export const OverlayContent: FC<{ request: Request }> = ({ request }) => {
           </div>
         </div>
         <div>
-          <div className="text-base font-semibold mb-2 border-b pb-2 border-blue-900">
+          <div className="text-base font-semibold mb-2 border-b pb-2 border-[#003595]">
             Datos de Fumigación por Lote
           </div>
           {request.lots.map((lot) => (
@@ -84,30 +84,30 @@ export const OverlayContent: FC<{ request: Request }> = ({ request }) => {
                   Seleccionar Lote:
                   <input
                     type="checkbox"
-                    className="accent-blue-600"
+                    className="accent-[#003595]"
                     checked={selectedLots.includes(lot.id)}
                     onChange={() => handleLotCheckbox(lot.id)}
                   />
                 </label>
               </div>
-              <div className="border rounded bg-gray-50">
-                <div className="grid grid-cols-2 md:grid-cols-5 text-xs font-semibold text-gray-500 border-b px-4 py-2">
+              <div className="border rounded bg-white">
+                <div className="grid grid-cols-2 md:grid-cols-5 text-xs font-semibold text-[#003595] border-b border-[#003595] px-4 py-2">
                   <div className="col-span-2">DETALLE</div>
                   <div className="col-span-3">VALOR</div>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b">
+                <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
                   <div className="col-span-2">Fecha y Hora de Fumigación</div>
                   <div className="col-span-3">{lot.fumigationDate}</div>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b">
+                <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
                   <div className="col-span-2">Puerto de Destino</div>
                   <div className="col-span-3">{lot.destinationPort}</div>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b">
+                <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
                   <div className="col-span-2"># Toneladas</div>
                   <div className="col-span-3">{lot.tons}</div>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b">
+                <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
                   <div className="col-span-2">Calidad Grado</div>
                   <div className="col-span-3">{lot.grade}</div>
                 </div>
@@ -121,19 +121,19 @@ export const OverlayContent: FC<{ request: Request }> = ({ request }) => {
           <div className="flex items-center gap-2 mt-2">
             <input
               type="checkbox"
-              className="accent-blue-600"
+              className="accent-[#003595]"
               id="selectAllLots"
               checked={allSelected}
               onChange={handleSelectAll}
             />
-            <label htmlFor="selectAllLots" className="text-sm">
+            <label htmlFor="selectAllLots" className="text-sm text-[#003595]">
               Seleccionar Todos los Lotes
             </label>
           </div>
         </div>
       </div>
-      <div className="flex justify-end gap-4 px-8 py-6 border-t bg-white rounded-b-lg">
-        <Button variant="secondary" className="bg-gray-500 text-white hover:bg-gray-600">
+      <div className="flex justify-end gap-4 px-8 py-6 border-t border-[#003595] bg-white rounded-b-lg">
+        <Button variant="secondary" className="bg-[#003595] text-white hover:bg-[#002060]">
           Cancelar Revisión
         </Button>
         <Button className="bg-green-600 hover:bg-green-700 text-white">
