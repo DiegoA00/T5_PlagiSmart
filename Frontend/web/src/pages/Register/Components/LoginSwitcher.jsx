@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-const LoginSwitcher = ({ initialActive = "login" }) => {
+const 
+LoginSwitcher = ({ initialActive = "login" }) => {
   const [active, setActive] = useState(initialActive);
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,26 +20,26 @@ const LoginSwitcher = ({ initialActive = "login" }) => {
   };
 
   return (
-    <div className="flex w-full rounded-full bg-[#F8EDDD] p-2">
+    <div className="flex w-full rounded-full bg-[#E6ECF7] p-2">
       <button
         className={`cursor-pointer flex-1 px-4 py-2 rounded-full transition-colors ${
             active === "login"
-            ? "bg-[#9E896A] text-white"
-            : "bg-transparent text-[#9E896A]"
+            ? "bg-[#003595] text-white"
+            : "bg-transparent text-[#003595]"
         }`}
         onClick={() => handleClick("login")}
       >
-        Login
+        Iniciar sesión
       </button>
       <button
         className={`cursor-pointer flex-1 px-4 py-2 rounded-full transition-colors ${
             active === "register"
-            ? "bg-[#9E896A] text-white"
+            ? "bg-[#003595] text-white"
             : "bg-transparent text-[#9E896A]"
         }`}
         onClick={() => handleClick("register")}
       >
-        Register
+        Registrarse 
       </button>
     </div>
   );

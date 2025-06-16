@@ -23,7 +23,6 @@ const Register = () => {
       <div className="w-1/2 flex items-center justify-center">
         <div className="w-full max-w-md p-10 bg-white rounded-lg shadow-lg">
           <RegisterHeader />
-          <LoginSwitcher />
           <RegisterForm />
         </div>
       </div>

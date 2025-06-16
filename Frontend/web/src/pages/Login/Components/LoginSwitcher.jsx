@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-const LoginSwitcher = ({ initialActive = "login" }) => {
+const 
+LoginSwitcher = ({ initialActive = "login" }) => {
   const [active, setActive] = useState(initialActive);
   const navigate = useNavigate();
   const location = useLocation();
@@ -15,7 +16,7 @@ const LoginSwitcher = ({ initialActive = "login" }) => {
   }, [location.pathname]);
 
   const handleClick = (value) => {
-    navigate(value === "login" ? "/login" : "/register");
+    navigate(value === "login" ? "/login" : "/register");   
   };
 
   return (

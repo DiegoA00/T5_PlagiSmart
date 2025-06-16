@@ -21,7 +21,7 @@
     height: 825px;
     left: 41px;
     top: 38px;
-    background: linear-gradient(180deg, rgba(151, 118, 68, 0.35) 0%, rgba(0, 0, 0, 0.35) 100%);
+    background: linear-gradient(180deg, #003595 0%, rgba(0, 0, 0, 0.35) 100%);
     border-radius: 29px;
 }
 
@@ -103,7 +103,7 @@
     width: 329px;
     height: 59px;
 
-    background: #F8EDDD;
+    background: #E6ECF7;
     border-radius: 33px;
 }
 
@@ -131,7 +131,7 @@
     width: 150px;
     left: 4px;
     bottom: 4px;
-    background: #9E896A;
+    background: #003595;
     border-radius: 33px;
     -webkit-transition: .4s;
     transition: .4s;
