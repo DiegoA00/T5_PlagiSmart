@@ -1,13 +1,9 @@
 import { useState } from "react";
 import { useEffect } from "react";
-<<<<<<< HEAD
-import { login } from "../../../services/auth/loginService";
-=======
->>>>>>> feature/frontend-registration
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const LoginForm = () => {
+const RegisterForm = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,14 +13,19 @@ const LoginForm = () => {
     }
   }, [navigate]);
 
-  const nextPage = () => {
-    navigate('/login/mailrecovery')
+  const privacyPolicy = () => {
+    navigate('/register/privacy-policy')
+  }
+
+  const termsAndConditions = () => {
+    navigate('/register/terms-and-conditions')
   }
 
   const [form, setForm] = useState({
     email: "",
     password: "",
-    rememberMe: false,
+    repeatPassword: "",
+    accept: false,
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -42,24 +43,39 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { email, password } = form;
+    const { email, password, repeatPassword, accept } = form;
 
-    if (!email || !password) {
-      setError("Please enter both email and password.");
+    if (!email || !password || !repeatPassword) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    if (password !== repeatPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (!accept) {
+      setError("You must accept the privacy policy and terms and conditions.");
       return;
     }
 
     try {
-      const token = await login(email, password);
+      //const token = await register(email, password);
 
-      localStorage.setItem("token", token);
-      console.log("Successfully logged in. Token saved:", token);
-      setError("");
+      setError("You will receive a confirmation email on the next minutes if you don't have an account");
 
-      navigate("/dashboard");
+      setForm({
+        email: "",
+        password: "",
+        repeatPassword: "",
+        accept: false,
+      });
+
+      navigate("/register/success");
 
     } catch (err) {
-      console.error("Login failed:", err);
+      console.error("Register failed:", err);
 
       if (err.status === 401) {
         setError("Incorrect email or password.");
@@ -76,68 +92,38 @@ const LoginForm = () => {
     >
 
       <div>
-<<<<<<< HEAD
-        <label htmlFor="email" className="block text-sm font-medium text-[#003595] mb-1">
-          Correo electrónico
-=======
         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
           Email
->>>>>>> feature/frontend-registration
         </label>
         <input
           type="email"
           name="email"
-<<<<<<< HEAD
-          placeholder="Ingresa tu correo electrónico"
-          value={form.email}
-          onChange={handleChange}
-          required
-          className="w-full px-4 py-2 border border-[#003595] rounded-md focus:outline-none focus:ring-2 focus:ring-[#003595]"
-=======
           placeholder="Enter your email"
           value={form.email}
           onChange={handleChange}
           required
           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9E896A]"
->>>>>>> feature/frontend-registration
         />
       </div>
 
       <div>
-<<<<<<< HEAD
-        <label htmlFor="password" className="block text-sm font-medium text-[#003595] mb-1">
-          Contraseña
-=======
         <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
           Password
->>>>>>> feature/frontend-registration
         </label>
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
             name="password"
-<<<<<<< HEAD
-            placeholder="Ingresa tu contraseña"
-            value={form.password}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-[#003595] rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-[#003595]"
-=======
             placeholder="Enter your password"
             value={form.password}
             onChange={handleChange}
             required
             className="w-full px-4 py-2 border border-gray-300 rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-[#9E896A]"
->>>>>>> feature/frontend-registration
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-<<<<<<< HEAD
-            className="absolute inset-y-0 right-2 flex items-center text-[#003595] cursor-pointer"
-=======
             className="absolute inset-y-0 right-2 flex items-center text-gray-500 cursor-pointer"
->>>>>>> feature/frontend-registration
             tabIndex={-1}
           >
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -145,47 +131,57 @@ const LoginForm = () => {
         </div>
       </div>
 
-<<<<<<< HEAD
-      <div className="flex justify-between items-center text-sm text-[#003595]">
-=======
+      <div>
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+          Password
+        </label>
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            name="repeatPassword"
+            placeholder="Repeat your password"
+            value={form.repeatPassword}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-[#9E896A]"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute inset-y-0 right-2 flex items-center text-gray-500 cursor-pointer"
+            tabIndex={-1}
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
+      </div>
+
       <div className="flex justify-between items-center text-sm text-gray-600">
->>>>>>> feature/frontend-registration
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
-            name="rememberMe"
-            checked={form.rememberMe}
+            name="accept"
+            checked={form.accept}
             onChange={handleChange}
-<<<<<<< HEAD
-            className="accent-[#003595] cursor-pointer"
-          />
-          Recuérdame
-        </label>
-        <button type="button" className="cursor-pointer text-[#003595] hover:underline" onClick={nextPage}>
-          ¿Olvidaste tu contraseña?
-=======
             className="accent-[#9E896A] cursor-pointer"
           />
-          Remember me
+          I agree to the
+          <button type="button" className="cursor-pointer text-[#9E896A] hover:underline" onClick={privacyPolicy}>
+            privacy policy
+          </button>
+          and
+          <button type="button" className="cursor-pointer text-[#9E896A] hover:underline" onClick={termsAndConditions}>
+            terms and conditions
+          </button>
         </label>
-        <button type="button" className="cursor-pointer text-[#9E896A] hover:underline" onClick={nextPage}>
-          Forgot Password?
->>>>>>> feature/frontend-registration
-        </button>
       </div>
 
       <div className="text-right">
         <button
           type="submit"
-<<<<<<< HEAD
-          className="bg-[#003595] text-white px-6 py-2 rounded-full hover:bg-[#002060] transition-colors w-full sm:w-auto cursor-pointer"
-        >
-          Iniciar sesión
-=======
           className="bg-[#9E896A] text-white px-6 py-2 rounded-full hover:bg-[#826f56] transition-colors w-full sm:w-auto cursor-pointer"
         >
-          Login
->>>>>>> feature/frontend-registration
+          Register
         </button>
       </div>
 
@@ -198,4 +194,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default RegisterForm;

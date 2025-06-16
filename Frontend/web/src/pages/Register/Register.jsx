@@ -1,9 +1,9 @@
-import LoginForm from "./Components/LoginForm";
-import LoginHeader from "./Components/LoginHeader";
+import RegisterForm from "./Components/RegisterForm";
+import RegisterHeader from "./Components/RegisterHeader";
 import "../../App.css";
 import LoginSwitcher from "./Components/LoginSwitcher";
 
-const Login = () => {
+const Register = () => {
   return (
     <div className="flex h-screen bg-white px-10 py-6 gap-10">
       <div className="w-1/2 h-full flex items-center justify-center">
@@ -22,13 +22,13 @@ const Login = () => {
 
       <div className="w-1/2 flex items-center justify-center">
         <div className="w-full max-w-md p-10 bg-white rounded-lg shadow-lg">
-          <LoginHeader />
+          <RegisterHeader />
           <LoginSwitcher />
-          <LoginForm />
+          <RegisterForm />
         </div>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default Register;
