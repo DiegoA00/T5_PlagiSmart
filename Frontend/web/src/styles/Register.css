@@ -1,0 +1,160 @@
+.page-container {
+    position: relative;
+    width: 1440px;
+    height: 900px;
+    left: 2510px;
+    top: 1437px;
+    background: #FFFEFC;
+}
+
+.side-container {
+    position: absolute;
+    width: 737px;
+    height: 825px;
+    left: 41px;
+    top: 10px;
+}
+
+.image-container {
+    position: absolute;
+    width: 737px;
+    height: 825px;
+    left: 41px;
+    top: 38px;
+    background: linear-gradient(180deg, #003595 0%, rgba(0, 0, 0, 0.35) 100%);
+    border-radius: 29px;
+}
+
+.image {
+    position: relative;
+    width: 737px;
+    height: 825px;
+    border-radius: 29px;
+}
+
+.text-container {
+    position: absolute;
+    width: 435px;
+    height: 99px;
+    left: 110px;
+    top: 500px;
+}
+
+.side-text {
+    position: absolute;
+    width: 435px;
+    height: 56px;
+
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 37px;
+    line-height: 56px;
+}
+
+.form-container {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    width: 454px;
+    height: 674px;
+    left: 889px;
+    top: 113px;
+}
+
+.form-header {
+    position: inherit;
+    display: flex;
+    align-items: center;
+    width: 454px;
+    height: 60px;
+
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 40px;
+    line-height: 60px;
+
+    color: #000000;
+}
+
+.form-title {
+    position: inherit;
+    width: 158px;
+    height: 24px;
+    
+
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+
+    color: #000000;
+}
+
+.form-choice {
+    position: inherit;
+    width: 329px;
+}
+
+.choice-item {
+    position: inherit;
+    width: 329px;
+    height: 59px;
+
+    background: #E6ECF7;
+    border-radius: 33px;
+}
+
+.choice-item input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: inherit;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: inherit;
+    content: "";
+    height: 50px;
+    width: 150px;
+    left: 4px;
+    bottom: 4px;
+    background: #003595;
+    border-radius: 33px;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked {
+    background-color: white;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(150px);
+    -ms-transform: translateX(150px);
+    transform: translateX(150px);
+}
+
+.slider.round {
+    border-radius: 50px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
