@@ -3,11 +3,11 @@ import Header from "./Components/Header";
 import Dashboard from "./Components/DashboardClient";
 function ClientHome() {
   return (
-    <div className="flex h-screen  flex-col">
+    <div className="flex h-screen flex-col overflow-hidden">
       <Header />
-      <div className="flex h-screen">
+      <div className="flex h-full">
         <NavbarClient />
-        <main className="flex-1  bg-white">
+        <main className="flex-1 bg-white overflow-y-scroll scrollbar-hide ">
           <Dashboard />
         </main>
       </div>
