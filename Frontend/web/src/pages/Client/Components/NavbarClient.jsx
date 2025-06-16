@@ -34,7 +34,6 @@ function NavbarClient() {
 
   return (
     <aside className="w-64 bg-[#003595] text-white p-6 flex flex-col h-screen">
-      <h1 className="text-2xl font-bold mb-10">PLAGISMART</h1>
       <nav className="flex flex-col gap-4">
         {menuData.map((section) => (
           <div key={section.label}>
