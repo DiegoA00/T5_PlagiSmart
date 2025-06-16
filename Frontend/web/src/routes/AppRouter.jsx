@@ -10,6 +10,7 @@ import CodeRecovery from "../pages/Recovery/CodeRecovery";
 import PasswordRecovery from "../pages/Recovery/PasswordRecovery";
 import Dashboard from "../pages/Dashboard/Dashboard";
 import AdminHome from "@/pages/Admin/AdminHome";
+import ClientHome from "@/pages/Client/ClientHome";
 import Solicitudes from "@/pages/Admin/AdminHome";
 import NotImplemented from "@/pages/NotImplemented";
 
@@ -23,7 +24,7 @@ export default function AppRouter() {
         <Route path='/login/passwordrecovery' element={<PasswordRecovery />} />
         <Route path='*' element={<Navigate to='/login' />} />
         <Route path='/dashboard' element={<Dashboard />} />
-        <Route path='/home/*' element={<AdminHome />} />
+        <Route path='/home/*' element={<ClientHome />} />
         <Route path='/admin/dashboard' element={<NotImplemented />} />
         <Route path='/admin/solicitudes' element={<Solicitudes />} />
         <Route path='/admin/lotes' element={<NotImplemented />} />
