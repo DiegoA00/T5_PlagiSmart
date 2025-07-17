@@ -16,4 +16,6 @@ public interface UserService {
     User getUserReferenceById (String token);
   
     boolean hasRole(String userId, RoleName roleName);
+
+    void updateUsersRole(UserUpdateRoleDTO userUpdateRoleDTO);
 }

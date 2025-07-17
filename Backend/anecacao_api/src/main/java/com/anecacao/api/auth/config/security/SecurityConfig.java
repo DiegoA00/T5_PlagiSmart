@@ -77,6 +77,7 @@ public class SecurityConfig {
                                 "/swagger-ui/**"
                         ).permitAll()
 
+                        .requestMatchers(HttpMethod.PUT, "/users/role").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/fumigation-applications").hasRole("CLIENT")
                         .requestMatchers(HttpMethod.PUT, "/fumigations/{id}/status").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/fumigation-applications/{id}").hasAnyRole("CLIENT", "ADMIN")

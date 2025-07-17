@@ -105,6 +105,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void updateUsersRole(UserUpdateRoleDTO userUpdateRoleDTO) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByEmail(userUpdateRoleDTO.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found."));
+
+        if (userUpdateRoleDTO.getEmail().equals(email)) throw new IllegalRoleChangeException();
+
+        Role role = roleRepository.findByName(RoleName.ROLE_TECHNICIAN)
+                .orElseThrow(() -> new RuntimeException("Role not found."));
+
+        user.getRoles().add(role);
+        userRepository.save(user);
+    }
+
+    @Override
     public User getUserReferenceById (String token) {
         jwtProvider.validateToken(token);
         return userRepository.getReferenceById(jwtProvider.getUserIdFromJWT(token));

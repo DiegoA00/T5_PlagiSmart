@@ -34,4 +34,9 @@ public class UserRestController {
     public UserDTO getUserInfo () {
         return userService.getUserInfo();
     }
+
+    @PutMapping ("/users/role")
+    public void updateUsersRole(@RequestBody @Valid UserUpdateRoleDTO userUpdateRoleDTO) {
+        userService.updateUsersRole(userUpdateRoleDTO);
+    }
 }
