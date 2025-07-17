@@ -8,12 +8,12 @@ import com.anecacao.api.auth.data.entity.User;
 import com.anecacao.api.auth.data.mapper.UserMapper;
 import com.anecacao.api.auth.data.repository.RoleRepository;
 import com.anecacao.api.auth.data.repository.UserRepository;
-import com.anecacao.api.auth.domain.exception.RoleNotFoundException;
-import com.anecacao.api.auth.domain.exception.UserAlreadyExistsException;
-import com.anecacao.api.auth.domain.exception.UserNotFoundException;
+import com.anecacao.api.auth.domain.exception.*;
 import com.anecacao.api.auth.domain.service.UserPasswordService;
 import com.anecacao.api.auth.domain.service.UserService;
 
+import com.anecacao.api.request.creation.data.entity.Company;
+import com.anecacao.api.request.creation.domain.service.CompanyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,6 +32,7 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final UserPasswordService userPasswordService;
+    private final CompanyService companyService;
     private final JwtProvider jwtProvider;
 
     @Override
@@ -49,6 +50,30 @@ public class UserServiceImpl implements UserService {
         userPasswordService.savePassword(newUser, userRequestDTO.getPassword());
 
         return userMapper.userToUserRegistrationResponseDTO(newUser);
+    }
+
+    @Override
+    public void completeUserInfo(UserProfileSetUpRequestDTO request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
+
+        if (userRepository.existsByNationalIdAndIdNot(request.getNationalId(), user.getId())) {
+            throw new UserAlreadyExistsException();
+        }
+
+        if (companyService.existsByRuc(request.getCompany().getRuc())) {
+            throw new CompanyAlreadyExistsException();
+        }
+
+        user.setNationalId(request.getNationalId());
+        user.setBirthday(request.getBirthday());
+
+        Company company = companyService.createNewCompany(request.getCompany(), user);
+
+        user.getCompanies().add(company);
+
+        userRepository.save(user);
     }
 
     @Override
@@ -92,10 +117,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean areUserCredentialsAvailable(UserRegistrationRequestDTO userRequestDTO){
-        boolean nationalIdIsAvailable = !userRepository.existsUserByNationalId(userRequestDTO.getNationalId());
-        boolean emailIsAvailable = !userRepository.existsUserByEmail(userRequestDTO.getEmail());
-
-        return nationalIdIsAvailable && emailIsAvailable;
+        return !userRepository.existsUserByEmail(userRequestDTO.getEmail());
     }
 
     @Override

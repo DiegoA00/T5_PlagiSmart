@@ -8,4 +8,6 @@ import java.util.Optional;
 
 public interface CompanyRepository extends JpaRepository<Company, Long> {
     Optional<Company> findByIdAndLegalRepresentative(Long companyId, User legalRepresentative);
+
+    boolean existsByRuc(String ruc);
 }
