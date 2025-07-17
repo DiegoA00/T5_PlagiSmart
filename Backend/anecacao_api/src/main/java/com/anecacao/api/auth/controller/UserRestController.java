@@ -14,8 +14,15 @@ public class UserRestController {
     private final UserService userService;
 
     @PostMapping("/auth/register")
-    public ResponseEntity<UserRegistrationResponseDTO> registerUser(@RequestBody @Valid UserRegistrationRequestDTO user){
+    public ResponseEntity<UserRegistrationResponseDTO> registerUser(
+            @RequestBody @Valid UserRegistrationRequestDTO user){
         return new ResponseEntity<>(userService.registerUser(user), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/auth/profile-setup")
+    public void completeUserInfo(
+            @RequestBody @Valid UserProfileSetUpRequestDTO user){
+        userService.completeUserInfo(user);
     }
 
     @PostMapping("/auth/login")
