@@ -1,9 +1,24 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import LoginForm from "./Components/LoginForm";
 import LoginHeader from "./Components/LoginHeader";
+import { authService } from "../../services/auth/loginService";
 import "../../App.css";
-import LoginSwitcher from "./Components/LoginSwitcher";
 
 const Login = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      const userData = authService.getUserData();
+      if (userData?.roles?.some(role => role.name === "ADMIN")) {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
+    }
+  }, [navigate]);
+
   return (
     <div className="flex h-screen bg-white px-10 py-6 gap-10">
       <div className="w-1/2 h-full flex items-center justify-center">
