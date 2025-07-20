@@ -14,7 +14,7 @@ const Login = () => {
       if (userData?.roles?.some(role => role.name === "ADMIN")) {
         navigate("/admin");
       } else {
-        navigate("/dashboard");
+        navigate("/home");
       }
     }
   }, [navigate]);
