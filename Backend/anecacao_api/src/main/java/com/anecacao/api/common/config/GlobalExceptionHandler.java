@@ -1,16 +1,13 @@
 package com.anecacao.api.common.config;
 
 import com.anecacao.api.auth.data.dto.ErrorResponseDTO;
-import com.anecacao.api.auth.domain.exception.RoleNotFoundException;
-import com.anecacao.api.auth.domain.exception.UserAlreadyExistsException;
-import com.anecacao.api.auth.domain.exception.UserNotFoundException;
+import com.anecacao.api.auth.domain.exception.*;
 import com.anecacao.api.request.creation.domain.exception.CompanyNotFoundException;
 import com.anecacao.api.request.creation.domain.exception.FumigationNotFoundException;
 import com.anecacao.api.request.creation.domain.exception.FumigationValidationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.anecacao.api.request.creation.domain.exception.FumigationApplicationNotFoundException;
-import com.anecacao.api.auth.domain.exception.UnauthorizedAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -117,6 +114,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(FumigationApplicationNotFoundException.class)
     public ResponseEntity<ErrorResponseDTO> handleFumigationApplicationNotFoundException(FumigationApplicationNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(buildResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalRoleChangeException.class)
+    public ResponseEntity<ErrorResponseDTO> handleIllegalRoleChangeException(IllegalRoleChangeException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(buildResponse(ex.getMessage()));
     }
 
     private ErrorResponseDTO buildResponse (String message) {

@@ -7,6 +7,8 @@ import com.anecacao.api.auth.data.entity.User;
 public interface UserService {
     UserRegistrationResponseDTO registerUser(UserRegistrationRequestDTO userRequestDTO);
 
+    void completeUserInfo(UserProfileSetUpRequestDTO User);
+
     UserLoginResponseDTO loginUser (UserLoginRequestDTO userLoginRequestDTO);
 
     UserDTO getUserInfo();
@@ -14,4 +16,6 @@ public interface UserService {
     User getUserReferenceById (String token);
   
     boolean hasRole(String userId, RoleName roleName);
+
+    void updateUsersRole(UserUpdateRoleDTO userUpdateRoleDTO);
 }
