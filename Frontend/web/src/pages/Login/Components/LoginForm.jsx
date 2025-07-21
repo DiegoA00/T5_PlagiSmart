@@ -55,10 +55,10 @@ const LoginForm = () => {
       if (response.success) {
         const userData = authService.getUserData();
         // Aquí podrías implementar lógica adicional basada en los roles del usuario
-        if (userData?.roles?.some(role => role.name === "ADMIN")) {
-          navigate("/admin");
-        } else {
+        if (userData?.roles?.some(role => role.name === "ROLE_ADMIN")) {
           navigate("/dashboard");
+        } else {
+          navigate("/home");
         }
       }
     } catch (err) {

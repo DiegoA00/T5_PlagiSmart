@@ -53,29 +53,25 @@ export const loginService = {
     login: async (email, password) => {
         try {
             // 1. Realizar el login
-            const response = await apiClient.post('/auth/login', {
+            const authResponse = await apiClient.post('/auth/login', {
                 email,
                 password
             });
 
-            const { token, tokenType } = response.data;
+            const { token, tokenType } = authResponse.data;
             
             if (!token) {
                 throw new Error('Token no recibido del servidor');
             }
 
-            // 2. Decodificar el token JWT para obtener la información del usuario
-            // El token JWT contiene: id, email, name, lastName
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            
-            const userData = {
-                id: payload.id,
-                email: payload.email,
-                firstName: payload.name,
-                lastName: payload.lastName
-            };
+            // 2. Configurar el token para la siguiente petición
+            apiClient.defaults.headers.common['Authorization'] = `${tokenType || 'Bearer'} ${token}`;
 
-            // 3. Guardar toda la información
+            // 3. Obtener la información completa del usuario
+            const userResponse = await apiClient.get('/users');
+            const userData = userResponse.data;
+
+            // 4. Guardar toda la información
             authService.setAuthData(token, tokenType, userData);
 
             return {
