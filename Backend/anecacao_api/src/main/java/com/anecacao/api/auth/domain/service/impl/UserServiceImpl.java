@@ -5,8 +5,10 @@ import com.anecacao.api.auth.data.dto.*;
 import com.anecacao.api.auth.data.entity.Role;
 import com.anecacao.api.auth.data.entity.RoleName;
 import com.anecacao.api.auth.data.entity.User;
+import com.anecacao.api.auth.data.entity.UserPassword;
 import com.anecacao.api.auth.data.mapper.UserMapper;
 import com.anecacao.api.auth.data.repository.RoleRepository;
+import com.anecacao.api.auth.data.repository.UserPasswordRepository;
 import com.anecacao.api.auth.data.repository.UserRepository;
 import com.anecacao.api.auth.domain.exception.*;
 import com.anecacao.api.auth.domain.service.UserPasswordService;
@@ -14,14 +16,19 @@ import com.anecacao.api.auth.domain.service.UserService;
 
 import com.anecacao.api.request.creation.data.entity.Company;
 import com.anecacao.api.request.creation.domain.service.CompanyService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -34,6 +41,8 @@ public class UserServiceImpl implements UserService {
     private final UserPasswordService userPasswordService;
     private final CompanyService companyService;
     private final JwtProvider jwtProvider;
+    private final PasswordEncoder passwordEncoder;
+    private final UserPasswordRepository userPasswordRepository;
 
     @Override
     public UserRegistrationResponseDTO registerUser(UserRegistrationRequestDTO userRequestDTO) {
@@ -118,6 +127,31 @@ public class UserServiceImpl implements UserService {
 
         user.getRoles().add(role);
         userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void createAdminUserIfNotExist() {
+        Optional<User> adminUser = userRepository.findByEmail("admin");
+
+        Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
+                .orElseThrow(() -> new RuntimeException("ADMIN role not found"));
+
+
+        if (adminUser.isEmpty()) {
+            User user = new User();
+            user.setEmail("admin");
+            user.setFirstName("admin");
+            user.setRoles(Set.of(adminRole));
+
+            userRepository.save(user);
+
+            UserPassword userPassword = new UserPassword();
+            userPassword.setUser(user);
+            userPassword.setHashedPassword(passwordEncoder.encode("admin"));
+
+            userPasswordRepository.save(userPassword);
+        }
     }
 
     @Override
