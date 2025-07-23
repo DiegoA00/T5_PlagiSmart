@@ -46,7 +46,7 @@ export default function CompletedServicesPage() {
   };
 
   return (
-    <Layout userName="Jose Jose">
+    <Layout>
       <div className="p-10">
         <header className="mb-8">
           <h2 className="text-3xl font-bold mb-1">Servicios finalizados</h2>
