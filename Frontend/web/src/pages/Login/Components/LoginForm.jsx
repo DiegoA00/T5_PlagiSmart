@@ -13,15 +13,14 @@ const LoginForm = () => {
       if (authService.isAuthenticated()) {
         try {
           await loginService.validateSession();
-          navigate("/dashboard");
+          redirect();
         } catch (error) {
           console.log("Sesión expirada o inválida");
         }
       }
     };
-
     checkSession();
-  }, [navigate]);
+  }, [redirect]);
 
   const [form, setForm] = useState({
     email: "",
@@ -48,9 +47,8 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      const { email, password } = form;
-      const response = await loginService.login(email, password);
-      
+      const { email, password, rememberMe } = form;
+      const response = await loginService.login(email, password, rememberMe);
       if (response.success) {
         redirect();
       }
