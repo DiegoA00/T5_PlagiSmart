@@ -1,23 +1,18 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import LoginForm from "./Components/LoginForm";
 import LoginHeader from "./Components/LoginHeader";
 import { authService } from "../../services/auth/loginService";
+import { useRoleRedirect } from "../../hooks/useRoleRedirect";
 import "../../App.css";
 
 const Login = () => {
-  const navigate = useNavigate();
+  const redirect = useRoleRedirect();
 
   useEffect(() => {
     if (authService.isAuthenticated()) {
-      const userData = authService.getUserData();
-      if (userData?.roles?.some(role => role.name === "ADMIN")) {
-        navigate("/admin");
-      } else {
-        navigate("/home");
-      }
+      redirect();
     }
-  }, [navigate]);
+  }, [redirect]);
 
   return (
     <div className="flex h-screen bg-white px-10 py-6 gap-10">

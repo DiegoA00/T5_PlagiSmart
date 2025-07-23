@@ -2,19 +2,19 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { loginService, authService } from "../../../services/auth/loginService";
+import { useRoleRedirect } from "../../../hooks/useRoleRedirect";
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const redirect = useRoleRedirect();
 
   useEffect(() => {
     const checkSession = async () => {
       if (authService.isAuthenticated()) {
         try {
-          // Validar si la sesión sigue activa
           await loginService.validateSession();
           navigate("/dashboard");
         } catch (error) {
-          // La sesión no es válida, se limpiará automáticamente
           console.log("Sesión expirada o inválida");
         }
       }
@@ -39,7 +39,6 @@ const LoginForm = () => {
       ...prevForm,
       [name]: type === "checkbox" ? checked : value,
     }));
-    // Limpiar errores cuando el usuario empieza a escribir
     if (error) setError("");
   };
 
@@ -53,13 +52,7 @@ const LoginForm = () => {
       const response = await loginService.login(email, password);
       
       if (response.success) {
-        const userData = authService.getUserData();
-        // Aquí podrías implementar lógica adicional basada en los roles del usuario
-        if (userData?.roles?.some(role => role.name === "ROLE_ADMIN")) {
-          navigate("/dashboard");
-        } else {
-          navigate("/home");
-        }
+        redirect();
       }
     } catch (err) {
       setError(err.message);
@@ -76,7 +69,7 @@ const LoginForm = () => {
     <form 
       onSubmit={handleSubmit} 
       className="space-y-6 bg-white rounded-lg w-full"
-      noValidate // Usamos validación personalizada
+      noValidate
     >
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-[#003595] mb-1">
