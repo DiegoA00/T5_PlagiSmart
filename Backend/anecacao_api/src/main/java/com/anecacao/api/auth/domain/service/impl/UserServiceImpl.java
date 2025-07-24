@@ -140,7 +140,7 @@ public class UserServiceImpl implements UserService {
 
         if (adminUser.isEmpty()) {
             User user = new User();
-            user.setEmail("admin");
+            user.setEmail("admin@admin.com");
             user.setFirstName("admin");
             user.setRoles(Set.of(adminRole));
 
