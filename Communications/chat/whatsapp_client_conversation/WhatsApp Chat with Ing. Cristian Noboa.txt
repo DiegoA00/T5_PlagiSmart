@@ -1,0 +1,48 @@
+6/12/25, 10:30 - Diego Araujo: Opciones de despliegue PlagiSmart.pdf (file attached)
+Opciones de despliegue PlagiSmart.pdf
+6/12/25, 10:30 - Ing. Cristian Noboa: Gracias por tu mensaje. En este momento no podemos responder, la atención es de lunes a viernes de 9 a 17:00 horas. Saludos.🤗
+6/12/25, 10:30 - Diego Araujo: También le agradeceríamos mucho si fuera posible que nos enviara las fotos tomadas durante la reunión en la oficina el pasado 16 de mayo.
+6/12/25, 10:31 - Diego Araujo: Además, mañana le estaremos enviando un reporte con los avances que hemos logrado hasta el momento, acompañado de un acta de conformidad para su revisión y firma.
+Disculpe la molestia en día domingo. Agradecemos mucho su apoyo continuo y quedamos atentos ante cualquier comentario.
+6/16/25, 10:55 - Diego Araujo: Midterm_Project_Specification.pdf (file attached)
+Midterm_Project_Specification.pdf
+6/16/25, 10:55 - Ing. Cristian Noboa: Gracias por tu mensaje. En este momento no podemos responder, la atención es de lunes a viernes de 9 a 17:00 horas. Saludos.🤗
+6/16/25, 10:55 - Diego Araujo: Adicionalmente, comparto los enlaces donde puede ver el avance de la aplicación web:
+
+Portal de inicio de sesión
+https://plagismart.vercel.app/
+
+Página inicial del cliente
+https://plagismart.vercel.app/home
+
+Panel de solicitudes del administrador
+https://plagismart.vercel.app/admin/solicitudes
+
+La aplicación está pensada para uso en escritorio, por lo que se recomienda abrir los enlaces desde una computadora, o activar la vista de escritorio si los abre desde el navegador del teléfono.
+Esta es una versión temporal en desarrollo, por lo que lo que ve actualmente cambiará y mejorará en las próximas semanas.
+6/16/25, 10:55 - Diego Araujo: Acta de Conformidad-2.pdf (file attached)
+Acta de Conformidad.pdf
+6/17/25, 11:08 - Ing. Cristian Noboa: Hola Diego buenos días
+6/17/25, 11:09 - Ing. Cristian Noboa: PTT-20250617-WA0025.opus (file attached)
+6/17/25, 11:17 - Diego Araujo: Buenos días,
+Esto es solo un avance, ya que en el curso se debe entregar un reporte con todos los detalles técnicos.
+
+De igual forma, en las próximas semanas continuaremos desarrollando la aplicación hasta que esté completamente terminada.
+6/17/25, 11:53 - Ing. Cristian Noboa: PTT-20250617-WA0030.opus (file attached)
+6/17/25, 12:30 - Ing. Cristian Noboa: PTT-20250617-WA0043.opus (file attached)
+6/17/25, 12:32 - Diego Araujo: PTT-20250617-WA0044.opus (file attached)
+6/17/25, 12:37 - Ing. Cristian Noboa: PTT-20250617-WA0045.opus (file attached)
+6/17/25, 12:39 - Diego Araujo: El trabajo debe estar terminado a finales de agosto
+6/17/25, 12:40 - Ing. Cristian Noboa: PTT-20250617-WA0046.opus (file attached)
+6/17/25, 12:41 - Ing. Cristian Noboa: PTT-20250617-WA0047.opus (file attached)
+6/17/25, 12:41 - Diego Araujo: PTT-20250617-WA0048.opus (file attached)
+6/17/25, 12:43 - Diego Araujo: Ya voy a cambiar el documento  para que se explique todo lo que se planea para el sistema
+6/17/25, 12:44 - Diego Araujo: El trabajo ya sería toda la plataforma incluido con el testing
+6/17/25, 12:52 - Ing. Cristian Noboa: PTT-20250617-WA0053.opus (file attached)
+6/17/25, 12:56 - Diego Araujo: Listo, muchas gracias 
+Estamos trabajando para poder terminar todo el trabajo a tiempo
+6/17/25, 12:56 - Ing. Cristian Noboa: PTT-20250617-WA0055.opus (file attached)
+6/17/25, 12:57 - Diego Araujo: Muchas gracias
+6/17/25, 13:31 - Ing. Cristian Noboa: Acta de conformidad.pdf (file attached)
+Acta de conformidad.pdf
+6/17/25, 16:31 - Diego Araujo: Gracias

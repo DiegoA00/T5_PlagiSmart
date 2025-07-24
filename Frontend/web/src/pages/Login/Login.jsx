@@ -1,9 +1,19 @@
+import { useEffect } from "react";
 import LoginForm from "./Components/LoginForm";
 import LoginHeader from "./Components/LoginHeader";
+import { authService } from "../../services/auth/loginService";
+import { useRoleRedirect } from "../../hooks/useRoleRedirect";
 import "../../App.css";
-import LoginSwitcher from "./Components/LoginSwitcher";
 
 const Login = () => {
+  const redirect = useRoleRedirect();
+
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      redirect();
+    }
+  }, [redirect]);
+
   return (
     <div className="flex h-screen bg-white px-10 py-6 gap-10">
       <div className="w-1/2 h-full flex items-center justify-center">
