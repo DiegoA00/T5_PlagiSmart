@@ -3,7 +3,9 @@ package com.anecacao.api.request.creation.domain.service.impl;
 import com.anecacao.api.auth.data.entity.RoleName;
 import com.anecacao.api.request.creation.data.dto.request.FumigationCreationRequestDTO;
 import com.anecacao.api.request.creation.data.dto.request.UpdateStatusRequestDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationInfoDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationSummaryDTO;
+import com.anecacao.api.request.creation.data.entity.Company;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
 import com.anecacao.api.request.creation.data.entity.Status;
 import com.anecacao.api.request.creation.data.repository.FumigationRepository;
@@ -19,6 +21,7 @@ import com.anecacao.api.auth.domain.exception.UnauthorizedAccessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -103,9 +106,46 @@ public class FumigationServiceImpl implements FumigationService {
     }
 
     @Override
-    public List<FumigationSummaryDTO> getApprovedFumigations() {
-        List<Fumigation> approvedFumigations = repository.findByStatus(Status.APPROVED);
-        return mapper.toSummaryDtoList(approvedFumigations);
+    public FumigationInfoDTO getFumigationInfo(Long id, String token) {
+        Fumigation fumigation = repository.findById(id)
+                .orElseThrow(() -> new FumigationNotFoundException(id));
+
+        validateUserPermission(fumigation, token);
+
+        FumigationInfoDTO infoDTO = new FumigationInfoDTO();
+
+        // Company info
+        Company company = fumigation.getFumigationApplication().getCompany();
+        FumigationInfoDTO.CompanyInfoDTO companyInfo = new FumigationInfoDTO.CompanyInfoDTO();
+        companyInfo.setId(company.getId());
+        companyInfo.setName(company.getName());
+        infoDTO.setCompany(companyInfo);
+
+        // Lot info
+        FumigationInfoDTO.LotInfoDTO lotInfo = new FumigationInfoDTO.LotInfoDTO();
+        lotInfo.setId(fumigation.getId());
+        lotInfo.setLotNumber(fumigation.getLotNumber());
+        lotInfo.setTons(fumigation.getTon());
+        lotInfo.setQuality(fumigation.getQuality());
+        lotInfo.setSacks(fumigation.getSacks().intValue());
+        lotInfo.setPortDestination(fumigation.getPortDestination().toString());
+        infoDTO.setLot(lotInfo);
+
+        return infoDTO;
+    }
+
+    @Override
+    public List<FumigationSummaryDTO> getFumigationsByStatus(String status) {
+        Status statusEnum;
+        try {
+            statusEnum = Status.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status: " + status + ". Valid values are: " +
+                    Arrays.toString(Status.values()));
+        }
+
+        List<Fumigation> fumigations = repository.findByStatus(statusEnum);
+        return mapper.toSummaryDtoList(fumigations);
     }
 
 }

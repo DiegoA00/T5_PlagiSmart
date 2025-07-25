@@ -45,7 +45,7 @@ public class FumigationReportDTO {
     private EnvironmentalConditions environmentalConditions;
 
     @NotNull(message = "Industrial safety conditions must not be null")
-    private IndustrialSafetyConditionsDTO industrialSafetyConditions;
+    private IndustrialSafetyConditions industrialSafetyConditions;
 
     private String observations;
 }
