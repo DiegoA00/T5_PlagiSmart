@@ -20,6 +20,7 @@ public class FumigationResponseDTO {
     private Long sacks;
     private Grade grade;
     private Status status;
+    private Status phase;
     private String message;
     private LocalDateTime dateTime;
 }

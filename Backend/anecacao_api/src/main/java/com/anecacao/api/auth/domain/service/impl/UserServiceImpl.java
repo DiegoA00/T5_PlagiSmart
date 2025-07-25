@@ -26,10 +26,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -179,4 +177,28 @@ public class UserServiceImpl implements UserService {
                 .anyMatch(role -> role.getName().equals(roleName));
     }
 
+    @Override
+    public List<UserResponseDTO> getUsersByRole(String role) {
+        RoleName roleName;
+        try {
+            // Convertir el string del parámetro al enum RoleName
+            roleName = RoleName.valueOf("ROLE_" + role.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid role: " + role);
+        }
+
+        List<User> users = userRepository.findByRoleName(roleName);
+
+        return users.stream()
+                .map(user -> {
+                    UserResponseDTO dto = new UserResponseDTO();
+                    dto.setId(user.getId());
+                    dto.setNationalId(user.getNationalId());
+                    dto.setFirstName(user.getFirstName());
+                    dto.setLastName(user.getLastName());
+                    dto.setEmail(user.getEmail());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
 }

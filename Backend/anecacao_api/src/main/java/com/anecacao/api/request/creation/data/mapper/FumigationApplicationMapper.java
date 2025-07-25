@@ -4,6 +4,7 @@ import com.anecacao.api.request.creation.data.dto.request.FumigationApplicationD
 import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
 import com.anecacao.api.request.creation.data.dto.request.FumigationCreationRequestDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationResponseDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationSummaryDTO;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
 import com.anecacao.api.request.creation.data.entity.FumigationApplication;
 import org.mapstruct.AfterMapping;
@@ -25,6 +26,8 @@ public interface FumigationApplicationMapper {
     FumigationApplicationResponseDTO toFumigationApplicationResponseDTO (FumigationApplication fumigationApplication);
 
     FumigationResponseDTO toFumigationResponseDTO(Fumigation fumigation);
+
+    List<FumigationSummaryDTO> toSummaryDtoList(List<Fumigation> fumigations);
   
     @AfterMapping
     default void linkFumigationApplication(@MappingTarget FumigationApplication entity) {

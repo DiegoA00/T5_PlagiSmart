@@ -4,11 +4,14 @@ import com.anecacao.api.request.creation.data.dto.request.FumigationCreationRequ
 import com.anecacao.api.request.creation.data.dto.request.UpdateStatusRequestDTO;
 import com.anecacao.api.auth.domain.service.UserService;
 import com.anecacao.api.request.creation.data.dto.response.FumigationResponseDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationSummaryDTO;
 import com.anecacao.api.request.creation.domain.service.FumigationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/fumigations")
@@ -43,4 +46,11 @@ public class FumigationController {
     ) {
         return ResponseEntity.ok(fumigationService.getFumigationById(id, token));
     }
+
+    @GetMapping("/approved")
+    public ResponseEntity<List<FumigationSummaryDTO>> getApprovedFumigations() {
+        List<FumigationSummaryDTO> approvedFumigations = fumigationService.getApprovedFumigations();
+        return ResponseEntity.ok(approvedFumigations);
+    }
+
 }

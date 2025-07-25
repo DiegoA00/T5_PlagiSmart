@@ -3,6 +3,7 @@ package com.anecacao.api.request.creation.domain.service.impl;
 import com.anecacao.api.auth.data.entity.RoleName;
 import com.anecacao.api.request.creation.data.dto.request.FumigationCreationRequestDTO;
 import com.anecacao.api.request.creation.data.dto.request.UpdateStatusRequestDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationSummaryDTO;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
 import com.anecacao.api.request.creation.data.entity.Status;
 import com.anecacao.api.request.creation.data.repository.FumigationRepository;
@@ -17,6 +18,8 @@ import com.anecacao.api.request.creation.data.entity.FumigationApplication;
 import com.anecacao.api.auth.domain.exception.UnauthorizedAccessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -98,4 +101,11 @@ public class FumigationServiceImpl implements FumigationService {
 
         if (statusIsRejected && messageIsBlank) throw new FumigationValidationException();
     }
+
+    @Override
+    public List<FumigationSummaryDTO> getApprovedFumigations() {
+        List<Fumigation> approvedFumigations = repository.findByStatus(Status.APPROVED);
+        return mapper.toSummaryDtoList(approvedFumigations);
+    }
+
 }
