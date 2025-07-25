@@ -1,7 +1,6 @@
 package com.anecacao.api.auth.config.security;
 
 import com.anecacao.api.auth.data.repository.UserRepository;
-import io.swagger.v3.oas.models.PathItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -82,6 +81,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/fumigations/{id}/status").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/fumigation-applications/{id}").hasAnyRole("CLIENT", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/fumigations/{id}").hasAnyRole("CLIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "reports/fumigations").hasRole("TECHNICIAN")
 
                         .anyRequest().authenticated()
                 )
