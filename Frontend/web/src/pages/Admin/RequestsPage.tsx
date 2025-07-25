@@ -1,4 +1,3 @@
-// src/pages/RequestsPage.tsx
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Layout } from "@/layouts/Layout";
@@ -8,7 +7,7 @@ import { Request } from "@/types/request";
 import { Overlay } from "@/layouts/Overlay";
 import { OverlayContent } from "@/pages/Admin/Components/OverlayContent";
 
-export default function AdminHome() {
+export default function RequestsPage() {
   const [search, setSearch] = useState("");
   const [searchDate, setSearchDate] = useState<Date | undefined>(undefined);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
@@ -21,7 +20,6 @@ export default function AdminHome() {
     return matchesClient && matchesDate;
   });
 
-  // Definimos las columnas para la tabla
   const columns = [
     { header: "ID", key: "id" },
     { header: "Servicio", key: "service" },
@@ -31,7 +29,7 @@ export default function AdminHome() {
   ];
 
   return (
-    <Layout userName="Jose Jose">
+    <Layout>
       <div className="p-10">
         <header className="mb-8">
           <h2 className="text-3xl font-bold mb-1">Solicitudes</h2>
