@@ -6,11 +6,8 @@ import lombok.Data;
 @Data
 @Embeddable
 public class IndustrialSafetyConditions {
-    private boolean electricDanger;
-    private boolean fallingDanger;
-    private boolean hitDanger;
-
-    public boolean hasAnyDanger() {
-        return electricDanger || fallingDanger || hitDanger;
-    }
+    private Boolean electricDanger;
+    private Boolean fallingDanger;
+    private Boolean hitDanger;
+    private Boolean otherDanger;
 }

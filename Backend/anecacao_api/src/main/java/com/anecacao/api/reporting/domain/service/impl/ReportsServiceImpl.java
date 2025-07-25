@@ -2,7 +2,6 @@ package com.anecacao.api.reporting.domain.service.impl;
 
 import com.anecacao.api.common.data.dto.MessageDTO;
 import com.anecacao.api.reporting.data.dto.FumigationReportDTO;
-import com.anecacao.api.reporting.domain.exception.IndustrialSafetyViolationException;
 import com.anecacao.api.reporting.domain.exception.InvalidFumigationStatusException;
 import com.anecacao.api.reporting.domain.service.ReportsService;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
@@ -30,17 +29,17 @@ public class ReportsServiceImpl implements ReportsService {
             throw new InvalidFumigationStatusException(fumigation.getId());
         }
 
-        if (reportDTO.getIndustrialSafetyConditions().hasAnyDanger()) {
-            fumigation.setStatus(Status.FAILED);
-            fumigationRepository.save(fumigation);
-            throw new IndustrialSafetyViolationException(fumigation.getId());
-        }
-
         mapper.updateFumigationFromReport(reportDTO, fumigation);
         fumigation.getSupplies()
                 .forEach(
                         supply -> supply.setFumigation(fumigation)
                 );
+
+        if (reportDTO.getIndustrialSafetyConditions().hasAnyDanger()) {
+            fumigation.setStatus(Status.FAILED);
+            fumigationRepository.save(fumigation);
+            return null;
+        }
 
         fumigation.setStatus(Status.APPROVED);
         fumigationRepository.save(fumigation);

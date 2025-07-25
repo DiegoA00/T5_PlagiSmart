@@ -2,6 +2,7 @@ package com.anecacao.api.reporting.controller;
 
 import com.anecacao.api.common.data.dto.MessageDTO;
 import com.anecacao.api.reporting.data.dto.FumigationReportDTO;
+import com.anecacao.api.reporting.domain.exception.IndustrialSafetyViolationException;
 import com.anecacao.api.reporting.domain.service.ReportsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +23,13 @@ public class ReportRestController {
     public ResponseEntity<MessageDTO> createFumigationReport(
             @RequestBody @Valid FumigationReportDTO reportDTO
             ) {
+
+        MessageDTO message = reportsService.createFumigationReport(reportDTO);
+
+        if (message == null) throw new IndustrialSafetyViolationException(reportDTO.getId());
+
         return new ResponseEntity<>(
-                reportsService.createFumigationReport(reportDTO),
+                message,
                 HttpStatus.CREATED);
     }
 }

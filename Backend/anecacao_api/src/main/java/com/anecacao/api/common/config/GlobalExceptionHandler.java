@@ -133,6 +133,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(buildResponse(ex.getMessage()));
     }
 
+    @ExceptionHandler(CompanyAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponseDTO> handleCompanyAlreadyExistsException(CompanyAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(buildResponse(ex.getMessage()));
+    }
+
     private ErrorResponseDTO buildResponse (String message) {
         ErrorResponseDTO error = new ErrorResponseDTO();
         error.setMessage(message);

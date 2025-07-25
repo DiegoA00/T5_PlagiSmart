@@ -1,7 +1,6 @@
 package com.anecacao.api.reporting.data.dto;
 
 import com.anecacao.api.reporting.data.entity.EnvironmentalConditions;
-import com.anecacao.api.reporting.data.entity.IndustrialSafetyConditions;
 import com.anecacao.api.reporting.data.entity.Supply;
 import com.anecacao.api.request.creation.data.entity.Dimensions;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -46,7 +45,7 @@ public class FumigationReportDTO {
     private EnvironmentalConditions environmentalConditions;
 
     @NotNull(message = "Industrial safety conditions must not be null")
-    private IndustrialSafetyConditions industrialSafetyConditions;
+    private IndustrialSafetyConditionsDTO industrialSafetyConditions;
 
     private String observations;
 }
