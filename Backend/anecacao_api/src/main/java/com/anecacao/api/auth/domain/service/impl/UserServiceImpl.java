@@ -115,22 +115,31 @@ public class UserServiceImpl implements UserService {
     public void updateUsersRole(UserUpdateRoleDTO userUpdateRoleDTO) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        User user = userRepository.findByEmail(userUpdateRoleDTO.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found."));
+        User user = getUser(userUpdateRoleDTO);
 
         if (userUpdateRoleDTO.getEmail().equals(email)) throw new IllegalRoleChangeException();
 
         Role role = roleRepository.findByName(RoleName.ROLE_TECHNICIAN)
                 .orElseThrow(() -> new RuntimeException("Role not found."));
 
+        Role clientRole = roleRepository.findByName(RoleName.ROLE_CLIENT)
+                .orElseThrow(() -> new RuntimeException("Role not found."));
+
         user.getRoles().add(role);
+        user.getRoles().remove(clientRole);
         userRepository.save(user);
+    }
+
+    private User getUser(UserUpdateRoleDTO userUpdateRoleDTO) {
+        User user = userRepository.findByEmail(userUpdateRoleDTO.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found."));
+        return user;
     }
 
     @Override
     @Transactional
     public void createAdminUserIfNotExist() {
-        Optional<User> adminUser = userRepository.findByEmail("admin");
+        Optional<User> adminUser = userRepository.findByEmail("admin@admin.com");
 
         Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
                 .orElseThrow(() -> new RuntimeException("ADMIN role not found"));
