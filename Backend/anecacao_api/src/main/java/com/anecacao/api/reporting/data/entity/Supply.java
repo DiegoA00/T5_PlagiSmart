@@ -1,6 +1,7 @@
 package com.anecacao.api.reporting.data.entity;
 
 import com.anecacao.api.request.creation.data.entity.Fumigation;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
 public class Supply {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonIgnore
     private Long id;
 
     @Column(nullable = false)
