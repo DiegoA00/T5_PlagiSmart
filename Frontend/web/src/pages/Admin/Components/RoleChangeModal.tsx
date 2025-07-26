@@ -33,12 +33,10 @@ export const RoleChangeModal: FC<RoleChangeModalProps> = ({ user, onClose, onCon
 
   return (
     <>
-      {/* Header */}
       <div className="bg-[#003595] text-white px-6 py-4 rounded-t-lg">
         <h3 className="text-lg font-semibold">Cambiar Rol de Usuario</h3>
       </div>
       
-      {/* Body */}
       <div className="bg-white p-6 rounded-b-lg">
         <p className="mb-4">
           ¿Estás seguro que deseas cambiar el rol del usuario <strong>{user.firstName} {user.lastName}</strong> a técnico?
