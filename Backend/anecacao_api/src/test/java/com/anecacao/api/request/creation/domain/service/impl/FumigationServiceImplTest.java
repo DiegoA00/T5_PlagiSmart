@@ -7,8 +7,10 @@ import com.anecacao.api.auth.domain.service.UserService;
 import com.anecacao.api.request.creation.data.dto.request.FumigationCreationRequestDTO;
 import com.anecacao.api.request.creation.data.dto.request.UpdateStatusRequestDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationResponseDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationSummaryDTO;
 import com.anecacao.api.request.creation.data.entity.*;
 import com.anecacao.api.request.creation.data.mapper.FumigationApplicationMapper;
+import com.anecacao.api.request.creation.data.mapper.FumigationMapper;
 import com.anecacao.api.request.creation.data.repository.FumigationRepository;
 import com.anecacao.api.request.creation.domain.exception.FumigationNotFoundException;
 import com.anecacao.api.request.creation.domain.exception.FumigationValidationException;
@@ -22,6 +24,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
@@ -40,6 +44,10 @@ class FumigationServiceImplTest {
 
     @Mock
     private FumigationApplicationMapper mapper;
+
+    @Mock
+    private FumigationMapper fumigationMapper;
+
 
     @InjectMocks
     private FumigationServiceImpl subject;
@@ -239,5 +247,76 @@ class FumigationServiceImplTest {
 
         assertTrue(ex.getMessage().contains("Fumigation"));
         assertTrue(ex.getMessage().contains(fumigationId.toString()));
+    }
+    
+    @Test
+    void getFumigationsByStatus_WithValidStatus_ShouldReturnList() {
+        // Arrange
+        Fumigation fumigation1 = new Fumigation();
+        fumigation1.setId(1L);
+        fumigation1.setStatus(Status.APPROVED);
+        fumigation1.setDateTime(LocalDateTime.of(2024, 3, 15, 14, 0));
+
+        Fumigation fumigation2 = new Fumigation();
+        fumigation2.setId(2L);
+        fumigation2.setStatus(Status.APPROVED);
+        fumigation2.setDateTime(LocalDateTime.of(2024, 3, 15, 15, 30));
+
+        List<Fumigation> fumigations = Arrays.asList(fumigation1, fumigation2);
+        List<FumigationSummaryDTO> expectedDtos = Arrays.asList(
+                new FumigationSummaryDTO(1L, "14:00"),
+                new FumigationSummaryDTO(2L, "15:30")
+        );
+
+        when(repository.findByStatus(Status.APPROVED)).thenReturn(fumigations);
+        // CAMBIO IMPORTANTE: Usar 'mapper' en lugar de 'fumigationMapper'
+        when(mapper.toSummaryDtoList(fumigations)).thenReturn(expectedDtos);
+
+        // Act
+        List<FumigationSummaryDTO> result = subject.getFumigationsByStatus("APPROVED");
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(1L, result.get(0).getId());
+        assertEquals("14:00", result.get(0).getTime());
+        verify(repository).findByStatus(Status.APPROVED);
+        // CAMBIO IMPORTANTE: Verificar 'mapper' en lugar de 'fumigationMapper'
+        verify(mapper).toSummaryDtoList(fumigations);
+    }
+
+    @Test
+    void getFumigationsByStatus_WithInvalidStatus_ShouldThrowException() {
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            subject.getFumigationsByStatus("INVALID_STATUS");
+        });
+
+        assertTrue(exception.getMessage().contains("Invalid status: INVALID_STATUS"));
+        assertTrue(exception.getMessage().contains("Valid values are:"));
+
+        // Verify no database call was made
+        verify(repository, never()).findByStatus(any());
+        verify(mapper, never()).toSummaryDtoList(any());
+    }
+
+    @Test
+    void getFumigationsByStatus_WithLowercaseStatus_ShouldWork() {
+        // Arrange
+        List<Fumigation> emptyList = Arrays.asList();
+        List<FumigationSummaryDTO> emptyDtoList = Arrays.asList();
+
+        when(repository.findByStatus(Status.PENDING)).thenReturn(emptyList);
+        // CAMBIO IMPORTANTE: Usar 'mapper' en lugar de 'fumigationMapper'
+        when(mapper.toSummaryDtoList(emptyList)).thenReturn(emptyDtoList);
+
+        // Act
+        List<FumigationSummaryDTO> result = subject.getFumigationsByStatus("pending");
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(repository).findByStatus(Status.PENDING);
+        verify(mapper).toSummaryDtoList(emptyList);
     }
 }
