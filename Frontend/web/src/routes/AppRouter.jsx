@@ -20,6 +20,7 @@ import ClientHome from "@/pages/Client/ClientHome";
 import Solicitudes from "@/pages/Admin/RequestsPage";
 import LotsInService from "../pages/Admin/LotsPage";
 import CompletedServicesPage from "@/pages/Admin/CompletedServicesPage";
+import UsersPage from "@/pages/Admin/UsersPage";
 
 import NotImplemented from "@/pages/NotImplemented";
 import TechnicianLotsPage from "@/pages/Technician/TechnicianLotsPage";
@@ -47,7 +48,7 @@ export default function AppRouter() {
         <Route path='/admin/solicitudes' element={<Solicitudes />} />
         <Route path='/admin/lotes' element={<LotsInService />} />
         <Route path='/admin/servicios' element={<CompletedServicesPage />} />
-        <Route path='/admin/clientes' element={<NotImplemented />} />
+        <Route path="/admin/usuarios" element={<UsersPage />} />
         <Route path='/admin/configuracion' element={<NotImplemented />} />
 
         <Route path='/tecnico/lotes' element={<TechnicianLotsPage />} />
