@@ -15,7 +15,8 @@ const LoginForm = () => {
           await loginService.validateSession();
           redirect();
         } catch (error) {
-          console.log("Sesión expirada o inválida");
+          console.log("Sesión expirada o inválida - Iniciando sesión nuevamente");
+          authService.clearAuthData();
         }
       }
     };

@@ -39,7 +39,7 @@ export const authService = {
   },
 
   isAuthenticated() {
-    return !!this.getAuthHeader();
+    return !!(localStorage.getItem(AUTH_TOKEN_KEY) || sessionStorage.getItem(AUTH_TOKEN_KEY));
   }
 };
 
@@ -55,16 +55,27 @@ export const loginService = {
       if (!token) throw new Error('Token no recibido del servidor');
 
       apiClient.defaults.headers.common['Authorization'] = `${tokenType || 'Bearer'} ${token}`;
-      const userResponse = await apiClient.get('/users');
-      const userData = userResponse.data;
+      
+      try {
+        const userResponse = await apiClient.get('/users');
+        const userData = userResponse.data;
 
-      authService.setAuthData(token, tokenType, userData, rememberMe);
+        authService.setAuthData(token, tokenType, userData, rememberMe);
 
-      return {
-        success: true,
-        user: userData,
-        token
-      };
+        return {
+          success: true,
+          user: userData,
+          token
+        };
+      } catch (userError) {
+        authService.setAuthData(token, tokenType, null, rememberMe);
+        
+        return {
+          success: true,
+          token,
+          message: 'Login successful but could not fetch user data'
+        };
+      }
     } catch (error) {
       if (error.response?.status === 401) {
         throw {
@@ -77,6 +88,30 @@ export const loginService = {
         success: false,
         message: error.response?.data?.message || 'Error al iniciar sesión',
         status: error.response?.status || 500
+      };
+    }
+  },
+
+  validateSession: async () => {
+    try {
+      const token = localStorage.getItem(AUTH_TOKEN_KEY) || sessionStorage.getItem(AUTH_TOKEN_KEY);
+      if (!token) {
+        throw new Error('No session token found');
+      }
+      
+      apiClient.defaults.headers.common['Authorization'] = `${localStorage.getItem(TOKEN_TYPE_KEY) || sessionStorage.getItem(TOKEN_TYPE_KEY) || 'Bearer'} ${token}`;
+      const response = await apiClient.get('/users');
+      
+      return {
+        success: true,
+        user: response.data
+      };
+    } catch (error) {
+      authService.clearAuthData();
+      throw {
+        success: false,
+        message: 'Session expired or invalid',
+        status: error.response?.status || 401
       };
     }
   },

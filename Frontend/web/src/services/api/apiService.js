@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { authService } from '../auth/loginService';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -14,14 +15,11 @@ const apiClient = axios.create({
     }
 });
 
-// Interceptor para añadir el token a las peticiones
 apiClient.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('auth_token');
-        const tokenType = localStorage.getItem('token_type') || 'Bearer';
-        
-        if (token) {
-            config.headers.Authorization = `${tokenType} ${token}`;
+        const authHeader = authService.getAuthHeader();
+        if (authHeader) {
+            config.headers.Authorization = authHeader;
         }
         return config;
     },
@@ -30,12 +28,11 @@ apiClient.interceptors.request.use(
     }
 );
 
-// Interceptor para manejar errores de respuesta
 apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            localStorage.clear();
+            authService.clearAuthData();
             window.location.href = '/login';
         }
         return Promise.reject(error);
