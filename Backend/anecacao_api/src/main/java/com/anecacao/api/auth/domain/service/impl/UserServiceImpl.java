@@ -188,6 +188,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponseDTO> getUsersByRole(String role) {
+        if (role == null) {
+            return new ArrayList<>();
+        }
+
         RoleName roleName;
         try {
             // Convertir el string del parámetro al enum RoleName
@@ -206,6 +210,11 @@ public class UserServiceImpl implements UserService {
                     dto.setFirstName(user.getFirstName());
                     dto.setLastName(user.getLastName());
                     dto.setEmail(user.getEmail());
+                    String userRole = user.getRoles().stream()
+                        .map(r -> r.getName().toString().replace("ROLE_", "").toLowerCase())
+                        .findFirst()
+                        .orElse("unknown");
+                    dto.setRole(userRole);
                     return dto;
                 })
                 .collect(Collectors.toList());

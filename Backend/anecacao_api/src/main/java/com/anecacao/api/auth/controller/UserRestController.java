@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,25 +35,20 @@ public class UserRestController {
         return userService.loginUser(userLoginRequestDTO);
     }
 
-    @GetMapping ("/users")
-    public UserDTO getUserInfo () {
+    @GetMapping("/users/me")
+    public UserDTO getUserInfo() {
         return userService.getUserInfo();
     }
 
-    @PutMapping ("/users/role")
-    public void updateUsersRole(@RequestBody @Valid UserUpdateRoleDTO userUpdateRoleDTO) {
-        userService.updateUsersRole(userUpdateRoleDTO);
+    @GetMapping("/users")
+    public ResponseEntity<List<UserResponseDTO>> getUsers(@RequestParam(required = false) String role) {
+        List<UserResponseDTO> users = userService.getUsersByRole(role);
+        return ResponseEntity.ok(users);
     }
 
-    @GetMapping("/users")
-    public ResponseEntity<?> getUsers(@RequestParam(required = false) String role) {
-        if (role != null) {
-            List<UserResponseDTO> users = userService.getUsersByRole(role);
-            return ResponseEntity.ok(users);
-        }
-
-        UserDTO currentUser = userService.getUserInfo();
-        return ResponseEntity.ok(currentUser);
+    @PutMapping("/users/role")
+    public void updateUsersRole(@RequestBody @Valid UserUpdateRoleDTO userUpdateRoleDTO) {
+        userService.updateUsersRole(userUpdateRoleDTO);
     }
 
 }

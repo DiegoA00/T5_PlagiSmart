@@ -248,7 +248,7 @@ class FumigationServiceImplTest {
         assertTrue(ex.getMessage().contains("Fumigation"));
         assertTrue(ex.getMessage().contains(fumigationId.toString()));
     }
-    
+
     @Test
     void getFumigationsByStatus_WithValidStatus_ShouldReturnList() {
         // Arrange
