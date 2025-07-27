@@ -24,4 +24,6 @@ public interface UserService {
     void createAdminUserIfNotExist();
 
     List<UserResponseDTO> getUsersByRole(String role);
+
+    List<UserResponseDTO> getAllUsers();
 }

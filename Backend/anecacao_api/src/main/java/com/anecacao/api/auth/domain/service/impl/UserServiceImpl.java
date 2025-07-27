@@ -219,4 +219,30 @@ public class UserServiceImpl implements UserService {
                 })
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<UserResponseDTO> getAllUsers() {
+        List<User> users = userRepository.findAll();
+
+        return users.stream()
+                .map(user -> {
+                    UserResponseDTO dto = new UserResponseDTO();
+                    dto.setId(user.getId());
+                    dto.setNationalId(user.getNationalId());
+                    dto.setFirstName(user.getFirstName());
+                    dto.setLastName(user.getLastName());
+                    dto.setEmail(user.getEmail());
+
+                    // Obtener el primer rol del usuario (o manejar múltiples roles)
+                    String userRole = user.getRoles().stream()
+                            .map(role -> role.getName().toString().replace("ROLE_", "").toLowerCase())
+                            .findFirst()
+                            .orElse("no_role");
+                    dto.setRole(userRole);
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
 }

@@ -5,6 +5,7 @@ import com.anecacao.api.auth.data.entity.User;
 import com.anecacao.api.auth.domain.service.UserService;
 import com.anecacao.api.request.creation.data.dto.request.FumigationApplicationDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationSummaryDTO;
 import com.anecacao.api.request.creation.data.entity.Company;
 import com.anecacao.api.request.creation.data.entity.FumigationApplication;
 import com.anecacao.api.request.creation.data.entity.Status;
@@ -16,6 +17,11 @@ import com.anecacao.api.auth.domain.exception.UnauthorizedAccessException;
 import com.anecacao.api.request.creation.domain.service.FumigationApplicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -67,4 +73,62 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
 
         return repository.save(newApplication);
     }
+
+    @Override
+    public List<FumigationApplicationSummaryDTO> getFumigationApplicationsByStatus(String status) {
+        // Validar y convertir el status
+        Status statusEnum;
+        try {
+            statusEnum = Status.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status: " + status + ". Valid values are: " +
+                    Arrays.toString(Status.values()));
+        }
+
+        // Obtener las aplicaciones que tienen fumigaciones con el estado especificado
+        List<FumigationApplication> applications = repository.findByFumigationStatus(statusEnum);
+
+        // Mapear a DTOs
+        return applications.stream()
+                .map(app -> {
+                    FumigationApplicationSummaryDTO dto = new FumigationApplicationSummaryDTO();
+                    dto.setId(app.getId());
+
+                    // Company name
+                    dto.setCompanyName(app.getCompany() != null ? app.getCompany().getName() : "Unknown");
+
+                    // Representative (firstName + lastName)
+                    if (app.getCompany() != null && app.getCompany().getLegalRepresentative() != null) {
+                        User rep = app.getCompany().getLegalRepresentative();
+                        String fullName = (rep.getFirstName() != null ? rep.getFirstName() : "") + " " +
+                                (rep.getLastName() != null ? rep.getLastName() : "");
+                        dto.setRepresentative(fullName.trim());
+                    } else {
+                        dto.setRepresentative("Unknown");
+                    }
+
+                    // Location - tomamos la primera fumigación que tenga location
+                    String location = app.getFumigations().stream()
+                            .filter(f -> f.getLocation() != null)
+                            .map(f -> f.getLocation())
+                            .findFirst()
+                            .orElse("No location");
+                    dto.setLocation(location);
+
+                    // Local date - tomamos la fecha de la primera fumigación
+                    String localDate = app.getFumigations().stream()
+                            .filter(f -> f.getActualFumigationDate() != null)
+                            .map(f -> f.getActualFumigationDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
+                            .findFirst()
+                            .orElse("No date");
+                    dto.setLocalDate(localDate);
+
+                    // Status
+                    dto.setStatus(status.toUpperCase());
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
 }

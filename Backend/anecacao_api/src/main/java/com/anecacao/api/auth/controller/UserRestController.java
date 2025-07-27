@@ -46,6 +46,12 @@ public class UserRestController {
         return ResponseEntity.ok(users);
     }
 
+    @GetMapping("/users/all")
+    public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
+        List<UserResponseDTO> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
+    }
+
     @PutMapping("/users/role")
     public void updateUsersRole(@RequestBody @Valid UserUpdateRoleDTO userUpdateRoleDTO) {
         userService.updateUsersRole(userUpdateRoleDTO);
