@@ -3,6 +3,7 @@ package com.anecacao.api.request.creation.controller;
 import com.anecacao.api.request.creation.data.dto.request.FumigationCreationRequestDTO;
 import com.anecacao.api.request.creation.data.dto.request.UpdateStatusRequestDTO;
 import com.anecacao.api.auth.domain.service.UserService;
+import com.anecacao.api.request.creation.data.dto.response.FumigationDetailDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationInfoDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationResponseDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationSummaryDTO;
@@ -60,10 +61,10 @@ public class FumigationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<FumigationSummaryDTO>> getFumigationsByStatus(
+    public ResponseEntity<List<FumigationDetailDTO>> getFumigationsByStatus(
             @RequestParam(name = "status", required = true) String status
     ) {
-        List<FumigationSummaryDTO> fumigations = fumigationService.getFumigationsByStatus(status);
+        List<FumigationDetailDTO> fumigations = fumigationService.getFumigationsByStatus(status);
         return ResponseEntity.ok(fumigations);
     }
 

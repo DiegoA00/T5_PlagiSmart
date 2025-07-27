@@ -1,8 +1,10 @@
 package com.anecacao.api.request.creation.domain.service.impl;
 
 import com.anecacao.api.auth.data.entity.RoleName;
+import com.anecacao.api.auth.data.entity.User;
 import com.anecacao.api.request.creation.data.dto.request.FumigationCreationRequestDTO;
 import com.anecacao.api.request.creation.data.dto.request.UpdateStatusRequestDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationDetailDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationInfoDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationSummaryDTO;
 import com.anecacao.api.request.creation.data.entity.Company;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -135,7 +138,7 @@ public class FumigationServiceImpl implements FumigationService {
     }
 
     @Override
-    public List<FumigationSummaryDTO> getFumigationsByStatus(String status) {
+    public List<FumigationDetailDTO> getFumigationsByStatus(String status) {
         Status statusEnum;
         try {
             statusEnum = Status.valueOf(status.toUpperCase());
@@ -145,7 +148,54 @@ public class FumigationServiceImpl implements FumigationService {
         }
 
         List<Fumigation> fumigations = repository.findByStatus(statusEnum);
-        return mapper.toSummaryDtoList(fumigations);
+
+        return fumigations.stream()
+                .map(fumigation -> {
+                    FumigationDetailDTO dto = new FumigationDetailDTO();
+
+                    // Lot number
+                    dto.setLotNumber(fumigation.getLotNumber() != null ? fumigation.getLotNumber() : "No lot number");
+
+                    // Company information
+                    if (fumigation.getFumigationApplication() != null &&
+                            fumigation.getFumigationApplication().getCompany() != null) {
+
+                        Company company = fumigation.getFumigationApplication().getCompany();
+
+                        // Company name
+                        dto.setCompanyName(company.getName() != null ? company.getName() : "Unknown");
+
+                        // Phone number
+                        dto.setPhoneNumber(company.getPhoneNumber() != null ? company.getPhoneNumber() : "No phone");
+
+                        // Representative (firstName + lastName)
+                        if (company.getLegalRepresentative() != null) {
+                            User rep = company.getLegalRepresentative();
+                            String fullName = (rep.getFirstName() != null ? rep.getFirstName() : "") + " " +
+                                    (rep.getLastName() != null ? rep.getLastName() : "");
+                            dto.setRepresentative(fullName.trim());
+                        } else {
+                            dto.setRepresentative("Unknown");
+                        }
+                    } else {
+                        dto.setCompanyName("Unknown");
+                        dto.setPhoneNumber("No phone");
+                        dto.setRepresentative("Unknown");
+                    }
+
+                    // Location - primero de fumigation, luego de company address
+                    String location = fumigation.getLocation();
+                    if (location == null || location.isEmpty()) {
+                        if (fumigation.getFumigationApplication() != null &&
+                                fumigation.getFumigationApplication().getCompany() != null) {
+                            location = fumigation.getFumigationApplication().getCompany().getAddress();
+                        }
+                    }
+                    dto.setLocation(location != null ? location : "No location");
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
 }

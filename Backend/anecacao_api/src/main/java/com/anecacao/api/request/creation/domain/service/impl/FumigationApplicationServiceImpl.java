@@ -107,18 +107,28 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
                         dto.setRepresentative("Unknown");
                     }
 
-                    // Location - tomamos la primera fumigación que tenga location
+                    // Location - primero intentar obtener de fumigation, si no hay usar address de company
                     String location = app.getFumigations().stream()
-                            .filter(f -> f.getLocation() != null)
+                            .filter(f -> f.getLocation() != null && !f.getLocation().isEmpty())
                             .map(f -> f.getLocation())
                             .findFirst()
-                            .orElse("No location");
+                            .orElse(app.getCompany() != null ? app.getCompany().getAddress() : "No location");
                     dto.setLocation(location);
 
-                    // Local date - tomamos la fecha de la primera fumigación
+                    // Local date - obtener de actualFumigationDate o dateTime
                     String localDate = app.getFumigations().stream()
-                            .filter(f -> f.getActualFumigationDate() != null)
-                            .map(f -> f.getActualFumigationDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
+                            .map(f -> {
+                                // Primero intentar actualFumigationDate
+                                if (f.getActualFumigationDate() != null) {
+                                    return f.getActualFumigationDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                                }
+                                // Si no hay, usar dateTime
+                                else if (f.getDateTime() != null) {
+                                    return f.getDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                                }
+                                return null;
+                            })
+                            .filter(date -> date != null)
                             .findFirst()
                             .orElse("No date");
                     dto.setLocalDate(localDate);
