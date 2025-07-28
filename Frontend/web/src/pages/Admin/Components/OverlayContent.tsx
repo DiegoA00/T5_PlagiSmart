@@ -120,7 +120,11 @@ export const OverlayContent: FC<OverlayContentProps> = ({
                 {isLoading ? (
                   <Skeleton className="h-4 w-32 inline-block ml-2" />
                 ) : (
-                  <span className="ml-2">{request.applicationData?.company?.legalRepresentative.name + " " + request.applicationData?.company?.legalRepresentative.lastName || "-"}</span>
+                  <span className="ml-2">
+                    {request.applicationData?.company?.legalRepresentative ? 
+                      `${request.applicationData.company.legalRepresentative.name || ''} ${request.applicationData.company.legalRepresentative.lastName || ''}`.trim() || "-" : 
+                      "-"}
+                  </span>
                 )}
               </div>
 
