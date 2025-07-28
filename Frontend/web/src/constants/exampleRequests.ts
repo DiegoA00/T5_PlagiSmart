@@ -2,7 +2,7 @@ import { Request } from "@/types/request";
 
 export const REQUESTS: Request[] = [
   {
-    id: "#12345",
+    id: "1",
     service: "Fumigación de Cacao",
     client: "AgroExportadores S.A.",
     date: "2024-03-15",
