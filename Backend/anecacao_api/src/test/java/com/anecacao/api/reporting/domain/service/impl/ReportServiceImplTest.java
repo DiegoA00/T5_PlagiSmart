@@ -3,6 +3,7 @@ package com.anecacao.api.reporting.domain.service.impl;
 import com.anecacao.api.common.data.dto.MessageDTO;
 import com.anecacao.api.reporting.data.dto.FumigationReportDTO;
 import com.anecacao.api.reporting.data.dto.IndustrialSafetyConditionsDTO;
+import com.anecacao.api.reporting.data.entity.IndustrialSafetyConditions;
 import com.anecacao.api.reporting.domain.exception.InvalidFumigationStatusException;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
 import com.anecacao.api.request.creation.data.entity.Status;
@@ -32,14 +33,14 @@ class ReportServiceImplTest {
 
     private FumigationReportDTO dto;
     private Fumigation fumigation;
-    private IndustrialSafetyConditionsDTO safety;
+    private IndustrialSafetyConditions safety;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         dto = new FumigationReportDTO();
         fumigation = new Fumigation();
-        safety = mock(IndustrialSafetyConditionsDTO.class);
+        safety = mock(IndustrialSafetyConditions.class);
     }
 
     @Test

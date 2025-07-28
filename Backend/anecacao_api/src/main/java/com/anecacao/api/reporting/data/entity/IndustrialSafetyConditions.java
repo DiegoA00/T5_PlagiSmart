@@ -10,4 +10,8 @@ public class IndustrialSafetyConditions {
     private Boolean fallingDanger;
     private Boolean hitDanger;
     private Boolean otherDanger;
+
+    public boolean hasAnyDanger() {
+        return electricDanger || fallingDanger || hitDanger;
+    }
 }
