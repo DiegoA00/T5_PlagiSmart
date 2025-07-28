@@ -1,11 +1,41 @@
-export type Lot = {
-  id: string;
+export interface Company {
+  id: number;
+  name: string;
+  businessName: string;
+  phoneNumber: string;
+  ruc: string;
+  address: string;
+  legalRepresentative: User;
+  cosigner?: string;
+}
+
+export interface User {
+  id: number;
+  name: string;
+  lastName: string;
+  email: string;
+  role: string;
+}
+
+export interface Fumigation {
+  id: number;
+  lotNumber: string;
   fumigationDate: string;
-  destinationPort: string;
+  portDestination: string;
   tons: number;
   grade: string;
   sacks: number;
-};
+  status: string;
+  message: string;
+  dateTime: string;
+  fumigationApplication: FumigationApplication;
+}
+
+export interface FumigationApplication {
+  id: number;
+  company: Company;
+  fumigations: Fumigation[];
+}
 
 export type Request = {
   id: string;
@@ -21,5 +51,6 @@ export type Request = {
   legalRep?: string;
   plantContact?: string;
   consignee?: string;
-  lots: Lot[];
+  lots: Fumigation[];
+  applicationData?: FumigationApplication;
 };
