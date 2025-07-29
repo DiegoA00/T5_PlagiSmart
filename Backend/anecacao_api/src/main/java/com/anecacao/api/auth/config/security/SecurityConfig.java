@@ -82,6 +82,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/fumigation-applications/{id}").hasAnyRole("CLIENT", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/fumigations/{id}").hasAnyRole("CLIENT", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "reports/fumigations").hasRole("TECHNICIAN")
+                        .requestMatchers(HttpMethod.GET, "/fumigations").hasAnyRole("ADMIN", "TECHNICIAN", "CLIENT")
+                        .requestMatchers(HttpMethod.GET, "/fumigations/info/{id}").hasAnyRole("CLIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("ADMIN", "TECHNICIAN")
+                        .requestMatchers(HttpMethod.GET, "/users/all").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/fumigation-applications").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/users/me").authenticated()
 
                         .anyRequest().authenticated()
                 )
