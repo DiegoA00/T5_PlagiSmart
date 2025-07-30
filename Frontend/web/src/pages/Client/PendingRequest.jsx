@@ -1,7 +1,7 @@
 import NavbarClient from "./Components/NavbarClient";
 import Header from "./Components/Header";
 import DashboardClient from "./Components/DashboardClient";
-function ClientHome() {
+function PendingRequest() {
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <Header />
@@ -9,9 +9,9 @@ function ClientHome() {
         <NavbarClient />
         <main className="flex-1 bg-white overflow-y-scroll scrollbar-hide ">
           <DashboardClient
-            showHeader={true}
-            showNewButton={true}
-            tablesToShow={['pendientes', 'enCurso', 'finalizadas']}
+            showHeader={false}
+            showNewButton={false}
+            tablesToShow={['pendientes']}
             title="Gestión de Reservas"
           />
         </main>
@@ -20,4 +20,4 @@ function ClientHome() {
   );
 }
 
-export default ClientHome;
+export default PendingRequest;

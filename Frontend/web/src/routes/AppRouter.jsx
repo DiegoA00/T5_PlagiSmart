@@ -18,16 +18,18 @@ import PrivacyPolicy from "../pages/Register/PrivacyPolicy";
 import TermsAndConditions from "../pages/Register/TermsAndConditions";
 import RegisterSuccess from "../pages/Register/RegisterSuccess";
 import CompleteProfile from "../pages/Register/CompleteProfile";
+import PendingRequest from "../pages/Client/PendingRequest";
+import DocumentosReserva from "../pages/Client/ReservationDocuments";
 
 export default function AppRouter() {
   return (
     <Router>
       <Routes>
-        <Route path='/login' element={<Login />} />
+        {/*<Route path='/login' element={<Login />} />*/}
         <Route path='/login/mailrecovery' element={<MailRecovery />} />
         <Route path='/login/coderecovery' element={<CodeRecovery />} />
         <Route path='/login/passwordrecovery' element={<PasswordRecovery />} />
-        <Route path='*' element={<Navigate to='/login' />} />
+        {/*<Route path='*' element={<Navigate to='/login' />} />*/}
         <Route path='/dashboard' element={<Dashboard />} />
         <Route path='/home/*' element={<ClientHome />} />
         <Route path='/admin/dashboard' element={<NotImplemented />} />
@@ -41,7 +43,11 @@ export default function AppRouter() {
         <Route path='/register/terms-and-conditions' element={<TermsAndConditions />} />
         <Route path='/register/success' element={<RegisterSuccess />} />
         <Route path='/register/complete-profile' element={<CompleteProfile />} />
-        <Route path='*' element={<Navigate to='/Login' />} />
+        <Route path='*' element={<Navigate to='/home/*' />} />
+        <Route path='/client/solicitudes-pendientes' element={<PendingRequest />} />
+        <Route path='/client/solicitudes-en-curso' element={<NotImplemented />} />
+        <Route path='/client/solicitudes-finalizadas' element={<NotImplemented />} />
+        <Route path='/client/documentos/:codigo' element={<DocumentosReserva />} />
       </Routes>
     </Router>
   );
