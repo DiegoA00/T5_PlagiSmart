@@ -19,8 +19,8 @@ export const authService = {
   },
 
   getToken() {
-        return localStorage.getItem(AUTH_TOKEN_KEY) || sessionStorage.getItem(AUTH_TOKEN_KEY);
-    },
+    return localStorage.getItem(AUTH_TOKEN_KEY) || sessionStorage.getItem(AUTH_TOKEN_KEY);
+  },
 
   getAuthHeader() {
     const token = localStorage.getItem(AUTH_TOKEN_KEY) || sessionStorage.getItem(AUTH_TOKEN_KEY);
@@ -57,29 +57,19 @@ export const loginService = {
 
       const { token, tokenType } = authResponse.data;
       if (!token) throw new Error('Token no recibido del servidor');
-
+      
       apiClient.defaults.headers.common['Authorization'] = `${tokenType || 'Bearer'} ${token}`;
       
-      try {
-        const userResponse = await apiClient.get('/users');
-        const userData = userResponse.data;
+      const userResponse = await apiClient.get('/users/me');
+      const userData = userResponse.data;
 
-        authService.setAuthData(token, tokenType, userData, rememberMe);
+      authService.setAuthData(token, tokenType, userData, rememberMe);
 
-        return {
-          success: true,
-          user: userData,
-          token
-        };
-      } catch (userError) {
-        authService.setAuthData(token, tokenType, null, rememberMe);
-        
-        return {
-          success: true,
-          token,
-          message: 'Login successful but could not fetch user data'
-        };
-      }
+      return {
+        success: true,
+        user: userData,
+        token
+      };
     } catch (error) {
       if (error.response?.status === 401) {
         throw {
@@ -104,7 +94,7 @@ export const loginService = {
       }
       
       apiClient.defaults.headers.common['Authorization'] = `${localStorage.getItem(TOKEN_TYPE_KEY) || sessionStorage.getItem(TOKEN_TYPE_KEY) || 'Bearer'} ${token}`;
-      const response = await apiClient.get('/users');
+      const response = await apiClient.get('/users/me');
       
       return {
         success: true,

@@ -21,14 +21,14 @@ export const useRoleRedirect = () => {
 
     const userRoles = userData.roles.map(role => role.name);
     
-    const redirectPath = rolePriority
-      .find(role => userRoles.includes(role) && roleRoutes[role]);
-
-    if (redirectPath) {
-      navigate(roleRoutes[redirectPath]);
-    } else {
-      navigate("/login");
+    for (const role of rolePriority) {
+      if (userRoles.includes(role) && roleRoutes[role]) {
+        navigate(roleRoutes[role]);
+        return;
+      }
     }
+
+    navigate("/login");
   };
 
   return redirect;

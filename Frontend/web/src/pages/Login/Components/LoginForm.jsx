@@ -9,18 +9,9 @@ const LoginForm = () => {
   const redirect = useRoleRedirect();
 
   useEffect(() => {
-    const checkSession = async () => {
-      if (authService.isAuthenticated()) {
-        try {
-          await loginService.validateSession();
-          redirect();
-        } catch (error) {
-          console.log("Sesión expirada o inválida - Iniciando sesión nuevamente");
-          authService.clearAuthData();
-        }
-      }
-    };
-    checkSession();
+    if (authService.isAuthenticated()) {
+      redirect();
+    }
   }, [redirect]);
 
   const [form, setForm] = useState({
