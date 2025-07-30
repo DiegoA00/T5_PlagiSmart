@@ -56,6 +56,51 @@ function ReservationDocuments() {
                 ]
               },
               {
+                type: "request-details",
+                data: [
+                  {
+                    lot: "[Número de Lote 1]",
+                    dimension: "[Dimensiones de Lote 1]",
+                    tons: "[Toneladas de Lote 1]",
+                    quality: "[calidad de Lote 1]",
+                    sacks: "[Número de sacos de Lote 1]",
+                    destination: "[Destino de Lote 1]"
+                  },
+                  {
+                    lot: "[Número de Lote 2]",
+                    dimension: "[Dimensiones de Lote 2]",
+                    tons: "[Toneladas de Lote 2]",
+                    quality: "[calidad de Lote 2]",
+                    sacks: "[Número de sacos de Lote 2]",
+                    destination: "[Destino de Lote 2]"
+                  },
+                  {
+                    lot: "[Número de Lote 3]",
+                    dimension: "[Dimensiones de Lote 3]",
+                    tons: "[Toneladas de Lote 3]",
+                    quality: "[calidad de Lote 3]",
+                    sacks: "[Número de sacos de Lote 3]",
+                    destination: "[Destino de Lote 3]"
+                  },
+                  {
+                    lot: "[Número de Lote 4]",
+                    dimension: "[Dimensiones de Lote 4]",
+                    tons: "[Toneladas de Lote 4]",
+                    quality: "[calidad de Lote 4]",
+                    sacks: "[Número de sacos de Lote 4]",
+                    destination: "[Destino de Lote 4]"
+                  },
+                  {
+                    lot: "[Número de Lote 5]",
+                    dimension: "[Dimensiones de Lote 5]",
+                    tons: "[Toneladas de Lote 5]",
+                    quality: "[calidad de Lote 5]",
+                    sacks: "[Número de sacos de Lote 5]",
+                    destination: "[Destino de Lote 5]"
+                  }
+                ]
+              },
+              {
                 type: "text",
                 title: "Detalles del Servicio",
                 content: "Por medio del presente documento, se hace constar que el servicio de fumigación de cacao ha sido ejecutado conforme a los estándares establecidos y bajo las especificaciones técnicas acordadas en el contrato de prestación de servicios."
@@ -293,7 +338,40 @@ function ReservationDocuments() {
           </table>
         );
 
-        case 'grid':
+      case 'request-details':
+        return (
+          <table className="w-full mb-4 border">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="p-2"># de lote</th>
+                <th className="p-2">Dimensiones del lote</th>
+                <th className="p-2">Toneladas</th>
+                <th className="p-2">Calidad</th>
+                <th className="p-2"># de sacos</th>
+                <th className="p-2">Destino</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(section.data).map(([key, value], i) =>
+                <tr key={i} className="border-b">
+                  <td className="p-2 text-center">{value.lot}</td>
+                  <td className="p-2 text-center">{value.dimension}</td>
+                  <td className="p-2 text-center">{value.tons}</td>
+                  <td className="p-2 text-center">{value.quality}</td>
+                  <td className="p-2 text-center">{value.sacks}</td>
+                  <td className="p-2 text-center">{value.destination}</td>
+                </tr>
+              )}
+              <tr>
+                <th className="p-2">Condiciones Ambientales</th>
+                <th className="p-2">Condiciones de seguridad industrial</th>
+                <th className="p-2">Observaciones:</th>
+              </tr>
+            </tbody>
+          </table>
+        );
+
+      case 'grid':
         return (
           <div key={index} className="grid grid-cols-2 gap-4 mb-4">
             {section.data.map((item, i) => (
