@@ -19,6 +19,7 @@ import TermsAndConditions from "../pages/Register/TermsAndConditions";
 import RegisterSuccess from "../pages/Register/RegisterSuccess";
 import CompleteProfile from "../pages/Register/CompleteProfile";
 import PendingRequest from "../pages/Client/PendingRequest";
+import OnGoingRequest from "@/pages/Client/OnGoingRequest";
 import DocumentosReserva from "../pages/Client/ReservationDocuments";
 
 export default function AppRouter() {
@@ -45,7 +46,7 @@ export default function AppRouter() {
         <Route path='/register/complete-profile' element={<CompleteProfile />} />
         <Route path='*' element={<Navigate to='/home/*' />} />
         <Route path='/client/solicitudes-pendientes' element={<PendingRequest />} />
-        <Route path='/client/solicitudes-en-curso' element={<NotImplemented />} />
+        <Route path='/client/solicitudes-en-curso' element={<OnGoingRequest />} />
         <Route path='/client/solicitudes-finalizadas' element={<NotImplemented />} />
         <Route path='/client/documentos/:codigo' element={<DocumentosReserva />} />
       </Routes>
