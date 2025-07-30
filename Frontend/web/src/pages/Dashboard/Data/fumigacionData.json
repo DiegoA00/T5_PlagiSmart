@@ -1,0 +1,8 @@
+[
+  { "Mes": "Enero", "Exportado": 20924, "Presupuestado": 0, "Fumigado": 13701 },
+  { "Mes": "Febrero", "Exportado": 23080, "Presupuestado": 0, "Fumigado": 14712 },
+  { "Mes": "Marzo", "Exportado": 30722, "Presupuestado": 0, "Fumigado": 20036 },
+  { "Mes": "Abril", "Exportado": 26343, "Presupuestado": 0, "Fumigado": 17072 },
+  { "Mes": "Mayo", "Exportado": 21284, "Presupuestado": 0, "Fumigado": 13527 },
+  { "Mes": "Junio", "Exportado": 20990, "Presupuestado": 0, "Fumigado": 13937 }
+]

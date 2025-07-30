@@ -18,6 +18,12 @@ const menuData = [
       { label: "Fumigación", path: "/admin/fumigacion" },
     ],
   },
+  {
+    label: "Dashboard",
+    items: [
+      { label: "Dashboard", path: "/adnin/dashboardF" },
+    ],
+  },
 ];
 
 function NavbarClient() {

@@ -25,6 +25,8 @@ import CompletedServicesPage from "@/pages/Admin/CompletedServicesPage";
 import NotImplemented from "@/pages/NotImplemented";
 import TechnicianLotsPage from "@/pages/Technician/TechnicianLotsPage";
 
+import AdminDashboard from "@/pages/Dashboard/AdminDashboard";
+
 export default function AppRouter() {
   return (
     <Router>
@@ -44,7 +46,7 @@ export default function AppRouter() {
         <Route path='/dashboard' element={<Dashboard />} />
         <Route path='/home/*' element={<ClientHome />} />
 
-        <Route path='/admin/dashboard' element={<NotImplemented />} />
+        <Route path='/admin/dashboard' element={<AdminDashboard />} />
         <Route path='/admin/solicitudes' element={<Solicitudes />} />
         <Route path='/admin/lotes' element={<LotsInService />} />
         <Route path='/admin/servicios' element={<CompletedServicesPage />} />
