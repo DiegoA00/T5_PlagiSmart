@@ -2,52 +2,90 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Layout } from "@/layouts/Layout";
 import { BaseTable } from "./Components/BaseTable";
-import { REQUESTS } from "@/constants/exampleRequests";
-import { Request } from "@/types/request";
+import { ApiFumigationApplication } from "@/types/request";
 import { Overlay } from "@/layouts/Overlay";
 import { OverlayContent } from "@/pages/Admin/Components/OverlayContent";
 import { fumigationService } from "@/services/fumigationService";
 
 export default function RequestsPage() {
+  const [applications, setApplications] = useState<ApiFumigationApplication[]>([]);
+  const [filteredApplications, setFilteredApplications] = useState<ApiFumigationApplication[]>([]);
   const [search, setSearch] = useState("");
-  const [searchDate, setSearchDate] = useState<Date | undefined>(undefined);
-  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedRequest, setSelectedRequest] = useState<ApiFumigationApplication | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const filtered = REQUESTS.filter((r) => {
-    const matchesClient = r.client.toLowerCase().includes(search.toLowerCase());
-    const matchesDate = searchDate
-      ? new Date(r.date).toDateString() === searchDate.toDateString()
-      : true;
-    return matchesClient && matchesDate;
-  });
+  const statuses = ["all", "PENDING", "REJECTED"];
+
+  useEffect(() => {
+    fetchApplications();
+  }, [selectedStatus]);
+
+  useEffect(() => {
+    if (Array.isArray(applications) && applications.length > 0) {
+      const filtered = applications.filter((app) =>
+        app.companyName.toLowerCase().includes(search.toLowerCase()) ||
+        app.representative.toLowerCase().includes(search.toLowerCase()) ||
+        app.location.toLowerCase().includes(search.toLowerCase())
+      );
+      setFilteredApplications(filtered);
+    } else {
+      setFilteredApplications([]);
+    }
+  }, [search, applications]);
+
+  const fetchApplications = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      let data: ApiFumigationApplication[];
+
+      if (selectedStatus === "all") {
+        data = await fumigationService.getAllApplications();
+      } else if (selectedStatus === "PENDING") {
+        data = await fumigationService.getPendingApplications();
+      } else {
+        data = await fumigationService.getRejectedApplications();
+      }
+
+      setApplications(data);
+      setFilteredApplications(data);
+    } catch (err: any) {
+      setError(err.message || "Error desconocido");
+      setApplications([]);
+      setFilteredApplications([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const columns = [
     { header: "ID", key: "id" },
-    { header: "Servicio", key: "service" },
-    { header: "Cliente", key: "client" },
-    { header: "Fecha Solicitud", key: "date" },
-    { header: "Total Toneladas", key: "tons" },
+    { header: "Empresa", key: "companyName" },
+    { header: "Representante", key: "representative" },
+    { header: "Ubicación", key: "location" },
+    { header: "Fecha", key: "localDate" },
+    { header: "Estado", key: "status" },
   ];
 
-  const handleViewDetails = async (request: Request) => {
-    setIsLoading(true);
+  const handleViewDetails = async (application: ApiFumigationApplication) => {
+    setIsDetailLoading(true);
     setError(null);
     try {
-      const applicationData = await fumigationService.getApplicationById(request.id);
+      const applicationData = await fumigationService.getApplicationById(application.id.toString());
 
       setSelectedRequest({
-        ...request,
+        ...application,
         applicationData,
-      });
+      } as any);
     } catch (err: any) {
-      console.error("Error al obtener detalles de la solicitud:", err);
       setError(err.message || "Error al cargar los detalles de la solicitud");
-
-      setSelectedRequest(request);
+      setSelectedRequest(application);
     } finally {
-      setIsLoading(false);
+      setIsDetailLoading(false);
     }
   };
 
@@ -60,36 +98,68 @@ export default function RequestsPage() {
     <Layout>
       <div className="p-10">
         <header className="mb-8">
-          <h2 className="text-3xl font-bold mb-1">Solicitudes</h2>
-          <p className="text-gray-500">Gestiona las solicitudes de servicio entrantes</p>
+          <h2 className="text-3xl font-bold mb-1">Solicitudes de Fumigación</h2>
+          <p className="text-gray-500">Gestiona las solicitudes de servicio de fumigación</p>
         </header>
 
         <div className="flex gap-4 items-center mb-6">
           <Input
-            placeholder="Buscar por cliente"
+            placeholder="Buscar por empresa, representante o ubicación"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="max-w-md"
           />
+
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#003595] focus:border-transparent"
+          >
+            {statuses.map((status) => (
+              <option key={status} value={status}>
+                {status === "all" ? "Todos los estados" : status}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <BaseTable
-          data={filtered}
-          columns={columns}
-          actions={[
-            {
-              label: "Ver Más Información",
-              onClick: handleViewDetails,
-            },
-          ]}
-        />
+        {error && (
+          <div className="bg-red-100 text-red-700 p-4 rounded-md mb-6">
+            {error}
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <span className="animate-spin mr-2">⌛</span> Cargando solicitudes...
+          </div>
+        ) : (
+          <>
+            <BaseTable
+              data={filteredApplications}
+              columns={columns}
+              actions={[
+                {
+                  label: "Ver Más Información",
+                  onClick: handleViewDetails,
+                },
+              ]}
+            />
+
+            {filteredApplications.length === 0 && !isLoading && (
+              <div className="text-center py-8 text-gray-500">
+                No se encontraron solicitudes con los criterios de búsqueda.
+              </div>
+            )}
+          </>
+        )}
 
         <Overlay open={!!selectedRequest} onClose={handleCloseOverlay}>
           {selectedRequest && (
             <OverlayContent
-              request={selectedRequest}
+              request={selectedRequest as any}
               onClose={handleCloseOverlay}
-              isLoading={isLoading}
+              isLoading={isDetailLoading}
               error={error}
             />
           )}
