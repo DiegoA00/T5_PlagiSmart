@@ -67,7 +67,7 @@ export default function RequestsPage() {
     { header: "Empresa", key: "companyName" },
     { header: "Representante", key: "representative" },
     { header: "Ubicación", key: "location" },
-    { header: "Fecha", key: "localDate" },
+    { header: "Fecha de Solicitud", key: "localDate" },
     { header: "Estado", key: "status" },
   ];
 

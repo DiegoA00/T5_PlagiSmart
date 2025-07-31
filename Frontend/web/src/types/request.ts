@@ -46,6 +46,29 @@ export interface ApiFumigationApplication {
   status: string;
 }
 
+export interface FumigationListItem {
+  lotNumber: string;
+  companyName: string;
+  representative: string;
+  phoneNumber: string;
+  location: string;
+}
+
+export interface FumigationDetailResponse {
+  company: {
+    id: number;
+    name: string;
+  };
+  lot: {
+    id: number;
+    lotNumber: string;
+    tons: number;
+    quality: string;
+    sacks: number;
+    portDestination: string;
+  };
+}
+
 export type Request = {
   id: string;
   service: string;

@@ -1,5 +1,5 @@
 import apiClient from "./api/apiService";
-import { FumigationApplication, ApiFumigationApplication } from "@/types/request";
+import { FumigationApplication, ApiFumigationApplication, FumigationListItem, FumigationDetailResponse } from "@/types/request";
 
 export const fumigationService = {
   getApplicationById: async (id: string): Promise<FumigationApplication> => {
@@ -54,6 +54,31 @@ export const fumigationService = {
       }
     } catch (error: any) {
       throw new Error(`Error al cargar solicitudes rechazadas: ${error.response?.data?.message || error.message}`);
+    }
+  },
+
+  getFumigationsByStatus: async (status: string): Promise<FumigationListItem[]> => {
+    try {
+      const response = await apiClient.get('/fumigations', {
+        params: { status }
+      });
+      
+      if (Array.isArray(response.data)) {
+        return response.data;
+      } else {
+        throw new Error("Formato de datos inesperado");
+      }
+    } catch (error: any) {
+      throw new Error(`Error al cargar fumigaciones con status ${status}: ${error.response?.data?.message || error.message}`);
+    }
+  },
+
+  getFumigationDetails: async (id: number): Promise<FumigationDetailResponse> => {
+    try {
+      const response = await apiClient.get(`/fumigations/info/${id}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || "Error al obtener detalles de la fumigación");
     }
   }
 };
