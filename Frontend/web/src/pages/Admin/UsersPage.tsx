@@ -5,19 +5,26 @@ import { Overlay } from "@/layouts/Overlay";
 import { TopBar } from "@/layouts/TopBar";
 import { UsersTable, User } from "./Components/UsersTable";
 import { RoleChangeModal } from "./Components/RoleChangeModal";
-import apiClient from "@/services/api/apiService";
+import { usersService, ApiUser } from "@/services/usersService";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
+  const [selectedRole, setSelectedRole] = useState("all");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const roles = ["all", "ROLE_ADMIN", "ROLE_CLIENT", "ROLE_TECHNICIAN"];
+
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (selectedRole === "all") {
+      fetchAllUsers();
+    } else {
+      fetchUsersByRole(selectedRole);
+    }
+  }, [selectedRole]);
 
   useEffect(() => {
     if (Array.isArray(users) && users.length > 0) {
@@ -25,7 +32,7 @@ export default function UsersPage() {
         user.firstName.toLowerCase().includes(search.toLowerCase()) ||
         user.lastName.toLowerCase().includes(search.toLowerCase()) ||
         user.email.toLowerCase().includes(search.toLowerCase()) ||
-        user.roles.some(role => role.name.toLowerCase().includes(search.toLowerCase()))
+        user.roles.toLowerCase().includes(search.toLowerCase())
       );
       setFilteredUsers(filtered);
     } else {
@@ -33,32 +40,23 @@ export default function UsersPage() {
     }
   }, [search, users]);
 
-  const fetchUsers = async () => {
+  const mapApiUserToUser = (apiUser: ApiUser): User => ({
+    ...apiUser,
+    roles: apiUser.role,
+    companies: []
+  });
+
+  const fetchAllUsers = async () => {
     setIsLoading(true);
     setError("");
     
     try {
-      const response = await apiClient.get('/users');
-      
-      if (Array.isArray(response.data)) {
-        setUsers(response.data);
-        setFilteredUsers(response.data);
-      } else if (response.data && Array.isArray(response.data.content)) {
-        setUsers(response.data.content);
-        setFilteredUsers(response.data.content);
-      } else if (response.data && typeof response.data === 'object' && response.data.id) {
-        const singleUser = response.data;
-        console.log("Converting single user to array:", singleUser);
-        setUsers([singleUser]);
-        setFilteredUsers([singleUser]);
-      } else {
-        console.error("Unexpected API response format:", response.data);
-        setError("Error: formato de datos inesperado");
-        setUsers([]);
-        setFilteredUsers([]);
-      }
+      const apiUsers = await usersService.getAllUsers();
+      const mappedUsers = apiUsers.map(mapApiUserToUser);
+      setUsers(mappedUsers);
+      setFilteredUsers(mappedUsers);
     } catch (err: any) {
-      setError("Error al cargar usuarios: " + (err.message || "Error desconocido"));
+      setError(err.message || "Error desconocido");
       console.error("Error fetching users:", err);
       setUsers([]);
       setFilteredUsers([]);
@@ -67,19 +65,38 @@ export default function UsersPage() {
     }
   };
 
-  const adminseChangeRole = async (email: string) => {
+  const fetchUsersByRole = async (role: string) => {
+    setIsLoading(true);
+    setError("");
+    
     try {
-      await apiClient.put('/users/role', { email });
-      fetchUsers();
+      const apiUsers = await usersService.getUsersByRole(role);
+      const mappedUsers = apiUsers.map(mapApiUserToUser);
+      setUsers(mappedUsers);
+      setFilteredUsers(mappedUsers);
     } catch (err: any) {
-      console.error("Error changing role:", err);
-      throw new Error(err.response?.data?.message || "Error al cambiar el rol");
+      setError(err.message || "Error desconocido");
+      console.error("Error fetching users by role:", err);
+      setUsers([]);
+      setFilteredUsers([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  function handleChangeRole(email: string): Promise<void> {
-    throw new Error("Function not implemented.");
-  }
+  const handleChangeRole = async (email: string) => {
+    try {
+      await usersService.changeUserRole(email);
+      if (selectedRole === "all") {
+        fetchAllUsers();
+      } else {
+        fetchUsersByRole(selectedRole);
+      }
+    } catch (err: any) {
+      console.error("Error changing role:", err);
+      throw err;
+    }
+  };
 
   return (
     <div className="flex h-screen flex-col">
@@ -96,14 +113,25 @@ export default function UsersPage() {
             </div>
           </header>
 
-          {/* Search */}
-          <div className="mb-6">
+          <div className="flex gap-4 mb-6">
             <Input
               placeholder="Buscar por nombre, email o rol"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="max-w-md"
             />
+            
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#003595] focus:border-transparent"
+            >
+              {roles.map(role => (
+                <option key={role} value={role}>
+                  {role === "all" ? "Todos los roles" : role}
+                </option>
+              ))}
+            </select>
           </div>
 
           {error && (

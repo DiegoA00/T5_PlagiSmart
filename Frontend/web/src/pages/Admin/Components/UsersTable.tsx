@@ -1,10 +1,5 @@
 import { FC } from "react";
 
-interface Role {
-  id: number;
-  name: string;
-}
-
 interface Company {
   id: number;
   name: string;
@@ -20,7 +15,7 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  roles: Role[];
+  roles: string;
   companies: Company[];
 }
 
@@ -50,9 +45,7 @@ export const UsersTable: FC<UsersTableProps> = ({ data, onChangeRole }) => (
               <td className="px-4 py-2">{user.firstName}</td>
               <td className="px-4 py-2">{user.lastName}</td>
               <td className="px-4 py-2">{user.email}</td>
-              <td className="px-4 py-2">
-                {user.roles.map(role => role.name).join(", ")}
-              </td>
+              <td className="px-4 py-2">{user.roles}</td>
               <td className="px-4 py-2">
                 <button
                   onClick={() => onChangeRole(user)}
