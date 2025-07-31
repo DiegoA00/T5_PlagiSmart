@@ -1,6 +1,4 @@
 import axios from 'axios';
-import { authService } from '../auth/loginService';
-import { constructFromSymbol } from 'date-fns/constants';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -9,49 +7,46 @@ const apiClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
         'Accept': '*/*'
-    }
+    },
+    timeout: 15000
 });
 
-// Interceptor para añadir el token a las peticiones
+const getToken = () => {
+    return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+};
+
 apiClient.interceptors.request.use(
     (config) => {
-        // Obtener el token sin el prefijo "Bearer"
-        const token = authService.getToken(); // Esta función debe existir en authService
-        
+        const token = getToken();
         if (token) {
-            // Enviar solo el token sin el prefijo "Bearer "
             config.headers.Authorization = token;
-            
-            // Log para depuración (quitar en producción)
-            console.log("Token enviado:", token.substring(0, 20) + "...");
         }
+        
         return config;
     },
     (error) => {
         return Promise.reject(error);
     }
 );
-let isRedirecting = false;
 
 apiClient.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        return response;
+    },
     (error) => {
-        if (error.response?.status === 401 && !isRedirecting) {
-            const url = error.config.url;
-            const isSpecialEndpoint = url && (
-                url.includes('/fumigation-applications/')
-            );
-
-            if (!isSpecialEndpoint) {
-                isRedirecting = true;
-                console.log("Sesión expirada - redirigiendo al login");
-                authService.clearAuthData();
+        if (error.response?.status === 401) {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('token_type');
+            localStorage.removeItem('user_data');
+            sessionStorage.removeItem('auth_token');
+            sessionStorage.removeItem('token_type');
+            sessionStorage.removeItem('user_data');
+            
+            if (!window.location.pathname.includes('/login')) {
                 window.location.href = '/login';
-                setTimeout(() => {
-                    isRedirecting = false;
-                }, 1000);
             }
         }
+        
         return Promise.reject(error);
     }
 );

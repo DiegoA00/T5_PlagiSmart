@@ -37,6 +37,15 @@ export interface FumigationApplication {
   fumigations: Fumigation[];
 }
 
+export interface ApiFumigationApplication {
+  id: number;
+  companyName: string;
+  representative: string;
+  location: string;
+  localDate: string;
+  status: string;
+}
+
 export type Request = {
   id: string;
   service: string;

@@ -43,7 +43,9 @@ export const authService = {
   },
 
   isAuthenticated() {
-    return !!(localStorage.getItem(AUTH_TOKEN_KEY) || sessionStorage.getItem(AUTH_TOKEN_KEY));
+    const hasToken = !!(localStorage.getItem(AUTH_TOKEN_KEY) || sessionStorage.getItem(AUTH_TOKEN_KEY));
+    const hasUserData = !!(localStorage.getItem(USER_DATA_KEY) || sessionStorage.getItem(USER_DATA_KEY));
+    return hasToken && hasUserData;
   }
 };
 
@@ -56,13 +58,17 @@ export const loginService = {
       });
 
       const { token, tokenType } = authResponse.data;
-      if (!token) throw new Error('Token no recibido del servidor');
+      if (!token) {
+        throw new Error('Token no recibido del servidor');
+      }
       
-      apiClient.defaults.headers.common['Authorization'] = `${tokenType || 'Bearer'} ${token}`;
+      const userResponse = await apiClient.get('/users/me', {
+        headers: {
+          'Authorization': `${tokenType || 'Bearer'} ${token}`
+        }
+      });
       
-      const userResponse = await apiClient.get('/users/me');
       const userData = userResponse.data;
-
       authService.setAuthData(token, tokenType, userData, rememberMe);
 
       return {
@@ -78,9 +84,10 @@ export const loginService = {
           status: 401
         };
       }
+      
       throw {
         success: false,
-        message: error.response?.data?.message || 'Error al iniciar sesión',
+        message: error.response?.data?.message || error.message || 'Error al iniciar sesión',
         status: error.response?.status || 500
       };
     }
@@ -88,12 +95,11 @@ export const loginService = {
 
   validateSession: async () => {
     try {
-      const token = localStorage.getItem(AUTH_TOKEN_KEY) || sessionStorage.getItem(AUTH_TOKEN_KEY);
-      if (!token) {
+      const authHeader = authService.getAuthHeader();
+      if (!authHeader) {
         throw new Error('No session token found');
       }
       
-      apiClient.defaults.headers.common['Authorization'] = `${localStorage.getItem(TOKEN_TYPE_KEY) || sessionStorage.getItem(TOKEN_TYPE_KEY) || 'Bearer'} ${token}`;
       const response = await apiClient.get('/users/me');
       
       return {

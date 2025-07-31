@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { authService } from "../services/auth/loginService";
+import { useAuth } from "@/context/AuthContext";
 
 const roleRoutes = {
   "ROLE_ADMIN": "/admin/solicitudes",
@@ -11,15 +11,15 @@ const rolePriority = ["ROLE_ADMIN", "ROLE_TECHNICIAN", "ROLE_CLIENT"];
 
 export const useRoleRedirect = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const redirect = () => {
-    const userData = authService.getUserData();
-    if (!userData || !Array.isArray(userData.roles)) {
+    if (!user || !Array.isArray(user.roles)) {
       navigate("/login");
       return;
     }
 
-    const userRoles = userData.roles.map(role => role.name);
+    const userRoles = user.roles.map(role => role.name);
     
     for (const role of rolePriority) {
       if (userRoles.includes(role) && roleRoutes[role]) {
