@@ -47,6 +47,8 @@ export interface ApiFumigationApplication {
 }
 
 export interface FumigationListItem {
+  // TODO: El backend debería incluir este campo en futuras versiones
+  // id: number;  
   lotNumber: string;
   companyName: string;
   representative: string;

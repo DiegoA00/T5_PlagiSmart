@@ -27,16 +27,31 @@ export default function LotsPage() {
     { header: "Ubicación", key: "location" },
   ];
 
+  const extractLotId = (fumigation: FumigationListItem): number => {
+    // TODO: TEMPORAL - El backend debería incluir el 'id' en la respuesta de GET /fumigations
+    // Por ahora extraemos un ID numérico del lotNumber o usamos el índice
+    const numericId = parseInt(fumigation.lotNumber.replace(/\D/g, ''));
+    const fallbackId = fumigations.indexOf(fumigation) + 1;
+    const finalId = numericId || fallbackId;
+    
+    console.log(`🔢 LotsPage: Extrayendo ID del lote (TEMPORAL)`);
+    console.log(`📝 Número de lote: "${fumigation.lotNumber}"`);
+    console.log(`🧮 ID numérico extraído: ${numericId}`);
+    console.log(`🔄 ID fallback (índice + 1): ${fallbackId}`);
+    console.log(`✅ ID final a usar: ${finalId}`);
+    console.warn(`⚠️  Esta lógica es temporal hasta que el backend incluya el 'id' real`);
+    
+    return finalId;
+  };
+
   const handleViewDetails = async (fumigation: FumigationListItem) => {
-    // Extraer el ID del número de lote o usar un índice temporal
-    // Nota: Esta es una limitación temporal hasta que la API incluya el ID
-    const lotId = parseInt(fumigation.lotNumber.replace(/\D/g, '')) || fumigations.indexOf(fumigation) + 1;
+    const lotId = extractLotId(fumigation);
     setSelectedLotId(lotId);
     await loadFumigationDetails(lotId);
   };
 
   const handleViewEvidence = async (fumigation: FumigationListItem) => {
-    const lotId = parseInt(fumigation.lotNumber.replace(/\D/g, '')) || fumigations.indexOf(fumigation) + 1;
+    const lotId = extractLotId(fumigation);
     setSelectedLotId(lotId);
     setShowingEvidence(true);
     await loadFumigationDetails(lotId);

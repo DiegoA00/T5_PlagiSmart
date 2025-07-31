@@ -75,9 +75,22 @@ export const fumigationService = {
 
   getFumigationDetails: async (id: number): Promise<FumigationDetailResponse> => {
     try {
+      console.log(`🔍 Enviando petición a /fumigations/info/${id}`);
+      console.log(`📋 ID del lote: ${id} (tipo: ${typeof id})`);
+      console.warn(`⚠️  TEMPORAL: Usando ID extraído del lotNumber. Pendiente que backend incluya 'id' en GET /fumigations`);
+      
       const response = await apiClient.get(`/fumigations/info/${id}`);
+      
+      console.log(`✅ Respuesta recibida para ID ${id}:`, response.data);
+      
       return response.data;
     } catch (error: any) {
+      console.error(`❌ Error al obtener detalles del lote ID ${id}:`, error.response?.data || error.message);
+      
+      if (error.response?.status === 404) {
+        throw new Error(`No se encontró el lote con ID ${id}. Esto puede deberse a que el ID fue extraído del número de lote y no corresponde al ID real del registro.`);
+      }
+      
       throw new Error(error.response?.data?.message || "Error al obtener detalles de la fumigación");
     }
   }

@@ -3,14 +3,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LotStatus, CompletedLot } from "@/types/lot";
+import { FumigationDetailResponse } from "@/types/request";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface EvidenceOverlayProps {
-  lot: LotStatus | CompletedLot;
+  fumigationDetails: FumigationDetailResponse | null;
   isEditable?: boolean; // true para técnicos, false para administradores
   onClose?: () => void;
   onSave?: (data: any) => void;
+  loading?: boolean;
 }
 
 // Componente para secciones colapsables
@@ -46,17 +47,18 @@ const CollapsibleSection: FC<CollapsibleSectionProps> = ({
 };
 
 export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
-  lot,
+  fumigationDetails,
   isEditable = false,
   onClose,
-  onSave
+  onSave,
+  loading = false
 }) => {
   const [activeTab, setActiveTab] = useState("fumigation");
   
-  // Estados para los formularios (mantenemos los mismos)
+  // Estados para los formularios
   const [fumigationData, setFumigationData] = useState({
-    registrationNumber: lot.id || "",
-    company: "",
+    registrationNumber: fumigationDetails?.lot.id?.toString() || "",
+    company: fumigationDetails?.company.name || "",
     location: "",
     date: new Date().toISOString().split("T")[0],
     startTime: "07:00",
@@ -78,8 +80,8 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
   });
   
   const [uncoveringData, setUncoveringData] = useState({
-    registrationNumber: lot.id || "",
-    company: "",
+    registrationNumber: fumigationDetails?.lot.id?.toString() || "",
+    company: fumigationDetails?.company.name || "",
     location: "",
     date: new Date().toISOString().split("T")[0],
     startTime: "07:00",
@@ -109,12 +111,47 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
     if (onClose) onClose();
   };
 
+  if (loading) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="bg-[#003595] text-white rounded-t-lg px-8 py-5 text-lg font-semibold">
+          Cargando evidencias...
+        </div>
+        <div className="flex items-center justify-center px-8 py-6" style={{ minHeight: "300px" }}>
+          <div className="text-gray-500">Cargando detalles del lote...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!fumigationDetails) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="bg-[#003595] text-white rounded-t-lg px-8 py-5 text-lg font-semibold">
+          Error
+        </div>
+        <div className="flex items-center justify-center px-8 py-6" style={{ minHeight: "300px" }}>
+          <div className="text-red-500">No se pudieron cargar los detalles del lote</div>
+        </div>
+        <div className="flex justify-end gap-4 px-8 py-6 border-t border-[#003595] bg-white rounded-b-lg">
+          <Button
+            variant="secondary"
+            className="bg-[#003595] text-white hover:bg-[#002060]"
+            onClick={onClose}
+          >
+            Cerrar
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full max-h-[90vh]">
       {/* Encabezado fijo */}
       <div className="bg-[#003595] text-white rounded-t-lg px-8 py-5 flex-shrink-0">
         <h2 className="text-xl font-semibold">
-          Evidencias - Lote #{lot.id}
+          Evidencias - Lote #{fumigationDetails.lot.lotNumber}
         </h2>
       </div>
       
@@ -146,17 +183,31 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
         <div className="flex-1 overflow-y-auto px-8 py-6">
           <TabsContent value="fumigation" className="m-0 h-full">
             {isEditable ? (
-              <FumigationForm data={fumigationData} setData={setFumigationData} lot={lot} />
+              <FumigationForm 
+                data={fumigationData} 
+                setData={setFumigationData} 
+                fumigationDetails={fumigationDetails} 
+              />
             ) : (
-              <FumigationView data={fumigationData} lot={lot} />
+              <FumigationView 
+                data={fumigationData} 
+                fumigationDetails={fumigationDetails} 
+              />
             )}
           </TabsContent>
           
           <TabsContent value="uncovering" className="m-0 h-full">
             {isEditable ? (
-              <UncoveringForm data={uncoveringData} setData={setUncoveringData} lot={lot} />
+              <UncoveringForm 
+                data={uncoveringData} 
+                setData={setUncoveringData} 
+                fumigationDetails={fumigationDetails} 
+              />
             ) : (
-              <UncoveringView data={uncoveringData} lot={lot} />
+              <UncoveringView 
+                data={uncoveringData} 
+                fumigationDetails={fumigationDetails} 
+              />
             )}
           </TabsContent>
         </div>
@@ -189,10 +240,10 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
 interface FumigationFormProps {
   data: any;
   setData: (data: any) => void;
-  lot: LotStatus | CompletedLot;
+  fumigationDetails: FumigationDetailResponse;
 }
 
-const FumigationForm: FC<FumigationFormProps> = ({ data, setData, lot }) => {
+const FumigationForm: FC<FumigationFormProps> = ({ data, setData, fumigationDetails }) => {
   const handleChange = (field: string, value: any) => {
     setData({
       ...data,
@@ -222,10 +273,10 @@ const FumigationForm: FC<FumigationFormProps> = ({ data, setData, lot }) => {
 
   // Cargar datos conocidos del lote
   const loadLotData = () => {
-    handleChange('tons', lot.tons);
-    handleChange('quality', lot.grade);
-    handleChange('bags', lot.sacks);
-    handleChange('destination', lot.destinationPort);
+    handleChange('tons', fumigationDetails.lot.tons);
+    handleChange('quality', fumigationDetails.lot.quality);
+    handleChange('bags', fumigationDetails.lot.sacks);
+    handleChange('destination', fumigationDetails.lot.portDestination);
   };
   
   return (
@@ -352,8 +403,8 @@ const FumigationForm: FC<FumigationFormProps> = ({ data, setData, lot }) => {
       <CollapsibleSection title="Información del Lote" defaultOpen={true}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">ID de Lote</label>
-            <Input value={lot.id} disabled />
+            <label className="text-sm font-medium">Número de Lote</label>
+            <Input value={fumigationDetails.lot.lotNumber} disabled />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Dimensiones</label>
@@ -366,14 +417,14 @@ const FumigationForm: FC<FumigationFormProps> = ({ data, setData, lot }) => {
             <label className="text-sm font-medium">Toneladas</label>
             <Input 
               type="number"
-              value={data.tons || lot.tons}
+              value={data.tons || fumigationDetails.lot.tons}
               onChange={(e) => handleChange('tons', e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Calidad</label>
             <Input 
-              value={data.quality || lot.grade}
+              value={data.quality || fumigationDetails.lot.quality}
               onChange={(e) => handleChange('quality', e.target.value)}
             />
           </div>
@@ -381,14 +432,14 @@ const FumigationForm: FC<FumigationFormProps> = ({ data, setData, lot }) => {
             <label className="text-sm font-medium"># Sacos</label>
             <Input 
               type="number"
-              value={data.bags || lot.sacks}
+              value={data.bags || fumigationDetails.lot.sacks}
               onChange={(e) => handleChange('bags', e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Destino</label>
             <Input 
-              value={data.destination || lot.destinationPort}
+              value={data.destination || fumigationDetails.lot.portDestination}
               onChange={(e) => handleChange('destination', e.target.value)}
             />
           </div>
@@ -605,18 +656,18 @@ const FumigationForm: FC<FumigationFormProps> = ({ data, setData, lot }) => {
 
 // Componente para mostrar la información de fumigación (modo administrador)
 // Usa la misma estructura de secciones colapsables
-const FumigationView: FC<{ data: any; lot: LotStatus | CompletedLot }> = ({ data, lot }) => {
+const FumigationView: FC<{ data: any; fumigationDetails: FumigationDetailResponse }> = ({ data, fumigationDetails }) => {
   return (
     <div className="space-y-4">
       {/* Información básica - siempre visible */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3 mb-6">
         <div>
           <p className="text-sm font-medium text-gray-500">Nº Registro</p>
-          <p className="font-medium">{data.registrationNumber || lot.id}</p>
+          <p className="font-medium">{data.registrationNumber || fumigationDetails.lot.id}</p>
         </div>
         <div>
           <p className="text-sm font-medium text-gray-500">Empresa</p>
-          <p>{data.company || "-"}</p>
+          <p>{data.company || fumigationDetails.company.name}</p>
         </div>
         <div>
           <p className="text-sm font-medium text-gray-500">Fecha</p>
@@ -682,7 +733,7 @@ const FumigationView: FC<{ data: any; lot: LotStatus | CompletedLot }> = ({ data
         <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3">
           <div>
             <p className="text-sm font-medium text-gray-500">ID de Lote</p>
-            <p>{lot.id}</p>
+            <p>{fumigationDetails.lot.id}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Dimensiones</p>
@@ -690,19 +741,19 @@ const FumigationView: FC<{ data: any; lot: LotStatus | CompletedLot }> = ({ data
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Toneladas</p>
-            <p>{data.tons || lot.tons}</p>
+            <p>{data.tons || fumigationDetails.lot.tons}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Calidad</p>
-            <p>{data.quality || lot.grade}</p>
+            <p>{data.quality || fumigationDetails.lot.quality}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500"># Sacos</p>
-            <p>{data.bags || lot.sacks}</p>
+            <p>{data.bags || fumigationDetails.lot.sacks}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Destino</p>
-            <p>{data.destination || lot.destinationPort}</p>
+            <p>{data.destination || fumigationDetails.lot.portDestination}</p>
           </div>
         </div>
       </CollapsibleSection>
@@ -821,12 +872,10 @@ const FumigationView: FC<{ data: any; lot: LotStatus | CompletedLot }> = ({ data
 interface UncoveringFormProps {
   data: any;
   setData: (data: any) => void;
-  lot: LotStatus | CompletedLot;
+  fumigationDetails: FumigationDetailResponse;
 }
 
-// El componente UncoveringForm utilizaría el mismo patrón de CollapsibleSection
-const UncoveringForm: FC<UncoveringFormProps> = ({ data, setData, lot }) => {
-  // ... lógica actual
+const UncoveringForm: FC<UncoveringFormProps> = ({ data, setData, fumigationDetails }) => {
   const handleChange = (field: string, value: any) => {
     setData({
       ...data,
@@ -844,10 +893,9 @@ const UncoveringForm: FC<UncoveringFormProps> = ({ data, setData, lot }) => {
     handleChange('personnel', [...data.personnel, { name: "", role: "", signature: null }]);
   };
   
-  // Estructura similar a FumigationForm pero con secciones colapsables
   return (
     <div className="space-y-4">
-      {/* Información básica - siempre visible */}
+      {/* Información básica */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="space-y-2">
           <label className="text-sm font-medium">Nº Registro</label>
@@ -875,7 +923,7 @@ const UncoveringForm: FC<UncoveringFormProps> = ({ data, setData, lot }) => {
         </div>
       </div>
       
-      {/* Resto de secciones colapsables similares a FumigationForm */}
+      {/* Resto de secciones adaptadas para uncovering */}
       <CollapsibleSection title="Datos Generales" defaultOpen={true}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
@@ -913,8 +961,8 @@ const UncoveringForm: FC<UncoveringFormProps> = ({ data, setData, lot }) => {
         </div>
       </CollapsibleSection>
       
+      {/* Personal - colapsable */}
       <CollapsibleSection title="Personal que interviene">
-        {/* Contenido del personal, similar al FumigationForm */}
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse">
             <thead>
@@ -969,20 +1017,20 @@ const UncoveringForm: FC<UncoveringFormProps> = ({ data, setData, lot }) => {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">ID de Lote</label>
-            <Input value={lot.id} disabled />
+            <Input value={fumigationDetails.lot.id} disabled />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Toneladas</label>
             <Input 
               type="number"
-              value={data.tons || lot.tons}
+              value={data.tons || fumigationDetails.lot.tons}
               onChange={(e) => handleChange('tons', e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Calidad</label>
             <Input 
-              value={data.quality || lot.grade}
+              value={data.quality || fumigationDetails.lot.quality}
               onChange={(e) => handleChange('quality', e.target.value)}
             />
           </div>
@@ -990,14 +1038,14 @@ const UncoveringForm: FC<UncoveringFormProps> = ({ data, setData, lot }) => {
             <label className="text-sm font-medium"># Sacos</label>
             <Input 
               type="number"
-              value={data.bags || lot.sacks}
+              value={data.bags || fumigationDetails.lot.sacks}
               onChange={(e) => handleChange('bags', e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Destino</label>
             <Input 
-              value={data.destination || lot.destinationPort}
+              value={data.destination || fumigationDetails.lot.portDestination}
               onChange={(e) => handleChange('destination', e.target.value)}
             />
           </div>
@@ -1132,18 +1180,18 @@ const UncoveringForm: FC<UncoveringFormProps> = ({ data, setData, lot }) => {
 };
 
 // Componente UncoveringView similar a FumigationView con secciones colapsables
-const UncoveringView: FC<{ data: any; lot: LotStatus | CompletedLot }> = ({ data, lot }) => {
+const UncoveringView: FC<{ data: any; fumigationDetails: FumigationDetailResponse }> = ({ data, fumigationDetails }) => {
   return (
     <div className="space-y-4">
       {/* Información básica - siempre visible */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3 mb-6">
         <div>
           <p className="text-sm font-medium text-gray-500">Nº Registro</p>
-          <p className="font-medium">{data.registrationNumber || lot.id}</p>
+          <p className="font-medium">{data.registrationNumber || fumigationDetails.lot.id}</p>
         </div>
         <div>
           <p className="text-sm font-medium text-gray-500">Empresa</p>
-          <p>{data.company || "-"}</p>
+          <p>{data.company || fumigationDetails.company.name}</p>
         </div>
         <div>
           <p className="text-sm font-medium text-gray-500">Fecha</p>
@@ -1209,23 +1257,23 @@ const UncoveringView: FC<{ data: any; lot: LotStatus | CompletedLot }> = ({ data
         <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3">
           <div>
             <p className="text-sm font-medium text-gray-500">ID de Lote</p>
-            <p>{lot.id}</p>
+            <p>{fumigationDetails.lot.id}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Toneladas</p>
-            <p>{data.tons || lot.tons}</p>
+            <p>{data.tons || fumigationDetails.lot.tons}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Calidad</p>
-            <p>{data.quality || lot.grade}</p>
+            <p>{data.quality || fumigationDetails.lot.quality}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500"># Sacos</p>
-            <p>{data.bags || lot.sacks}</p>
+            <p>{data.bags || fumigationDetails.lot.sacks}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Destino</p>
-            <p>{data.destination || lot.destinationPort}</p>
+            <p>{data.destination || fumigationDetails.lot.portDestination}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Estado Cintas</p>
