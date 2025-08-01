@@ -25,6 +25,9 @@ public class Fumigation {
     private Long id;
 
     @Column(nullable = false)
+    private String lotNumber;
+
+    @Column(nullable = false)
     private BigDecimal ton;
 
     @Enumerated(EnumType.STRING)
@@ -34,9 +37,8 @@ public class Fumigation {
     @Column(nullable = false)
     private Long sacks;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Grade grade;
+    private String quality;
 
     @Column(nullable = false)
     private LocalDateTime dateTime;
