@@ -363,9 +363,18 @@ function ReservationDocuments() {
                 </tr>
               )}
               <tr>
-                <th className="p-2">Condiciones Ambientales</th>
-                <th className="p-2">Condiciones de seguridad industrial</th>
-                <th className="p-2">Observaciones:</th>
+                <th className="p-2" colSpan={2}>Condiciones Ambientales</th>
+                <th className="p-2" colSpan={2}>Condiciones de seguridad industrial</th>
+                <th className="p-2" colSpan={2}>Observaciones:</th>
+              </tr>
+              <tr>
+                <th className="p-2">Temperatura:</th>
+                <td className="p-2">[Temperatura]</td>
+                <th className="p-2">Peligro eléctrico</th>
+              </tr>
+              <tr>
+                <th className="p-2">Humedad:</th>
+                <td className="p-2">[Humedad]</td>
               </tr>
             </tbody>
           </table>
