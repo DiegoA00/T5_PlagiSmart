@@ -36,10 +36,4 @@ public class FumigationCreationRequestDTO {
     @NotNull(message = "Date and time must not be null")
     @JsonFormat(pattern = "dd-MM-yyyy HH:mm")
     private LocalDateTime dateTime;
-
-    @NotNull(message = "Lot number must not be null")
-    private String lotNumber;
-
-    @NotNull(message = "Quality must not be null")
-    private String quality;
 }

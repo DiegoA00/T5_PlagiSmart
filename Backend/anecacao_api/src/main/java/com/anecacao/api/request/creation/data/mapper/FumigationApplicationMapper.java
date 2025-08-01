@@ -80,7 +80,4 @@ public interface FumigationApplicationMapper {
     void updateCleanupReportFromDTO(CleanupReportDTO dto, @MappingTarget CleanupReport entity);
 
     IndustrialSafetyConditions toConditionEntity(IndustrialSafetyConditionsDTO dto);
-
-    @Mapping(target = "actualFumigationDate", source = "date")
-    void updateFumigationFromReport(FumigationReportDTO dto, @MappingTarget Fumigation entity);
 }

@@ -137,6 +137,7 @@ public class FumigationServiceImpl implements FumigationService {
         return infoDTO;
     }
 
+    /*
     @Override
     public List<FumigationDetailDTO> getFumigationsByStatus(String status) {
         Status statusEnum;
@@ -196,6 +197,6 @@ public class FumigationServiceImpl implements FumigationService {
                     return dto;
                 })
                 .collect(Collectors.toList());
-    }
+    }*/
 
 }

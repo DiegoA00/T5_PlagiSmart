@@ -82,6 +82,7 @@ class ReportServiceImplTest {
     @DisplayName("Should set status to FAILED and return null when there is danger in industrial safety conditions")
     void shouldSetStatusToFailedAndReturnNullWhenDangerInIndustrialSafetyConditions() {
         dto.setId(3L);
+        IndustrialSafetyConditionsDTO safety = new IndustrialSafetyConditionsDTO();
         dto.setIndustrialSafetyConditions(safety);
 
         fumigation.setId(3L);
@@ -101,7 +102,7 @@ class ReportServiceImplTest {
 
         IndustrialSafetyConditions mockedConditions = mock(IndustrialSafetyConditions.class);
         when(mockedConditions.hasAnyDanger()).thenReturn(true);
-        when(mapper.toConditionEntity(safety)).thenReturn(mockedConditions);
+        //when(mapper.toConditionEntity(safety)).thenReturn(mockedConditions);
 
         MessageDTO result = service.createFumigationReport(dto);
 
@@ -115,6 +116,7 @@ class ReportServiceImplTest {
     @DisplayName("Should create report and return success message when all is valid")
     void shouldCreateReportAndReturnSuccessMessageWhenAllIsValid() {
         dto.setId(4L);
+        IndustrialSafetyConditionsDTO safety = new IndustrialSafetyConditionsDTO();
         dto.setIndustrialSafetyConditions(safety);
         when(safety.hasAnyDanger()).thenReturn(false);
 

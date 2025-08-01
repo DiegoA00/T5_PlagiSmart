@@ -76,6 +76,7 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
         return repository.save(newApplication);
     }
 
+    /*
     @Override
     public List<FumigationApplicationSummaryDTO> getFumigationApplicationsByStatus(String status) {
         // Validar y convertir el status
@@ -141,6 +142,6 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
                     return dto;
                 })
                 .collect(Collectors.toList());
-    }
+    }*/
 
 }

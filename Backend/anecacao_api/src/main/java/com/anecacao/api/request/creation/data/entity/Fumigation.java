@@ -33,17 +33,11 @@ public class Fumigation {
     private String quality;
 
     @Column(nullable = false)
-    private String quality;
-
-    @Column(nullable = false)
     private LocalDateTime dateTime;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;
-
-    @Column(nullable = false)
-    private String lotNumber;
 
     private String message;
 
