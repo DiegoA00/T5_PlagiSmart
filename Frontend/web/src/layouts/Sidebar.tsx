@@ -16,7 +16,6 @@ export function Sidebar() {
 
   return (
     <aside className="w-64 bg-[#003595] text-white p-6 flex flex-col">
-      <h1 className="text-2xl font-bold mb-12">PLAGISMART</h1>
       <nav className="flex flex-col gap-4">
         {adminOptions.map((opt) => (
           <Button

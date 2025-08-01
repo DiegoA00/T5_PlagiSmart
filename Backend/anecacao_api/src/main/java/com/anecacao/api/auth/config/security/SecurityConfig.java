@@ -1,7 +1,6 @@
 package com.anecacao.api.auth.config.security;
 
 import com.anecacao.api.auth.data.repository.UserRepository;
-import io.swagger.v3.oas.models.PathItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -77,10 +76,18 @@ public class SecurityConfig {
                                 "/swagger-ui/**"
                         ).permitAll()
 
+                        .requestMatchers(HttpMethod.PUT, "/users/role").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/fumigation-applications").hasRole("CLIENT")
                         .requestMatchers(HttpMethod.PUT, "/fumigations/{id}/status").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/fumigation-applications/{id}").hasAnyRole("CLIENT", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/fumigations/{id}").hasAnyRole("CLIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "reports/fumigations").hasRole("TECHNICIAN")
+                        .requestMatchers(HttpMethod.GET, "/fumigations").hasAnyRole("ADMIN", "TECHNICIAN", "CLIENT")
+                        .requestMatchers(HttpMethod.GET, "/fumigations/info/{id}").hasAnyRole("CLIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("ADMIN", "TECHNICIAN")
+                        .requestMatchers(HttpMethod.GET, "/users/all").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/fumigation-applications").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/users/me").authenticated()
 
                         .anyRequest().authenticated()
                 )

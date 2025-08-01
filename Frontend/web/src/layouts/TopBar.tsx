@@ -1,0 +1,73 @@
+import { FC, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { loginService, authService } from "../services/auth/loginService";
+
+interface TopBarProps {
+  userImage?: string;
+}
+
+export const TopBar: FC<TopBarProps> = ({ userImage = "/avatar.png" }) => {
+  const navigate = useNavigate();
+  const [displayName, setDisplayName] = useState("");
+
+  useEffect(() => {
+    const userData = authService.getUserData();
+    if (userData && userData.firstName && userData.lastName) {
+      setDisplayName(`${userData.firstName} ${userData.lastName}`);
+    } else if (userData && userData.email) {
+      setDisplayName(userData.email);
+    } else {
+      setDisplayName("");
+    }
+  }, []);
+
+  const handleLogout = () => {
+    loginService.logout();
+    navigate('/login');
+  };
+
+  return (
+    <div className="h-16 border-b flex items-center justify-between px-6">
+      <h1 className="text-2xl font-bold">PLAGISMART</h1>
+      <DropdownMenu>
+        <DropdownMenuTrigger className="focus:outline-none">
+          <div className="flex items-center gap-2 hover:bg-gray-100 p-2 rounded-lg transition-colors">
+            {displayName && (
+              <span className="text-sm text-gray-700">{displayName}</span>
+            )}
+            <div className="w-10 h-10 rounded-full overflow-hidden">
+              <img
+                src={userImage}
+                alt="User"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <div className="px-2 py-1.5 text-sm font-medium text-gray-900 border-b">
+            {displayName}
+          </div>
+          <DropdownMenuItem 
+            className="cursor-pointer"
+            onClick={() => navigate('/profile')}
+          >
+            Perfil
+          </DropdownMenuItem>
+          <DropdownMenuItem 
+            className="cursor-pointer text-red-600"
+            onClick={handleLogout}
+          >
+            Cerrar sesión
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+};

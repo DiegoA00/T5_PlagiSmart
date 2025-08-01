@@ -27,7 +27,6 @@ public class User {
     @Column(unique = true)
     private String email;
 
-    private String location;
     private LocalDate birthday;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})

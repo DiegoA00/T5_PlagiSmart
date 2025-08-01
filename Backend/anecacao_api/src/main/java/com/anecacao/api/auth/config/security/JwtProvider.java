@@ -42,7 +42,6 @@ public class JwtProvider {
                 .claim("name", user.getFirstName())
                 .claim("lastName", user.getLastName())
                 .claim("email", user.getEmail())
-                .claim("location", user.getLocation())
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
     }

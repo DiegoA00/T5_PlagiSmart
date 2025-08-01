@@ -1,5 +1,6 @@
 package com.anecacao.api.auth.data.dto;
 
+import com.anecacao.api.request.creation.data.dto.response.CompanyResponseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,7 +21,7 @@ public class UserDTO {
 
     private String email;
 
-    private String location;
-
     private Set<RoleDTO> roles;
+
+    private Set<CompanyResponseDTO> companies;
 }

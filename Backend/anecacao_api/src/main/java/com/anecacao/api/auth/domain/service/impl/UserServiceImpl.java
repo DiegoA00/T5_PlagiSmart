@@ -5,24 +5,29 @@ import com.anecacao.api.auth.data.dto.*;
 import com.anecacao.api.auth.data.entity.Role;
 import com.anecacao.api.auth.data.entity.RoleName;
 import com.anecacao.api.auth.data.entity.User;
+import com.anecacao.api.auth.data.entity.UserPassword;
 import com.anecacao.api.auth.data.mapper.UserMapper;
 import com.anecacao.api.auth.data.repository.RoleRepository;
+import com.anecacao.api.auth.data.repository.UserPasswordRepository;
 import com.anecacao.api.auth.data.repository.UserRepository;
-import com.anecacao.api.auth.domain.exception.RoleNotFoundException;
-import com.anecacao.api.auth.domain.exception.UserAlreadyExistsException;
-import com.anecacao.api.auth.domain.exception.UserNotFoundException;
+import com.anecacao.api.auth.domain.exception.*;
 import com.anecacao.api.auth.domain.service.UserPasswordService;
 import com.anecacao.api.auth.domain.service.UserService;
 
+import com.anecacao.api.request.creation.data.entity.Company;
+import com.anecacao.api.request.creation.domain.service.CompanyService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
 
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +37,10 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final UserPasswordService userPasswordService;
+    private final CompanyService companyService;
     private final JwtProvider jwtProvider;
+    private final PasswordEncoder passwordEncoder;
+    private final UserPasswordRepository userPasswordRepository;
 
     @Override
     public UserRegistrationResponseDTO registerUser(UserRegistrationRequestDTO userRequestDTO) {
@@ -49,6 +57,30 @@ public class UserServiceImpl implements UserService {
         userPasswordService.savePassword(newUser, userRequestDTO.getPassword());
 
         return userMapper.userToUserRegistrationResponseDTO(newUser);
+    }
+
+    @Override
+    public void completeUserInfo(UserProfileSetUpRequestDTO request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
+
+        if (userRepository.existsByNationalIdAndIdNot(request.getNationalId(), user.getId())) {
+            throw new UserAlreadyExistsException();
+        }
+
+        if (companyService.existsByRuc(request.getCompany().getRuc())) {
+            throw new CompanyAlreadyExistsException();
+        }
+
+        user.setNationalId(request.getNationalId());
+        user.setBirthday(request.getBirthday());
+
+        Company company = companyService.createNewCompany(request.getCompany(), user);
+
+        user.getCompanies().add(company);
+
+        userRepository.save(user);
     }
 
     @Override
@@ -80,6 +112,56 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void updateUsersRole(UserUpdateRoleDTO userUpdateRoleDTO) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = getUser(userUpdateRoleDTO);
+
+        if (userUpdateRoleDTO.getEmail().equals(email)) throw new IllegalRoleChangeException();
+
+        Role role = roleRepository.findByName(RoleName.ROLE_TECHNICIAN)
+                .orElseThrow(() -> new RuntimeException("Role not found."));
+
+        Role clientRole = roleRepository.findByName(RoleName.ROLE_CLIENT)
+                .orElseThrow(() -> new RuntimeException("Role not found."));
+
+        user.getRoles().add(role);
+        user.getRoles().remove(clientRole);
+        userRepository.save(user);
+    }
+
+    private User getUser(UserUpdateRoleDTO userUpdateRoleDTO) {
+        User user = userRepository.findByEmail(userUpdateRoleDTO.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found."));
+        return user;
+    }
+
+    @Override
+    @Transactional
+    public void createAdminUserIfNotExist() {
+        Optional<User> adminUser = userRepository.findByEmail("admin@admin.com");
+
+        Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
+                .orElseThrow(() -> new RuntimeException("ADMIN role not found"));
+
+
+        if (adminUser.isEmpty()) {
+            User user = new User();
+            user.setEmail("admin@admin.com");
+            user.setFirstName("admin");
+            user.setRoles(Set.of(adminRole));
+
+            userRepository.save(user);
+
+            UserPassword userPassword = new UserPassword();
+            userPassword.setUser(user);
+            userPassword.setHashedPassword(passwordEncoder.encode("admin"));
+
+            userPasswordRepository.save(userPassword);
+        }
+    }
+
+    @Override
     public User getUserReferenceById (String token) {
         jwtProvider.validateToken(token);
         return userRepository.getReferenceById(jwtProvider.getUserIdFromJWT(token));
@@ -92,10 +174,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean areUserCredentialsAvailable(UserRegistrationRequestDTO userRequestDTO){
-        boolean nationalIdIsAvailable = !userRepository.existsUserByNationalId(userRequestDTO.getNationalId());
-        boolean emailIsAvailable = !userRepository.existsUserByEmail(userRequestDTO.getEmail());
-
-        return nationalIdIsAvailable && emailIsAvailable;
+        return !userRepository.existsUserByEmail(userRequestDTO.getEmail());
     }
 
     @Override
@@ -105,6 +184,65 @@ public class UserServiceImpl implements UserService {
 
         return user.getRoles().stream()
                 .anyMatch(role -> role.getName().equals(roleName));
+    }
+
+    @Override
+    public List<UserResponseDTO> getUsersByRole(String role) {
+        if (role == null) {
+            return new ArrayList<>();
+        }
+
+        RoleName roleName;
+        try {
+            // Convertir el string del parámetro al enum RoleName
+            roleName = RoleName.valueOf("ROLE_" + role.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid role: " + role);
+        }
+
+        List<User> users = userRepository.findByRoleName(roleName);
+
+        return users.stream()
+                .map(user -> {
+                    UserResponseDTO dto = new UserResponseDTO();
+                    dto.setId(user.getId());
+                    dto.setNationalId(user.getNationalId());
+                    dto.setFirstName(user.getFirstName());
+                    dto.setLastName(user.getLastName());
+                    dto.setEmail(user.getEmail());
+                    String userRole = user.getRoles().stream()
+                        .map(r -> r.getName().toString().replace("ROLE_", "").toLowerCase())
+                        .findFirst()
+                        .orElse("unknown");
+                    dto.setRole(userRole);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserResponseDTO> getAllUsers() {
+        List<User> users = userRepository.findAll();
+
+        return users.stream()
+                .map(user -> {
+                    UserResponseDTO dto = new UserResponseDTO();
+                    dto.setId(user.getId());
+                    dto.setNationalId(user.getNationalId());
+                    dto.setFirstName(user.getFirstName());
+                    dto.setLastName(user.getLastName());
+                    dto.setEmail(user.getEmail());
+
+                    // Obtener el primer rol del usuario (o manejar múltiples roles)
+                    String userRole = user.getRoles().stream()
+                            .map(role -> role.getName().toString().replace("ROLE_", "").toLowerCase())
+                            .findFirst()
+                            .orElse("no_role");
+                    dto.setRole(userRole);
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
 }
