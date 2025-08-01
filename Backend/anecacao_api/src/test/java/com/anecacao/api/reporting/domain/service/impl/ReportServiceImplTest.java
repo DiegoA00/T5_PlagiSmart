@@ -13,6 +13,7 @@ import com.anecacao.api.reporting.data.entity.IndustrialSafetyConditions;
 import com.anecacao.api.reporting.data.entity.Supply;
 import com.anecacao.api.reporting.data.repository.CleanupReportRepository;
 import com.anecacao.api.reporting.data.repository.FumigationReportRepository;
+import com.anecacao.api.reporting.data.entity.IndustrialSafetyConditions;
 import com.anecacao.api.reporting.domain.exception.InvalidFumigationStatusException;
 import com.anecacao.api.reporting.domain.service.exception.TechnicalRoleException;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
@@ -49,14 +50,14 @@ class ReportServiceImplTest {
 
     private FumigationReportDTO dto;
     private Fumigation fumigation;
-    private IndustrialSafetyConditionsDTO safety;
+    private IndustrialSafetyConditions safety;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         dto = new FumigationReportDTO();
         fumigation = new Fumigation();
-        safety = mock(IndustrialSafetyConditionsDTO.class);
+        safety = mock(IndustrialSafetyConditions.class);
     }
 
     @Test

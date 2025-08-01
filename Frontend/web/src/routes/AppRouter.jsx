@@ -17,8 +17,7 @@ import PasswordRecovery from "../pages/Recovery/PasswordRecovery";
 import Dashboard from "../pages/Dashboard/Dashboard";
 import ClientHome from "@/pages/Client/ClientHome";
 
-import AdminHome from "@/pages/Admin/AdminHome";
-import Solicitudes from "@/pages/Admin/AdminHome";
+import Solicitudes from "@/pages/Admin/RequestsPage";
 import LotsInService from "../pages/Admin/LotsPage";
 import CompletedServicesPage from "@/pages/Admin/CompletedServicesPage";
 
