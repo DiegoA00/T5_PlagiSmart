@@ -5,13 +5,11 @@ import com.anecacao.api.auth.data.dto.UserResponseDTO;
 import com.anecacao.api.auth.domain.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -41,14 +39,19 @@ public class UserRestController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<UserResponseDTO>> getUsers(@RequestParam(required = false) String role) {
-        List<UserResponseDTO> users = userService.getUsersByRole(role);
+    public ResponseEntity<Page<UserResponseDTO>> getUsers(
+            @RequestParam(required = false) String role,
+            Pageable pageable
+    ) {
+        Page<UserResponseDTO> users = userService.getUsersByRole(role, pageable);
         return ResponseEntity.ok(users);
     }
 
     @GetMapping("/users/all")
-    public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
-        List<UserResponseDTO> users = userService.getAllUsers();
+    public ResponseEntity<Page<UserResponseDTO>> getAllUsers(
+            Pageable pageable
+    ) {
+        Page<UserResponseDTO> users = userService.getAllUsers(pageable);
         return ResponseEntity.ok(users);
     }
 

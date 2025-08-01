@@ -14,4 +14,5 @@ public class CompanyResponseDTO {
     private String phoneNumber;
     private String ruc;
     private String address;
+    private UserResponseDTO legalRepresentative;
 }

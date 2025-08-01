@@ -1,6 +1,5 @@
 package com.anecacao.api.reporting.data.entity;
 
-import com.anecacao.api.request.creation.data.entity.Fumigation;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -31,6 +30,6 @@ public class Supply {
     private String numberOfStrips;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "fumigation_id")
-    private Fumigation fumigation;
+    @JoinColumn(name = "fumigation_report_id")
+    private FumigationReport fumigationReport;
 }
