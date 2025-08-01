@@ -18,6 +18,8 @@ import com.anecacao.api.request.creation.data.entity.Company;
 import com.anecacao.api.request.creation.domain.service.CompanyService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -189,9 +191,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponseDTO> getUsersByRole(String role) {
+    public Page<UserResponseDTO> getUsersByRole(String role, Pageable pageable) {
         if (role == null) {
-            return new ArrayList<>();
+            return Page.empty();
         }
 
         RoleName roleName;
@@ -202,49 +204,44 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Invalid role: " + role);
         }
 
-        List<User> users = userRepository.findByRoleName(roleName);
+        Page<User> users = userRepository.findByRoleName(roleName, pageable);
 
-        return users.stream()
-                .map(user -> {
-                    UserResponseDTO dto = new UserResponseDTO();
-                    dto.setId(user.getId());
-                    dto.setNationalId(user.getNationalId());
-                    dto.setFirstName(user.getFirstName());
-                    dto.setLastName(user.getLastName());
-                    dto.setEmail(user.getEmail());
-                    String userRole = user.getRoles().stream()
-                        .map(r -> r.getName().toString().replace("ROLE_", "").toLowerCase())
-                        .findFirst()
-                        .orElse("unknown");
-                    dto.setRole(userRole);
-                    return dto;
-                })
-                .collect(Collectors.toList());
+        return users.map(user -> {
+            UserResponseDTO dto = new UserResponseDTO();
+            dto.setId(user.getId());
+            dto.setNationalId(user.getNationalId());
+            dto.setFirstName(user.getFirstName());
+            dto.setLastName(user.getLastName());
+            dto.setEmail(user.getEmail());
+            String userRole = user.getRoles().stream()
+                    .map(r -> r.getName().toString().replace("ROLE_", "").toLowerCase())
+                    .findFirst()
+                    .orElse("unknown");
+            dto.setRole(userRole);
+            return dto;
+        });
     }
 
     @Override
-    public List<UserResponseDTO> getAllUsers() {
-        List<User> users = userRepository.findAll();
+    public Page<UserResponseDTO> getAllUsers(Pageable pageable) {
+        Page<User> usersPage = userRepository.findAll(pageable);
 
-        return users.stream()
-                .map(user -> {
-                    UserResponseDTO dto = new UserResponseDTO();
-                    dto.setId(user.getId());
-                    dto.setNationalId(user.getNationalId());
-                    dto.setFirstName(user.getFirstName());
-                    dto.setLastName(user.getLastName());
-                    dto.setEmail(user.getEmail());
+        return usersPage.map(user -> {
+            UserResponseDTO dto = new UserResponseDTO();
+            dto.setId(user.getId());
+            dto.setNationalId(user.getNationalId());
+            dto.setFirstName(user.getFirstName());
+            dto.setLastName(user.getLastName());
+            dto.setEmail(user.getEmail());
 
-                    // Obtener el primer rol del usuario (o manejar múltiples roles)
-                    String userRole = user.getRoles().stream()
-                            .map(role -> role.getName().toString().replace("ROLE_", "").toLowerCase())
-                            .findFirst()
-                            .orElse("no_role");
-                    dto.setRole(userRole);
+            String userRole = user.getRoles().stream()
+                    .map(role -> role.getName().toString().replace("ROLE_", "").toLowerCase())
+                    .findFirst()
+                    .orElse("no_role");
 
-                    return dto;
-                })
-                .collect(Collectors.toList());
+            dto.setRole(userRole);
+            return dto;
+        });
     }
 
 

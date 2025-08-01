@@ -17,12 +17,11 @@ import com.anecacao.api.request.creation.domain.exception.FumigationApplicationN
 import com.anecacao.api.auth.domain.exception.UnauthorizedAccessException;
 import com.anecacao.api.request.creation.domain.service.FumigationApplicationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -77,10 +76,10 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
     }
 
     @Override
-    public List<FumigationApplicationSummaryDTO> getFumigationApplicationsByStatus(String status) {
+    public Page<FumigationApplicationSummaryDTO> getFumigationApplicationsByStatus(String status, Pageable pageable) {
         Status statusEnum = parseAndValidateStatus(status);
-        List<FumigationApplication> applications = repository.findByFumigationStatus(statusEnum);
-        return summaryMapper.toSummaryDtoList(applications, status.toUpperCase());
+        Page<FumigationApplication> applications = repository.findByFumigationStatus(statusEnum, pageable);
+        return applications.map(app -> summaryMapper.toSummaryDto(app, status.toUpperCase()));
     }
 
     private Status parseAndValidateStatus(String status) {
