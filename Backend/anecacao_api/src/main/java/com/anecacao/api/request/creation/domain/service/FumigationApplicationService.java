@@ -9,5 +9,5 @@ import java.util.List;
 public interface FumigationApplicationService {
     FumigationApplicationResponseDTO createFumigationApplication(FumigationApplicationDTO dto, String jwt);
     FumigationApplicationResponseDTO getFumigationApplicationById(Long id, String token);
-//    List<FumigationApplicationSummaryDTO> getFumigationApplicationsByStatus(String status);
+    List<FumigationApplicationSummaryDTO> getFumigationApplicationsByStatus(String status);
 }

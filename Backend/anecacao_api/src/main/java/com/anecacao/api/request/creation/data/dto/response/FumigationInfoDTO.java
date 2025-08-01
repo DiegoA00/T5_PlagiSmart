@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 public class FumigationInfoDTO {
     private CompanyInfoDTO company;
     private LotInfoDTO lot;
+    private String representative;
+    private String plannedDate;
 
     @Data
     @AllArgsConstructor
@@ -19,6 +21,10 @@ public class FumigationInfoDTO {
     public static class CompanyInfoDTO {
         private Long id;
         private String name;
+        private String businessName;
+        private String phoneNumber;
+        private String ruc;
+        private String address;
     }
 
     @Data

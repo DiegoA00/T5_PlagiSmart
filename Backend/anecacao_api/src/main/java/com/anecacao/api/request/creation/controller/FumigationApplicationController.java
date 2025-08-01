@@ -38,12 +38,12 @@ public class FumigationApplicationController {
         return ResponseEntity.ok(fumigationApplicationResponseDTO);
     }
 
-//    @GetMapping
-//    public ResponseEntity<List<FumigationApplicationSummaryDTO>> getFumigationApplicationsByStatus(
-//            @RequestParam(name = "status", required = true) String status
-//    ) {
-//        List<FumigationApplicationSummaryDTO> applications = fumigationApplicationService.getFumigationApplicationsByStatus(status);
-//        return ResponseEntity.ok(applications);
-//    }
+    @GetMapping
+    public ResponseEntity<List<FumigationApplicationSummaryDTO>> getFumigationApplicationsByStatus(
+            @RequestParam(name = "status", required = true) String status
+    ) {
+        List<FumigationApplicationSummaryDTO> applications = fumigationApplicationService.getFumigationApplicationsByStatus(status);
+        return ResponseEntity.ok(applications);
+    }
 
 }

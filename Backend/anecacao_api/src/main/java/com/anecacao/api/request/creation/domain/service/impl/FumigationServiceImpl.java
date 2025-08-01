@@ -6,7 +6,7 @@ import com.anecacao.api.request.creation.data.dto.request.FumigationCreationRequ
 import com.anecacao.api.request.creation.data.dto.request.UpdateStatusRequestDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationDetailDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationInfoDTO;
-import com.anecacao.api.request.creation.data.dto.response.FumigationSummaryDTO;
+import com.anecacao.api.request.creation.data.mapper.FumigationDetailMapper;
 import com.anecacao.api.request.creation.data.entity.Company;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
 import com.anecacao.api.request.creation.data.entity.Status;
@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +34,7 @@ public class FumigationServiceImpl implements FumigationService {
     private final FumigationRepository repository;
     private final UserService userService;
     private final FumigationApplicationMapper mapper;
+    private final FumigationDetailMapper detailMapper;
 
     @Override
     public void updateFumigationStatus(Long id, UpdateStatusRequestDTO updateStatusRequestDTO) {
@@ -88,7 +90,7 @@ public class FumigationServiceImpl implements FumigationService {
         fumigation.setTon(fumigationDTO.getTon());
         fumigation.setPortDestination(fumigationDTO.getPortDestination());
         fumigation.setSacks(fumigationDTO.getSacks());
-        fumigation.setQuality(fumigationDTO.getQuality());
+        //set quality
         fumigation.setDateTime(fumigationDTO.getDateTime());
     }
 
@@ -114,17 +116,33 @@ public class FumigationServiceImpl implements FumigationService {
                 .orElseThrow(() -> new FumigationNotFoundException(id));
 
         validateUserPermission(fumigation, token);
-
         FumigationInfoDTO infoDTO = new FumigationInfoDTO();
 
-        // Company info
         Company company = fumigation.getFumigationApplication().getCompany();
         FumigationInfoDTO.CompanyInfoDTO companyInfo = new FumigationInfoDTO.CompanyInfoDTO();
         companyInfo.setId(company.getId());
         companyInfo.setName(company.getName());
+        companyInfo.setBusinessName(company.getBusinessName());
+        companyInfo.setPhoneNumber(company.getPhoneNumber());
+        companyInfo.setRuc(company.getRuc());
+        companyInfo.setAddress(company.getAddress());
         infoDTO.setCompany(companyInfo);
 
-        // Lot info
+        if (company.getLegalRepresentative() != null) {
+            User rep = company.getLegalRepresentative();
+            String fullName = (rep.getFirstName() != null ? rep.getFirstName() : "") + " " +
+                    (rep.getLastName() != null ? rep.getLastName() : "");
+            infoDTO.setRepresentative(fullName.trim());
+        } else {
+            infoDTO.setRepresentative("Unknown");
+        }
+
+        if (fumigation.getDateTime() != null) {
+            infoDTO.setPlannedDate(fumigation.getDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+        } else {
+            infoDTO.setPlannedDate("No date");
+        }
+
         FumigationInfoDTO.LotInfoDTO lotInfo = new FumigationInfoDTO.LotInfoDTO();
         lotInfo.setId(fumigation.getId());
         lotInfo.setLotNumber(fumigation.getLotNumber());
@@ -137,66 +155,20 @@ public class FumigationServiceImpl implements FumigationService {
         return infoDTO;
     }
 
-    /*
     @Override
     public List<FumigationDetailDTO> getFumigationsByStatus(String status) {
-        Status statusEnum;
+        Status statusEnum = parseAndValidateStatus(status);
+        List<Fumigation> fumigations = repository.findByStatus(statusEnum);
+        return detailMapper.toDetailDtoList(fumigations);
+    }
+
+    private Status parseAndValidateStatus(String status) {
         try {
-            statusEnum = Status.valueOf(status.toUpperCase());
+            return Status.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid status: " + status + ". Valid values are: " +
                     Arrays.toString(Status.values()));
         }
-
-        List<Fumigation> fumigations = repository.findByStatus(statusEnum);
-
-        return fumigations.stream()
-                .map(fumigation -> {
-                    FumigationDetailDTO dto = new FumigationDetailDTO();
-
-                    // Lot number
-                    dto.setLotNumber(fumigation.getLotNumber() != null ? fumigation.getLotNumber() : "No lot number");
-
-                    // Company information
-                    if (fumigation.getFumigationApplication() != null &&
-                            fumigation.getFumigationApplication().getCompany() != null) {
-
-                        Company company = fumigation.getFumigationApplication().getCompany();
-
-                        // Company name
-                        dto.setCompanyName(company.getName() != null ? company.getName() : "Unknown");
-
-                        // Phone number
-                        dto.setPhoneNumber(company.getPhoneNumber() != null ? company.getPhoneNumber() : "No phone");
-
-                        // Representative (firstName + lastName)
-                        if (company.getLegalRepresentative() != null) {
-                            User rep = company.getLegalRepresentative();
-                            String fullName = (rep.getFirstName() != null ? rep.getFirstName() : "") + " " +
-                                    (rep.getLastName() != null ? rep.getLastName() : "");
-                            dto.setRepresentative(fullName.trim());
-                        } else {
-                            dto.setRepresentative("Unknown");
-                        }
-                    } else {
-                        dto.setCompanyName("Unknown");
-                        dto.setPhoneNumber("No phone");
-                        dto.setRepresentative("Unknown");
-                    }
-
-                    // Location - primero de fumigation, luego de company address
-                    String location = fumigation.getLocation();
-                    if (location == null || location.isEmpty()) {
-                        if (fumigation.getFumigationApplication() != null &&
-                                fumigation.getFumigationApplication().getCompany() != null) {
-                            location = fumigation.getFumigationApplication().getCompany().getAddress();
-                        }
-                    }
-                    dto.setLocation(location != null ? location : "No location");
-
-                    return dto;
-                })
-                .collect(Collectors.toList());
-    }*/
+    }
 
 }

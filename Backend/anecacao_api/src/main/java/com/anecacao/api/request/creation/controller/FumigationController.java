@@ -60,12 +60,12 @@ public class FumigationController {
         return ResponseEntity.ok(fumigationInfo);
     }
 
-//    @GetMapping
-//    public ResponseEntity<List<FumigationDetailDTO>> getFumigationsByStatus(
-//            @RequestParam(name = "status", required = true) String status
-//    ) {
-//        List<FumigationDetailDTO> fumigations = fumigationService.getFumigationsByStatus(status);
-//        return ResponseEntity.ok(fumigations);
-//    }
+    @GetMapping
+    public ResponseEntity<List<FumigationDetailDTO>> getFumigationsByStatus(
+            @RequestParam(name = "status", required = true) String status
+    ) {
+        List<FumigationDetailDTO> fumigations = fumigationService.getFumigationsByStatus(status);
+        return ResponseEntity.ok(fumigations);
+    }
 
 }
