@@ -8,9 +8,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FumigationDetailDTO {
+    private Long id;
     private String lotNumber;
     private String companyName;
     private String representative;
     private String phoneNumber;
     private String location;
+    private String plannedDate;
 }
