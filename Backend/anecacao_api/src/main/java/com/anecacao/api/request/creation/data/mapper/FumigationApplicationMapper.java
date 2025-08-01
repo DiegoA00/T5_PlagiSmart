@@ -1,6 +1,7 @@
 package com.anecacao.api.request.creation.data.mapper;
 
 import com.anecacao.api.reporting.data.dto.FumigationReportDTO;
+import com.anecacao.api.reporting.data.entity.FumigationReport;
 import com.anecacao.api.request.creation.data.dto.request.FumigationApplicationDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
 import com.anecacao.api.request.creation.data.dto.request.FumigationCreationRequestDTO;
@@ -39,6 +40,9 @@ public interface FumigationApplicationMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "environmentalConditions", source = "environmentalConditions")
-    @Mapping(target = "actualFumigationDate", source = "date")
-    void updateFumigationFromReport(FumigationReportDTO dto, @MappingTarget Fumigation entity);
+    FumigationReport toFumigationReport (FumigationReportDTO dto);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "environmentalConditions", source = "environmentalConditions")
+    void updateFumigationReportFromDTO(FumigationReportDTO dto, @MappingTarget FumigationReport report);
 }

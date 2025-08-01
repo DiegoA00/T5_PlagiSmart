@@ -3,6 +3,9 @@ package com.anecacao.api.reporting.domain.service.impl;
 import com.anecacao.api.common.data.dto.MessageDTO;
 import com.anecacao.api.reporting.data.dto.FumigationReportDTO;
 import com.anecacao.api.reporting.data.dto.IndustrialSafetyConditionsDTO;
+import com.anecacao.api.reporting.data.entity.FumigationReport;
+import com.anecacao.api.reporting.data.entity.Supply;
+import com.anecacao.api.reporting.data.repository.FumigationReportRepository;
 import com.anecacao.api.reporting.domain.exception.InvalidFumigationStatusException;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
 import com.anecacao.api.request.creation.data.entity.Status;
@@ -17,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,6 +31,8 @@ class ReportServiceImplTest {
     private FumigationRepository fumigationRepository;
     @Mock
     private FumigationApplicationMapper mapper;
+    @Mock
+    private FumigationReportRepository fumigationReportRepository;
     @InjectMocks
     private ReportsServiceImpl service;
 
@@ -66,16 +72,23 @@ class ReportServiceImplTest {
         dto.setId(3L);
         dto.setIndustrialSafetyConditions(safety);
         when(safety.hasAnyDanger()).thenReturn(true);
+
         fumigation.setId(3L);
         fumigation.setStatus(Status.APPROVED);
-        fumigation.setSupplies(Collections.emptyList());
+
         when(fumigationRepository.findById(3L)).thenReturn(Optional.of(fumigation));
-        doNothing().when(mapper).updateFumigationFromReport(dto, fumigation);
-        when(fumigationRepository.save(fumigation)).thenReturn(fumigation);
+        when(fumigationReportRepository.findByFumigationId(3L)).thenReturn(Optional.empty());
+
+        FumigationReport report = new FumigationReport();
+        report.setSupplies(List.of(new Supply()));
+        when(mapper.toFumigationReport(dto)).thenReturn(report);
+
         MessageDTO result = service.createFumigationReport(dto);
+
         assertNull(result);
         assertEquals(Status.FAILED, fumigation.getStatus());
         verify(fumigationRepository).save(fumigation);
+        verify(fumigationReportRepository).save(report);
     }
 
     @Test
@@ -84,16 +97,24 @@ class ReportServiceImplTest {
         dto.setId(4L);
         dto.setIndustrialSafetyConditions(safety);
         when(safety.hasAnyDanger()).thenReturn(false);
+
         fumigation.setId(4L);
         fumigation.setStatus(Status.APPROVED);
-        fumigation.setSupplies(Collections.emptyList());
+
         when(fumigationRepository.findById(4L)).thenReturn(Optional.of(fumigation));
-        doNothing().when(mapper).updateFumigationFromReport(dto, fumigation);
-        when(fumigationRepository.save(fumigation)).thenReturn(fumigation);
+        when(fumigationReportRepository.findByFumigationId(4L)).thenReturn(Optional.empty());
+
+        FumigationReport report = new FumigationReport();
+        report.setSupplies(List.of(new Supply()));
+        when(mapper.toFumigationReport(dto)).thenReturn(report);
+
         MessageDTO result = service.createFumigationReport(dto);
+
         assertNotNull(result);
         assertEquals("Fumigation report created successfully", result.getMessage());
         assertEquals(Status.APPROVED, fumigation.getStatus());
         verify(fumigationRepository).save(fumigation);
+        verify(fumigationReportRepository).save(report);
     }
+
 }
