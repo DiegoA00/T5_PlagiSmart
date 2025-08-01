@@ -17,7 +17,7 @@ public class FumigationApplicationDTO {
     @Valid
     private CompanyRequestDTO company;
 
-    @NotEmpty(message = "Fumigations list must not be empty")
+    @NotEmpty(message = "Fumigation list must not be empty")
     @Valid
     private List<FumigationCreationRequestDTO> fumigations;
 }

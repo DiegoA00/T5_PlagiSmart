@@ -1,6 +1,11 @@
 package com.anecacao.api.request.creation.data.mapper;
 
+import com.anecacao.api.reporting.data.dto.CleanupReportDTO;
 import com.anecacao.api.reporting.data.dto.FumigationReportDTO;
+import com.anecacao.api.reporting.data.dto.IndustrialSafetyConditionsDTO;
+import com.anecacao.api.reporting.data.entity.CleanupReport;
+import com.anecacao.api.reporting.data.entity.FumigationReport;
+import com.anecacao.api.reporting.data.entity.IndustrialSafetyConditions;
 import com.anecacao.api.request.creation.data.dto.request.FumigationApplicationDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
 import com.anecacao.api.request.creation.data.dto.request.FumigationCreationRequestDTO;
@@ -56,6 +61,26 @@ public interface FumigationApplicationMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "environmentalConditions", source = "environmentalConditions")
+    FumigationReport toFumigationReport (FumigationReportDTO dto);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "environmentalConditions", source = "environmentalConditions")
+    void updateFumigationReportFromDTO(FumigationReportDTO dto, @MappingTarget FumigationReport report);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "stripsState", source = "lotDescription.stripsState")
+    @Mapping(target = "fumigationTime", source = "lotDescription.fumigationTime")
+    @Mapping(target = "ppmFosfina", source = "lotDescription.ppmFosfina")
+    CleanupReport toCleanupReport(CleanupReportDTO dto);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "stripsState", source = "lotDescription.stripsState")
+    @Mapping(target = "fumigationTime", source = "lotDescription.fumigationTime")
+    @Mapping(target = "ppmFosfina", source = "lotDescription.ppmFosfina")
+    void updateCleanupReportFromDTO(CleanupReportDTO dto, @MappingTarget CleanupReport entity);
+
+    IndustrialSafetyConditions toConditionEntity(IndustrialSafetyConditionsDTO dto);
+
     @Mapping(target = "actualFumigationDate", source = "date")
     void updateFumigationFromReport(FumigationReportDTO dto, @MappingTarget Fumigation entity);
 }

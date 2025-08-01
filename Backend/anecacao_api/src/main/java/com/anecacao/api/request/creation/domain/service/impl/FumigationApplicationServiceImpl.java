@@ -18,6 +18,7 @@ import com.anecacao.api.request.creation.domain.service.FumigationApplicationSer
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
@@ -69,6 +70,7 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
     private FumigationApplication saveNewFumigationApplication (FumigationApplicationDTO dto, Company company, Status status) {
         FumigationApplication newApplication = mapper.toEntity(dto);
         newApplication.setCompany(company);
+        newApplication.setCreatedAt(LocalDate.now());
         newApplication.getFumigations().forEach(f -> f.setStatus(status));
 
         return repository.save(newApplication);
