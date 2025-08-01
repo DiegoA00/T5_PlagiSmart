@@ -26,8 +26,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
@@ -187,5 +185,4 @@ public class UserServiceImpl implements UserService {
         return user.getRoles().stream()
                 .anyMatch(role -> role.getName().equals(roleName));
     }
-
 }

@@ -10,4 +10,11 @@ public class IndustrialSafetyConditions {
     private Boolean fallingDanger;
     private Boolean hitDanger;
     private Boolean otherDanger;
+
+    public boolean hasAnyDanger() {
+        return Boolean.TRUE.equals(hitDanger) ||
+                Boolean.TRUE.equals(electricDanger) ||
+                Boolean.TRUE.equals(fallingDanger) ||
+                Boolean.TRUE.equals(otherDanger);
+    }
 }

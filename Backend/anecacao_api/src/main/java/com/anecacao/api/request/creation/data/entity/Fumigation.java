@@ -1,5 +1,6 @@
 package com.anecacao.api.request.creation.data.entity;
 
+import com.anecacao.api.reporting.data.entity.CleanupReport;
 import com.anecacao.api.reporting.data.entity.FumigationReport;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -47,4 +48,7 @@ public class Fumigation {
 
     @OneToOne(mappedBy = "fumigation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private FumigationReport fumigationReport;
+
+    @OneToOne(mappedBy = "fumigation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private CleanupReport cleanupReport;
 }
