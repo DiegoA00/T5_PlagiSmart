@@ -46,18 +46,6 @@ public interface FumigationApplicationSummaryMapper {
     }
 
     default String getLocalDate(FumigationApplication app) {
-        return app.getFumigations().stream()
-                .map(f -> {
-                    if (f.getActualFumigationDate() != null) {
-                        return f.getActualFumigationDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-                    }
-                    else if (f.getDateTime() != null) {
-                        return f.getDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-                    }
-                    return null;
-                })
-                .filter(date -> date != null)
-                .findFirst()
-                .orElse("No date");
+        return app.getCreatedAt().toString();
     }
 }
