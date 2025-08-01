@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -12,5 +13,6 @@ import java.util.List;
 public class FumigationApplicationResponseDTO {
     private Long id;
     private CompanyResponseDTO company;
+    private LocalDate createdAt;
     private List<FumigationResponseDTO> fumigations;
 }

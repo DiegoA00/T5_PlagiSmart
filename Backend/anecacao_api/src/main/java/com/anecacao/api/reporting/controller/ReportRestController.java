@@ -1,6 +1,7 @@
 package com.anecacao.api.reporting.controller;
 
 import com.anecacao.api.common.data.dto.MessageDTO;
+import com.anecacao.api.reporting.data.dto.CleanupReportDTO;
 import com.anecacao.api.reporting.data.dto.FumigationReportDTO;
 import com.anecacao.api.reporting.domain.exception.IndustrialSafetyViolationException;
 import com.anecacao.api.reporting.domain.service.ReportsService;
@@ -31,5 +32,19 @@ public class ReportRestController {
         return new ResponseEntity<>(
                 message,
                 HttpStatus.CREATED);
+    }
+
+    @PostMapping("/cleanup")
+    public ResponseEntity<MessageDTO> createCleanupReport (
+            @RequestBody @Valid CleanupReportDTO reportDTO
+    ) {
+        MessageDTO message = reportsService.createCleanupReport(reportDTO);
+
+        if (message == null) throw new IndustrialSafetyViolationException(reportDTO.getId());
+
+        return new ResponseEntity<>(
+                message,
+                HttpStatus.CREATED
+        );
     }
 }

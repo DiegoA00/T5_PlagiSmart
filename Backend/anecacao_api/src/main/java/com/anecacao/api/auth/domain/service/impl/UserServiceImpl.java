@@ -26,6 +26,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
 
+import java.util.Optional;
+import java.util.Set;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -244,5 +246,6 @@ public class UserServiceImpl implements UserService {
                 })
                 .collect(Collectors.toList());
     }
+
 
 }
