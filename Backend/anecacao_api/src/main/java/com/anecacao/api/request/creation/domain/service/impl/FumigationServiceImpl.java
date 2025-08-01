@@ -90,7 +90,7 @@ public class FumigationServiceImpl implements FumigationService {
         fumigation.setTon(fumigationDTO.getTon());
         fumigation.setPortDestination(fumigationDTO.getPortDestination());
         fumigation.setSacks(fumigationDTO.getSacks());
-        fumigation.setGrade(fumigationDTO.getGrade());
+        //set quality
         fumigation.setDateTime(fumigationDTO.getDateTime());
     }
 

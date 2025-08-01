@@ -98,7 +98,7 @@ class FumigationServiceImplTest {
         verify(repository).save(fumigation);
 
         assertEquals(dto.getTon(), fumigation.getTon());
-        assertEquals(dto.getGrade(), fumigation.getGrade());
+        assertEquals(dto.getQuality(), fumigation.getQuality());
         assertEquals(dto.getPortDestination(), fumigation.getPortDestination());
     }
 
@@ -152,7 +152,7 @@ class FumigationServiceImplTest {
         dto.setTon(new BigDecimal("15.5"));
         dto.setSacks(100L);
         dto.setPortDestination(PortName.AMSTERDAM_HOLANDA);
-        dto.setGrade(Grade.GRADE_3);
+        dto.setQuality(Grade.GRADE_3.toString());
         dto.setDateTime(LocalDateTime.of(2024, 6, 1, 10, 0));
         return dto;
     }
