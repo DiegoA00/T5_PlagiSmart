@@ -19,12 +19,11 @@ export const SuppliesSection: FC<SuppliesSectionProps> = ({
   fumigationReportSubmitted
 }) => {
   const handleSupplyChange = (index: number, field: keyof Supply, value: string) => {
-    // Validaciones específicas para campos numéricos
     if (field === 'quantity' || field === 'numberOfStrips') {
       if (value !== "") {
         const numericValue = parseFloat(value);
         if (isNaN(numericValue) || numericValue < 0) {
-          return; // No actualizar si es negativo o no es un número válido
+          return;
         }
       }
     }
@@ -65,7 +64,7 @@ export const SuppliesSection: FC<SuppliesSectionProps> = ({
         {fumigationData.supplies.map((supply, index) => (
           <div key={index} className="grid grid-cols-5 gap-4 p-4 border rounded">
             <div>
-              <label className="block text-sm font-medium mb-2">Producto *</label>
+              <label className="block text-sm font-medium mb-2 required-field">Producto</label>
               <Input 
                 value={supply.name}
                 onChange={(e) => handleSupplyChange(index, 'name', e.target.value)}
@@ -74,7 +73,7 @@ export const SuppliesSection: FC<SuppliesSectionProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Cantidad *</label>
+              <label className="block text-sm font-medium mb-2 required-field">Cantidad</label>
               <Input 
                 type="number"
                 step="0.1"
@@ -91,7 +90,7 @@ export const SuppliesSection: FC<SuppliesSectionProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Dosis *</label>
+              <label className="block text-sm font-medium mb-2 required-field">Dosis</label>
               <Input 
                 value={supply.dosage}
                 onChange={(e) => handleSupplyChange(index, 'dosage', e.target.value)}
@@ -100,7 +99,7 @@ export const SuppliesSection: FC<SuppliesSectionProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Tipo *</label>
+              <label className="block text-sm font-medium mb-2 required-field">Tipo</label>
               <Input 
                 value={supply.kindOfSupply}
                 onChange={(e) => handleSupplyChange(index, 'kindOfSupply', e.target.value)}

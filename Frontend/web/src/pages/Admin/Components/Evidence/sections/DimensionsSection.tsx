@@ -17,10 +17,9 @@ export const DimensionsSection: FC<DimensionsSectionProps> = ({
   fumigationReportSubmitted
 }) => {
   const handleDimensionChange = (field: keyof typeof fumigationData.dimensions, value: string) => {
-    // Validar que no sea negativo
     const numericValue = parseFloat(value);
     if (value !== "" && (isNaN(numericValue) || numericValue < 0)) {
-      return; // No actualizar si es negativo o no es un número válido
+      return;
     }
     
     setFumigationData(prev => ({ 
@@ -33,7 +32,7 @@ export const DimensionsSection: FC<DimensionsSectionProps> = ({
     <CollapsibleSection title="Dimensiones del Lugar" defaultOpen required>
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-2">Altura (m) *</label>
+          <label className="block text-sm font-medium mb-2 required-field">Altura (m)</label>
           <Input 
             type="number"
             step="0.1"
@@ -51,7 +50,7 @@ export const DimensionsSection: FC<DimensionsSectionProps> = ({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Ancho (m) *</label>
+          <label className="block text-sm font-medium mb-2 required-field">Ancho (m)</label>
           <Input 
             type="number"
             step="0.1"
@@ -68,7 +67,7 @@ export const DimensionsSection: FC<DimensionsSectionProps> = ({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Largo (m) *</label>
+          <label className="block text-sm font-medium mb-2 required-field">Largo (m)</label>
           <Input 
             type="number"
             step="0.1"

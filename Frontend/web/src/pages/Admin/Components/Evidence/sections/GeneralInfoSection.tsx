@@ -36,7 +36,7 @@ export const GeneralInfoSection: FC<GeneralInfoSectionProps> = ({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Ubicación *</label>
+          <label className="block text-sm font-medium mb-2 required-field">Ubicación</label>
           <Input 
             value={fumigationData.location}
             onChange={(e) => setFumigationData(prev => ({ ...prev, location: e.target.value }))}
@@ -53,7 +53,7 @@ export const GeneralInfoSection: FC<GeneralInfoSectionProps> = ({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Hora de Inicio *</label>
+          <label className="block text-sm font-medium mb-2 required-field">Hora de Inicio</label>
           <Input 
             type="time"
             value={fumigationData.startTime}
@@ -62,7 +62,7 @@ export const GeneralInfoSection: FC<GeneralInfoSectionProps> = ({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Hora de Finalización *</label>
+          <label className="block text-sm font-medium mb-2 required-field">Hora de Finalización</label>
           <Input 
             type="time"
             value={fumigationData.endTime}

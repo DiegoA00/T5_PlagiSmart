@@ -19,15 +19,12 @@ export const EnvironmentalSection: FC<EnvironmentalSectionProps> = ({
   const handleEnvironmentalChange = (field: keyof typeof fumigationData.environmentalConditions, value: string) => {
     const numericValue = parseFloat(value);
     
-    // Validaciones específicas
     if (value !== "") {
-      if (isNaN(numericValue)) return; // No es un número válido
+      if (isNaN(numericValue)) return;
       
       if (field === 'humidity') {
-        // Solo validar humedad: 0-100%
         if (numericValue < 0 || numericValue > 100) return;
       }
-      // Para temperatura: sin restricciones de rango, solo que sea un número válido
     }
     
     setFumigationData(prev => ({ 
@@ -40,7 +37,7 @@ export const EnvironmentalSection: FC<EnvironmentalSectionProps> = ({
     <CollapsibleSection title="Condiciones Ambientales" defaultOpen required>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-2">Temperatura (°C) *</label>
+          <label className="block text-sm font-medium mb-2 required-field">Temperatura (°C)</label>
           <Input 
             type="number"
             value={fumigationData.environmentalConditions.temperature}
@@ -55,7 +52,7 @@ export const EnvironmentalSection: FC<EnvironmentalSectionProps> = ({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Humedad (%) *</label>
+          <label className="block text-sm font-medium mb-2 required-field">Humedad (%)</label>
           <Input 
             type="number"
             min="0"

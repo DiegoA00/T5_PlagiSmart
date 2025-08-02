@@ -32,7 +32,6 @@ export const PersonnelSection: FC<PersonnelSectionProps> = ({
     );
     
     if (technician) {
-      // Verificar si el técnico ya está agregado
       const isAlreadyAdded = fumigationData.technicians.some(t => t.id === technician.id);
       
       if (!isAlreadyAdded) {
@@ -64,7 +63,6 @@ export const PersonnelSection: FC<PersonnelSectionProps> = ({
     });
   };
 
-  // Filtrar técnicos que ya están agregados
   const availableToAdd = availableTechnicians.filter(tech => 
     !fumigationData.technicians.some(addedTech => addedTech.id === tech.id)
   );
@@ -72,10 +70,9 @@ export const PersonnelSection: FC<PersonnelSectionProps> = ({
   return (
     <CollapsibleSection title="Personal que Interviene" defaultOpen required>
       <div className="space-y-4">
-        {/* Combobox para agregar técnicos */}
         {isEditable && !fumigationReportSubmitted && availableToAdd.length > 0 && (
           <div className="flex flex-col">
-            <label className="block text-sm font-medium mb-2">Agregar Técnico *</label>
+            <label className="block text-sm font-medium mb-2 required-field">Agregar Técnico</label>
             <Popover open={technicianComboOpen} onOpenChange={setTechnicianComboOpen}>
               <PopoverTrigger>
                 <div
@@ -116,7 +113,6 @@ export const PersonnelSection: FC<PersonnelSectionProps> = ({
           </div>
         )}
 
-        {/* Lista de técnicos agregados */}
         {fumigationData.technicians.length > 0 && (
           <div className="space-y-3">
             <label className="block text-sm font-medium">Técnicos Asignados ({fumigationData.technicians.length})</label>
@@ -158,7 +154,6 @@ export const PersonnelSection: FC<PersonnelSectionProps> = ({
           </div>
         )}
 
-        {/* Mensaje si no hay técnicos */}
         {fumigationData.technicians.length === 0 && (
           <div className="p-4 border border-dashed border-red-200 rounded-md text-center text-gray-500 bg-red-50">
             <Plus className="h-8 w-8 mx-auto mb-2 text-gray-400" />
@@ -167,7 +162,6 @@ export const PersonnelSection: FC<PersonnelSectionProps> = ({
           </div>
         )}
 
-        {/* Mensaje si no hay más técnicos disponibles */}
         {isEditable && !fumigationReportSubmitted && availableToAdd.length === 0 && fumigationData.technicians.length > 0 && (
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
             <p className="text-sm text-blue-700">Todos los técnicos disponibles han sido asignados</p>
