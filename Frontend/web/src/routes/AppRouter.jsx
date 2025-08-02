@@ -41,13 +41,13 @@ export default function AppRouter() {
         <Route path='/register/terms-and-conditions' element={<TermsAndConditions />} />
         <Route path='/register/success' element={<RegisterSuccess />} />
         <Route path='/register/complete-profile' element={<CompleteProfile />} />
-        <Route path='*' element={<Navigate to='/home/*' />} />
         <Route path='/client/solicitudes-pendientes' element={<PendingRequest />} />
         <Route path='/client/solicitudes-en-curso' element={<OnGoingRequest />} />
         <Route path='/client/solicitudes-finalizadas' element={<FinishedRequest />} />
         <Route path='/client/documentos/:codigo' element={<DocumentosReserva />} />
 
-        <Route path='*' element={<Navigate to='/login' />} />
+        {/* <Route path='*' element={<Navigate to='/login' />} /> */}
+        <Route path='*' element={<Navigate to='/home/*' />} />
 
         <Route path='/dashboard' element={<Dashboard />} />
         <Route path='/home/*' element={<ClientHome />} />

@@ -101,13 +101,48 @@ function ReservationDocuments() {
                 ]
               },
               {
-                type: "text",
-                title: "Detalles del Servicio",
-                content: "Por medio del presente documento, se hace constar que el servicio de fumigación de cacao ha sido ejecutado conforme a los estándares establecidos y bajo las especificaciones técnicas acordadas en el contrato de prestación de servicios."
+                type: "supplies-details",
+                data: [
+                  {
+                    product: "Fosfina",
+                    quantity: "50 kg",
+                    dose: "Aplicación según protocolo",
+                    fumigationMethod: "Fumigación a presión",
+                    ribbonsNumber: "5",
+                  },
+                  {
+                    product: "Diatomita",
+                    quantity: "20 kg",
+                    dose: "Aplicación según protocolo",
+                    fumigationMethod: "Fumigación a presión",
+                    ribbonsNumber: "3",
+                  },
+                  {
+                    product: "Aerosol Insecticida",
+                    quantity: "10 kg",
+                    dose: "Aplicación según protocolo",
+                    fumigationMethod: "Fumigación a presión",
+                    ribbonsNumber: "2",
+                  },
+                  {
+                    product: "Trampa de Feromonas",
+                    quantity: "5 unidades",
+                    dose: "Instalación según protocolo",
+                    fumigationMethod: "Fumigación a presión",
+                    ribbonsNumber: "1",
+                  },
+                  {
+                    product: "Equipo de Protección Personal (EPP)",
+                    quantity: "5 juegos",
+                    dose: "Uso obligatorio durante la fumigación",
+                    fumigationMethod: "Fumigación a presión",
+                    ribbonsNumber: "0",
+                  }
+                ]
               },
               {
                 type: "signatures",
-                signatures: ["Firma del Cliente", "Firma del Prestador"]
+                signatures: ["Técnico Responsable Anecacao", "Cliente"]
               }
             ]
           }
@@ -340,44 +375,88 @@ function ReservationDocuments() {
 
       case 'request-details':
         return (
-          <table className="w-full mb-4 border">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="p-2"># de lote</th>
-                <th className="p-2">Dimensiones del lote</th>
-                <th className="p-2">Toneladas</th>
-                <th className="p-2">Calidad</th>
-                <th className="p-2"># de sacos</th>
-                <th className="p-2">Destino</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(section.data).map(([key, value], i) =>
-                <tr key={i} className="border-b">
-                  <td className="p-2 text-center">{value.lot}</td>
-                  <td className="p-2 text-center">{value.dimension}</td>
-                  <td className="p-2 text-center">{value.tons}</td>
-                  <td className="p-2 text-center">{value.quality}</td>
-                  <td className="p-2 text-center">{value.sacks}</td>
-                  <td className="p-2 text-center">{value.destination}</td>
+          <div>
+            <table className="w-full mb-4 border">
+              <colgroup>
+                <col span={2} />
+                <col span={6} />
+                <col span={2} />
+              </colgroup>
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className='p-2' colSpan={2}># de lote</th>
+                  <th className='p-2' colSpan={2}>Dimensiones del lote</th>
+                  <th className='p-2' colSpan={2}>Toneladas</th>
+                  <th className='p-2' colSpan={2}>Calidad</th>
+                  <th className='p-2' colSpan={2}># de sacos</th>
+                  <th className='p-2' colSpan={2}>Destino</th>
                 </tr>
-              )}
-              <tr>
-                <th className="p-2" colSpan={2}>Condiciones Ambientales</th>
-                <th className="p-2" colSpan={2}>Condiciones de seguridad industrial</th>
-                <th className="p-2" colSpan={2}>Observaciones:</th>
-              </tr>
-              <tr>
-                <th className="p-2">Temperatura:</th>
-                <td className="p-2">[Temperatura]</td>
-                <th className="p-2">Peligro eléctrico</th>
-              </tr>
-              <tr>
-                <th className="p-2">Humedad:</th>
-                <td className="p-2">[Humedad]</td>
-              </tr>
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {Object.entries(section.data).map(([key, value], i) =>
+                  <tr key={i} className="border-b">
+                    <td className="p-2 text-center" colSpan={2}>{value.lot}</td>
+                    <td className="p-2 text-center" colSpan={2}>{value.dimension}</td>
+                    <td className="p-2 text-center" colSpan={2}>{value.tons}</td>
+                    <td className="p-2 text-center" colSpan={2}>{value.quality}</td>
+                    <td className="p-2 text-center" colSpan={2}>{value.sacks}</td>
+                    <td className="p-2 text-center" colSpan={2}>{value.destination}</td>
+                  </tr>
+                )}
+                <tr>
+                  <th className="p-2" colSpan={2}>Condiciones Ambientales</th>
+                  <th className="p-2" colSpan={6}>Condiciones de seguridad industrial</th>
+                  <th className="p-2" colSpan={4}>Observaciones:</th>
+                </tr>
+                <tr>
+                  <th className="p-2">Temperatura:</th>
+                  <td className="p-2">[Temperatura]</td>
+                  <th className="p-2" colSpan={2}>Peligro eléctrico</th>
+                  <th className='p-2' colSpan={2}>Peligro de caídas</th>
+                  <th className="p-2" colSpan={2}>Peligro de atropellos</th>
+                  <td className="p-2 text-center" colSpan={4}>[Sí/No]</td>
+                </tr>
+                <tr>
+                  <th className="p-2">Humedad:</th>
+                  <td className="p-2">[Humedad]</td>
+                  <td className="p-2 text-center" colSpan={2}>[Sí/No]</td>
+                  <td className="p-2 text-center" colSpan={2}>[Sí/No]</td>
+                  <td className="p-2 text-center" colSpan={2}>[Sí/No]</td>
+                </tr>
+              </tbody>
+            </table>
+            <caption className="w-full flex justify-end mt-2 text-xs text-gray-600 mb-2">
+              Nota: Si las condiciones no son adecuadas, no iniciar la actividad.
+            </caption>
+          </div>
+        );
+      
+      case 'supplies-details':
+        return (
+          <div className="mt-6">
+            <table className="w-full mb-4 border">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="p-2">Producto</th>
+                  <th className="p-2">Cantidad</th>
+                  <th className="p-2">Dosis</th>
+                  <th className="p-2">Método de Fumigación</th>
+                  <th className="p-2"># Cintas</th>
+                </tr>
+              </thead>
+              <tbody>
+                {section.data.map((item, i) => (
+                  <tr key={i} className="border-b">
+                    <td className="p-2 text-center">{item.product}</td>
+                    <td className="p-2 text-center">{item.quantity}</td>
+                    <td className="p-2 text-center">{item.dose}</td>
+                    <td className="p-2 text-center">{item.fumigationMethod}</td>
+                    <td className="p-2 text-center">{item.ribbonsNumber}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         );
 
       case 'grid':
