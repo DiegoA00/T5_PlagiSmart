@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
 
 const adminOptions = [
   { label: "Dashboard", path: "/admin/dashboard" },
@@ -9,14 +10,30 @@ const adminOptions = [
   { label: "Usuarios", path: "/admin/usuarios" },
 ];
 
+const technicianOptions = [
+  { label: "Lotes a fumigar", path: "/tecnico/lotes" },
+];
+
 export function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { hasRole } = useAuth();
+
+  const getMenuOptions = () => {
+    if (hasRole(['ROLE_TECHNICIAN'])) {
+      return technicianOptions;
+    } else if (hasRole(['ROLE_ADMIN'])) {
+      return adminOptions;
+    }
+    return [];
+  };
+
+  const menuOptions = getMenuOptions();
 
   return (
     <aside className="w-64 bg-[#003595] text-white p-6 flex flex-col">
       <nav className="flex flex-col gap-4">
-        {adminOptions.map((opt) => (
+        {menuOptions.map((opt) => (
           <Button
             key={opt.path}
             variant={
