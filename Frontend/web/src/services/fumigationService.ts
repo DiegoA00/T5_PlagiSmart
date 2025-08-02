@@ -34,6 +34,41 @@ const createEmptyPaginatedResponse = <T>(): PaginatedResponse<T> => ({
   empty: true
 });
 
+const getApplicationsByStatus = async (
+  status: string, 
+  pageableRequest?: PageableRequest
+): Promise<PaginatedResponse<ApiFumigationApplication>> => {
+  try {
+    const defaultPageable: PageableRequest = {
+      page: 0,
+      size: 50,
+      sort: ["id"]
+    };
+
+    const pageable = { ...defaultPageable, ...pageableRequest };
+    
+    const params: any = {
+      status,
+      page: pageable.page,
+      size: pageable.size
+    };
+
+    if (pageable.sort && pageable.sort.length > 0) {
+      params.sort = formatSortParams(pageable.sort);
+    }
+    
+    const response = await apiClient.get('/fumigation-applications', { params });
+    
+    return response.data || createEmptyPaginatedResponse<ApiFumigationApplication>();
+  } catch (error: any) {
+    if (error.response?.status >= 500) {
+      return createEmptyPaginatedResponse<ApiFumigationApplication>();
+    }
+    
+    throw new Error(`Error al cargar solicitudes con estado ${status}: ${error.response?.data?.message || error.message}`);
+  }
+};
+
 export const fumigationService = {
   getApplicationById: async (id: string): Promise<FumigationApplication> => {
     try {
@@ -44,100 +79,23 @@ export const fumigationService = {
     }
   },
 
-  getAllApplications: async (pageableRequest?: PageableRequest): Promise<PaginatedResponse<ApiFumigationApplication>> => {
+  updateFumigationStatus: async (id: number, status: string, message: string = ""): Promise<void> => {
     try {
-      const defaultPageable: PageableRequest = {
-        page: 0,
-        size: 50,
-        sort: ["id"]
-      };
-
-      const pageable = { ...defaultPageable, ...pageableRequest };
-      
-      const params: any = {
-        status: 'pending',
-        page: pageable.page,
-        size: pageable.size
-      };
-
-      if (pageable.sort && pageable.sort.length > 0) {
-        params.sort = formatSortParams(pageable.sort);
-      }
-      
-      const response = await apiClient.get('/fumigation-applications', { params });
-      
-      return response.data || createEmptyPaginatedResponse<ApiFumigationApplication>();
+      await apiClient.put(`/fumigations/${id}/status`, {
+        status,
+        message
+      });
     } catch (error: any) {
-      if (error.response?.status >= 500) {
-        return createEmptyPaginatedResponse<ApiFumigationApplication>();
-      }
-      
-      throw new Error(error.response?.data?.message || "Error al cargar todas las solicitudes");
+      throw new Error(error.response?.data?.message || "Error al actualizar el estado de la fumigación");
     }
   },
 
   getPendingApplications: async (pageableRequest?: PageableRequest): Promise<PaginatedResponse<ApiFumigationApplication>> => {
-    try {
-      const defaultPageable: PageableRequest = {
-        page: 0,
-        size: 50,
-        sort: ["id"]
-      };
-
-      const pageable = { ...defaultPageable, ...pageableRequest };
-      
-      const params: any = {
-        status: 'PENDING',
-        page: pageable.page,
-        size: pageable.size
-      };
-
-      if (pageable.sort && pageable.sort.length > 0) {
-        params.sort = formatSortParams(pageable.sort);
-      }
-      
-      const response = await apiClient.get('/fumigation-applications', { params });
-      
-      return response.data || createEmptyPaginatedResponse<ApiFumigationApplication>();
-    } catch (error: any) {
-      if (error.response?.status >= 500) {
-        return createEmptyPaginatedResponse<ApiFumigationApplication>();
-      }
-      
-      throw new Error(`Error al cargar solicitudes pendientes: ${error.response?.data?.message || error.message}`);
-    }
+    return getApplicationsByStatus('PENDING', pageableRequest);
   },
 
   getRejectedApplications: async (pageableRequest?: PageableRequest): Promise<PaginatedResponse<ApiFumigationApplication>> => {
-    try {
-      const defaultPageable: PageableRequest = {
-        page: 0,
-        size: 50,
-        sort: ["id"]
-      };
-
-      const pageable = { ...defaultPageable, ...pageableRequest };
-      
-      const params: any = {
-        status: 'REJECTED',
-        page: pageable.page,
-        size: pageable.size
-      };
-
-      if (pageable.sort && pageable.sort.length > 0) {
-        params.sort = formatSortParams(pageable.sort);
-      }
-      
-      const response = await apiClient.get('/fumigation-applications', { params });
-      
-      return response.data || createEmptyPaginatedResponse<ApiFumigationApplication>();
-    } catch (error: any) {
-      if (error.response?.status >= 500) {
-        return createEmptyPaginatedResponse<ApiFumigationApplication>();
-      }
-      
-      throw new Error(`Error al cargar solicitudes rechazadas: ${error.response?.data?.message || error.message}`);
-    }
+    return getApplicationsByStatus('REJECTED', pageableRequest);
   },
 
   getFumigationsByStatus: async (

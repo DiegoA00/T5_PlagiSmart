@@ -7,7 +7,6 @@ const adminOptions = [
   { label: "Lotes a fumigar", path: "/admin/lotes" },
   { label: "Servicios finalizados", path: "/admin/servicios" },
   { label: "Usuarios", path: "/admin/usuarios" },
-  { label: "Configuración", path: "/admin/configuracion" },
 ];
 
 export function Sidebar() {
