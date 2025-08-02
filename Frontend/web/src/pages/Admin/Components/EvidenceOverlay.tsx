@@ -1,24 +1,55 @@
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FumigationDetailResponse } from "@/types/request";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { FumigationDetailResponse, ApiUser } from "@/types/request";
+import { ChevronDown, ChevronUp, Plus, Minus, Check, ChevronsUpDown } from "lucide-react";
+import { usersService } from "@/services/usersService";
+import { reportsService } from "@/services/reportsService";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface EvidenceOverlayProps {
   fumigationDetails: FumigationDetailResponse | null;
-  isEditable?: boolean; // true para técnicos, false para administradores
+  isEditable?: boolean;
   onClose?: () => void;
   onSave?: (data: any) => void;
   loading?: boolean;
 }
 
-// Componente para secciones colapsables
 interface CollapsibleSectionProps {
   title: string;
   defaultOpen?: boolean;
   children: React.ReactNode;
+}
+
+interface Supply {
+  name: string;
+  quantity: string;
+  dosage: string;
+  kindOfSupply: string;
+  numberOfStrips: string;
+}
+
+interface Technician {
+  id: number;
+  name: string;
+  role: string;
 }
 
 const CollapsibleSection: FC<CollapsibleSectionProps> = ({ 
@@ -54,71 +85,216 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
   loading = false
 }) => {
   const [activeTab, setActiveTab] = useState("fumigation");
+  const [availableTechnicians, setAvailableTechnicians] = useState<ApiUser[]>([]);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [fumigationReportSubmitted, setFumigationReportSubmitted] = useState(false);
+  const [technicianComboOpen, setTechnicianComboOpen] = useState(false);
   
-  // Estados para los formularios
+  const getCurrentDate = () => {
+    const today = new Date();
+    return today.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const getCurrentTime = () => {
+    const now = new Date();
+    return now.toTimeString().slice(0, 5);
+  };
+
   const [fumigationData, setFumigationData] = useState({
     registrationNumber: fumigationDetails?.lot.id?.toString() || "",
     company: fumigationDetails?.company.name || "",
     location: "",
-    date: new Date().toISOString().split("T")[0],
-    startTime: "07:00",
-    endTime: "09:00",
-    supervisor: "",
-    personnel: [{ name: "", role: "", signature: null }],
-    dimensions: "",
-    temperature: "",
-    humidity: "",
+    date: getCurrentDate(),
+    startTime: getCurrentTime(),
+    endTime: getCurrentTime(),
+    selectedTechnician: "",
+    technicians: [] as Technician[],
+    dimensions: {
+      height: "",
+      width: "",
+      length: ""
+    },
+    environmentalConditions: {
+      temperature: "",
+      humidity: ""
+    },
     hazards: {
-      electrical: false,
-      falls: false,
-      runOver: false
+      electricDanger: false,
+      fallingDanger: false,
+      hitDanger: false
     },
     observations: "",
-    supplies: [{ product: "", quantity: "", dosage: "", fumigationType: "", tapeCount: "" }],
-    technicianSignature: null,
-    clientSignature: null
+    supplies: [{ 
+      name: "", 
+      quantity: "", 
+      dosage: "", 
+      kindOfSupply: "", 
+      numberOfStrips: "" 
+    }] as Supply[]
   });
-  
-  const [uncoveringData, setUncoveringData] = useState({
-    registrationNumber: fumigationDetails?.lot.id?.toString() || "",
-    company: fumigationDetails?.company.name || "",
-    location: "",
-    date: new Date().toISOString().split("T")[0],
-    startTime: "07:00",
-    endTime: "09:00",
-    supervisor: "",
-    personnel: [{ name: "", role: "", signature: null }],
-    tapeStatus: true,
-    fumigationTime: "72",
-    ppmPhosphine: "1000",
-    hazards: {
-      electrical: false,
-      falls: false,
-      runOver: false
-    },
-    technicianSignature: null,
-    clientSignature: null
-  });
-  
-  const handleSave = () => {
-    if (onSave) {
-      onSave({
-        fumigation: fumigationData,
-        uncovering: uncoveringData
-      });
+
+  useEffect(() => {
+    const loadTechnicians = async () => {
+      try {
+        const response = await usersService.getUsersByRole('TECHNICIAN');
+        setAvailableTechnicians(response.content);
+      } catch (error) {
+        toast.error("Error al cargar técnicos disponibles");
+      }
+    };
+
+    if (isEditable) {
+      loadTechnicians();
     }
-    
-    if (onClose) onClose();
+  }, [isEditable]);
+
+  const handleTechnicianSelect = (technicianId: string) => {
+    const technician = availableTechnicians.find(t => t.id.toString() === technicianId);
+    if (technician) {
+      setFumigationData(prev => ({
+        ...prev,
+        selectedTechnician: technicianId,
+        technicians: [{
+          id: technician.id,
+          name: `${technician.firstName} ${technician.lastName}`,
+          role: "Técnico"
+        }]
+      }));
+      setTechnicianComboOpen(false);
+    }
+  };
+
+  const handleSupplyChange = (index: number, field: keyof Supply, value: string) => {
+    setFumigationData(prev => ({
+      ...prev,
+      supplies: prev.supplies.map((supply, i) => 
+        i === index ? { ...supply, [field]: value } : supply
+      )
+    }));
+  };
+
+  const addSupply = () => {
+    setFumigationData(prev => ({
+      ...prev,
+      supplies: [...prev.supplies, { 
+        name: "", 
+        quantity: "", 
+        dosage: "", 
+        kindOfSupply: "", 
+        numberOfStrips: "" 
+      }]
+    }));
+  };
+
+  const removeSupply = (index: number) => {
+    if (fumigationData.supplies.length > 1) {
+      setFumigationData(prev => ({
+        ...prev,
+        supplies: prev.supplies.filter((_, i) => i !== index)
+      }));
+    }
+  };
+
+  const validateFumigationForm = () => {
+    const required = [
+      fumigationData.location,
+      fumigationData.startTime,
+      fumigationData.endTime,
+      fumigationData.dimensions.height,
+      fumigationData.dimensions.width,
+      fumigationData.dimensions.length,
+      fumigationData.environmentalConditions.temperature,
+      fumigationData.environmentalConditions.humidity
+    ];
+
+    if (required.some(field => !field)) {
+      toast.error("Por favor complete todos los campos requeridos");
+      return false;
+    }
+
+    if (fumigationData.technicians.length === 0) {
+      toast.error("Debe seleccionar al menos un técnico");
+      return false;
+    }
+
+    if (fumigationData.supplies.some(supply => 
+      !supply.name || !supply.quantity || !supply.dosage || !supply.kindOfSupply || !supply.numberOfStrips
+    )) {
+      toast.error("Complete todos los campos de suministros");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmitFumigationReport = async () => {
+    if (!validateFumigationForm()) return;
+
+    try {
+      const reportData = {
+        id: fumigationDetails?.lot.id || 0,
+        location: fumigationData.location,
+        date: fumigationData.date,
+        startTime: fumigationData.startTime,
+        endTime: fumigationData.endTime,
+        technicians: fumigationData.technicians.map(t => ({ id: t.id })),
+        supplies: fumigationData.supplies.map(supply => ({
+          name: supply.name,
+          quantity: parseFloat(supply.quantity),
+          dosage: supply.dosage,
+          kindOfSupply: supply.kindOfSupply,
+          numberOfStrips: supply.numberOfStrips
+        })),
+        dimensions: {
+          height: parseFloat(fumigationData.dimensions.height),
+          width: parseFloat(fumigationData.dimensions.width),
+          length: parseFloat(fumigationData.dimensions.length)
+        },
+        environmentalConditions: {
+          temperature: parseFloat(fumigationData.environmentalConditions.temperature),
+          humidity: parseFloat(fumigationData.environmentalConditions.humidity)
+        },
+        industrialSafetyConditions: {
+          electricDanger: fumigationData.hazards.electricDanger,
+          fallingDanger: fumigationData.hazards.fallingDanger,
+          hitDanger: fumigationData.hazards.hitDanger
+        },
+        observations: fumigationData.observations
+      };
+
+      await reportsService.createFumigationReport(reportData);
+      setFumigationReportSubmitted(true);
+      setShowConfirmDialog(false);
+      toast.success("Reporte de fumigación enviado exitosamente");
+      
+      if (onClose) {
+        onClose();
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Error al enviar el reporte");
+    }
+  };
+
+  const handleTabChange = (value: string) => {
+    if (value === "uncovering" && !fumigationReportSubmitted) {
+      toast.error("Debe completar el registro de fumigación antes de acceder al registro de descarpe");
+      return;
+    }
+    setActiveTab(value);
   };
 
   if (loading) {
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full max-h-[90vh]">
         <div className="bg-[#003595] text-white rounded-t-lg px-8 py-5 text-lg font-semibold">
           Cargando evidencias...
         </div>
-        <div className="flex items-center justify-center px-8 py-6" style={{ minHeight: "300px" }}>
-          <div className="text-gray-500">Cargando detalles del lote...</div>
+        <div className="flex items-center justify-center px-8 py-6 flex-1">
+          <div className="text-gray-500">Cargando información...</div>
         </div>
       </div>
     );
@@ -126,1219 +302,450 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
 
   if (!fumigationDetails) {
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full max-h-[90vh]">
         <div className="bg-[#003595] text-white rounded-t-lg px-8 py-5 text-lg font-semibold">
           Error
         </div>
-        <div className="flex items-center justify-center px-8 py-6" style={{ minHeight: "300px" }}>
-          <div className="text-red-500">No se pudieron cargar los detalles del lote</div>
-        </div>
-        <div className="flex justify-end gap-4 px-8 py-6 border-t border-[#003595] bg-white rounded-b-lg">
-          <Button
-            variant="secondary"
-            className="bg-[#003595] text-white hover:bg-[#002060]"
-            onClick={onClose}
-          >
-            Cerrar
-          </Button>
+        <div className="flex items-center justify-center px-8 py-6 flex-1">
+          <div className="text-red-500">No se pudieron cargar los detalles</div>
         </div>
       </div>
     );
   }
 
+  const selectedTechnician = availableTechnicians.find(t => t.id.toString() === fumigationData.selectedTechnician);
+
   return (
-    <div className="flex flex-col h-full max-h-[90vh]">
-      {/* Encabezado fijo */}
-      <div className="bg-[#003595] text-white rounded-t-lg px-8 py-5 flex-shrink-0">
-        <h2 className="text-xl font-semibold">
-          Evidencias - Lote #{fumigationDetails.lot.lotNumber}
-        </h2>
-      </div>
-      
-      {/* Tabs y contenido con scroll */}
-      <Tabs
-        defaultValue="fumigation"
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="flex-1 flex flex-col overflow-hidden"
-      >
-        <div className="border-b border-gray-200 flex-shrink-0 bg-white">
-          <TabsList className="bg-transparent p-0 w-full justify-start">
-            <TabsTrigger 
-              value="fumigation" 
-              className="py-3 px-6 data-[state=active]:border-b-2 data-[state=active]:border-[#003595] data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none"
-            >
-              Registro de Fumigación
-            </TabsTrigger>
-            <TabsTrigger 
-              value="uncovering"
-              className="py-3 px-6 data-[state=active]:border-b-2 data-[state=active]:border-[#003595] data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none"
-            >
-              Registro de Descarpe
-            </TabsTrigger>
-          </TabsList>
+    <>
+      <div className="flex flex-col h-full max-h-[90vh] max-w-6xl w-full">
+        <div className="bg-[#003595] text-white rounded-t-lg px-8 py-5 text-lg font-semibold flex-shrink-0">
+          Evidencias de Fumigación - Lote {fumigationDetails.lot.lotNumber}
         </div>
-        
-        {/* Contenido con scroll */}
-        <div className="flex-1 overflow-y-auto px-8 py-6">
-          <TabsContent value="fumigation" className="m-0 h-full">
-            {isEditable ? (
-              <FumigationForm 
-                data={fumigationData} 
-                setData={setFumigationData} 
-                fumigationDetails={fumigationDetails} 
-              />
-            ) : (
-              <FumigationView 
-                data={fumigationData} 
-                fumigationDetails={fumigationDetails} 
-              />
-            )}
-          </TabsContent>
-          
-          <TabsContent value="uncovering" className="m-0 h-full">
-            {isEditable ? (
-              <UncoveringForm 
-                data={uncoveringData} 
-                setData={setUncoveringData} 
-                fumigationDetails={fumigationDetails} 
-              />
-            ) : (
-              <UncoveringView 
-                data={uncoveringData} 
-                fumigationDetails={fumigationDetails} 
-              />
-            )}
-          </TabsContent>
-        </div>
-      </Tabs>
-      
-      {/* Pie fijo con botones */}
-      <div className="flex justify-end gap-4 px-8 py-6 border-t border-[#003595] bg-white rounded-b-lg flex-shrink-0">
-        {isEditable && (
-          <Button 
-            type="button" 
-            onClick={handleSave}
-            className="bg-[#003595] text-white hover:bg-[#002060]"
-          >
-            Guardar Evidencias
-          </Button>
-        )}
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={onClose}
-        >
-          Cerrar
-        </Button>
-      </div>
-    </div>
-  );
-};
 
-// Componentes para el formulario de fumigación
-interface FumigationFormProps {
-  data: any;
-  setData: (data: any) => void;
-  fumigationDetails: FumigationDetailResponse;
-}
+        <div className="flex-1 overflow-hidden">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full h-full flex flex-col">
+            <TabsList className="grid w-full grid-cols-2 mx-8 mt-4 flex-shrink-0">
+              <TabsTrigger value="fumigation">Registro de Fumigación</TabsTrigger>
+              <TabsTrigger 
+                value="uncovering" 
+                disabled={!fumigationReportSubmitted}
+                className={!fumigationReportSubmitted ? "opacity-50 cursor-not-allowed" : ""}
+              >
+                Registro de Descarpe
+              </TabsTrigger>
+            </TabsList>
 
-const FumigationForm: FC<FumigationFormProps> = ({ data, setData, fumigationDetails }) => {
-  const handleChange = (field: string, value: any) => {
-    setData({
-      ...data,
-      [field]: value
-    });
-  };
-  
-  const handlePersonnelChange = (index: number, field: string, value: any) => {
-    const updatedPersonnel = [...data.personnel];
-    updatedPersonnel[index] = { ...updatedPersonnel[index], [field]: value };
-    handleChange('personnel', updatedPersonnel);
-  };
-  
-  const addPersonnel = () => {
-    handleChange('personnel', [...data.personnel, { name: "", role: "", signature: null }]);
-  };
-  
-  const handleSupplyChange = (index: number, field: string, value: any) => {
-    const updatedSupplies = [...data.supplies];
-    updatedSupplies[index] = { ...updatedSupplies[index], [field]: value };
-    handleChange('supplies', updatedSupplies);
-  };
-  
-  const addSupply = () => {
-    handleChange('supplies', [...data.supplies, { product: "", quantity: "", dosage: "", fumigationType: "", tapeCount: "" }]);
-  };
+            <TabsContent value="fumigation" className="flex-1 overflow-auto px-8 py-4 space-y-4 m-0">
+              <CollapsibleSection title="Información General" defaultOpen>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Número de Registro</label>
+                    <Input 
+                      value={fumigationData.registrationNumber}
+                      disabled
+                      className="bg-gray-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Empresa</label>
+                    <Input 
+                      value={fumigationData.company}
+                      disabled
+                      className="bg-gray-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Ubicación *</label>
+                    <Input 
+                      value={fumigationData.location}
+                      onChange={(e) => setFumigationData(prev => ({ ...prev, location: e.target.value }))}
+                      disabled={!isEditable || fumigationReportSubmitted}
+                      placeholder="Ingrese la ubicación"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Fecha</label>
+                    <Input 
+                      value={fumigationData.date}
+                      disabled
+                      className="bg-gray-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Hora de Inicio *</label>
+                    <Input 
+                      type="time"
+                      value={fumigationData.startTime}
+                      onChange={(e) => setFumigationData(prev => ({ ...prev, startTime: e.target.value }))}
+                      disabled={!isEditable || fumigationReportSubmitted}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Hora de Finalización *</label>
+                    <Input 
+                      type="time"
+                      value={fumigationData.endTime}
+                      onChange={(e) => setFumigationData(prev => ({ ...prev, endTime: e.target.value }))}
+                      disabled={!isEditable || fumigationReportSubmitted}
+                    />
+                  </div>
+                </div>
+              </CollapsibleSection>
 
-  // Cargar datos conocidos del lote
-  const loadLotData = () => {
-    handleChange('tons', fumigationDetails.lot.tons);
-    handleChange('quality', fumigationDetails.lot.quality);
-    handleChange('bags', fumigationDetails.lot.sacks);
-    handleChange('destination', fumigationDetails.lot.portDestination);
-  };
-  
-  return (
-    <div className="space-y-4">
-      {/* Información básica - siempre visible */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Nº Registro</label>
-          <Input 
-            value={data.registrationNumber}
-            onChange={(e) => handleChange('registrationNumber', e.target.value)}
-            className="max-w-xs"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Empresa</label>
-          <Input 
-            value={data.company}
-            onChange={(e) => handleChange('company', e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Fecha</label>
-          <Input 
-            type="date"
-            value={data.date}
-            onChange={(e) => handleChange('date', e.target.value)}
-            className="max-w-xs"
-          />
-        </div>
-      </div>
-      
-      {/* Datos generales - colapsable pero abierta por defecto */}
-      <CollapsibleSection title="Datos Generales" defaultOpen={true}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Ubicación</label>
-            <Input 
-              value={data.location}
-              onChange={(e) => handleChange('location', e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Hora Inicio</label>
-            <Input 
-              type="time"
-              value={data.startTime}
-              onChange={(e) => handleChange('startTime', e.target.value)}
-              className="max-w-xs"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Hora Fin</label>
-            <Input 
-              type="time"
-              value={data.endTime}
-              onChange={(e) => handleChange('endTime', e.target.value)}
-              className="max-w-xs"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Supervisor</label>
-            <Input 
-              value={data.supervisor}
-              onChange={(e) => handleChange('supervisor', e.target.value)}
-            />
-          </div>
-        </div>
-      </CollapsibleSection>
-      
-      {/* Personal - colapsable */}
-      <CollapsibleSection title="Personal que interviene">
-        <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 text-left">Nombre Completo</th>
-                <th className="px-4 py-2 text-left">Cargo</th>
-                <th className="px-4 py-2 text-left">Firma</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.personnel.map((person: any, index: number) => (
-                <tr key={index}>
-                  <td className="px-4 py-2">
-                    <Input 
-                      value={person.name}
-                      onChange={(e) => handlePersonnelChange(index, 'name', e.target.value)}
-                    />
-                  </td>
-                  <td className="px-4 py-2">
-                    <Input 
-                      value={person.role}
-                      onChange={(e) => handlePersonnelChange(index, 'role', e.target.value)}
-                    />
-                  </td>
-                  <td className="px-4 py-2">
-                    <Input 
-                      type="file" 
-                      accept="image/*"
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          handlePersonnelChange(index, 'signature', URL.createObjectURL(e.target.files[0]));
-                        }
-                      }}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={addPersonnel} 
-          className="mt-2"
-        >
-          Agregar Personal
-        </Button>
-      </CollapsibleSection>
-      
-      {/* Información del Lote - colapsable pero abierta por defecto */}
-      <CollapsibleSection title="Información del Lote" defaultOpen={true}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Número de Lote</label>
-            <Input value={fumigationDetails.lot.lotNumber} disabled />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Dimensiones</label>
-            <Input 
-              value={data.dimensions}
-              onChange={(e) => handleChange('dimensions', e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Toneladas</label>
-            <Input 
-              type="number"
-              value={data.tons || fumigationDetails.lot.tons}
-              onChange={(e) => handleChange('tons', e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Calidad</label>
-            <Input 
-              value={data.quality || fumigationDetails.lot.quality}
-              onChange={(e) => handleChange('quality', e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium"># Sacos</label>
-            <Input 
-              type="number"
-              value={data.bags || fumigationDetails.lot.sacks}
-              onChange={(e) => handleChange('bags', e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Destino</label>
-            <Input 
-              value={data.destination || fumigationDetails.lot.portDestination}
-              onChange={(e) => handleChange('destination', e.target.value)}
-            />
-          </div>
-        </div>
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={loadLotData} 
-          className="mt-4"
-        >
-          Cargar Datos del Lote
-        </Button>
-      </CollapsibleSection>
-      
-      {/* Condiciones - colapsable */}
-      <CollapsibleSection title="Condiciones Ambientales y de Seguridad">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="font-medium mb-3">Condiciones Ambientales</h4>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Temperatura (°C)</label>
-                <Input 
-                  type="number"
-                  value={data.temperature}
-                  onChange={(e) => handleChange('temperature', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Humedad (%)</label>
-                <Input 
-                  type="number"
-                  value={data.humidity}
-                  onChange={(e) => handleChange('humidity', e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-          
-          <div>
-            <h4 className="font-medium mb-3">Condiciones de Seguridad</h4>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="electrical"
-                  checked={data.hazards.electrical}
-                  onCheckedChange={(checked) => {
-                    handleChange('hazards', {
-                      ...data.hazards,
-                      electrical: !!checked
-                    });
-                  }}
-                />
-                <label htmlFor="electrical" className="text-sm">
-                  Peligro Eléctrico
-                </label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="falls"
-                  checked={data.hazards.falls}
-                  onCheckedChange={(checked) => {
-                    handleChange('hazards', {
-                      ...data.hazards,
-                      falls: !!checked
-                    });
-                  }}
-                />
-                <label htmlFor="falls" className="text-sm">
-                  Peligro de Caídas
-                </label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="runOver"
-                  checked={data.hazards.runOver}
-                  onCheckedChange={(checked) => {
-                    handleChange('hazards', {
-                      ...data.hazards,
-                      runOver: !!checked
-                    });
-                  }}
-                />
-                <label htmlFor="runOver" className="text-sm">
-                  Peligro de Atropellos
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-4">
-          <h4 className="font-medium mb-2">Observaciones</h4>
-          <textarea
-            className="min-w-full p-2 border rounded-md"
-            rows={2}
-            value={data.observations}
-            onChange={(e) => handleChange('observations', e.target.value)}
-          />
-        </div>
-      </CollapsibleSection>
-      
-      {/* Insumos - colapsable */}
-      <CollapsibleSection title="Insumos Utilizados">
-        <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 text-left">Producto</th>
-                <th className="px-4 py-2 text-left">Cantidad</th>
-                <th className="px-4 py-2 text-left">Dosis</th>
-                <th className="px-4 py-2 text-left">Tipo de Fumigación</th>
-                <th className="px-4 py-2 text-left"># Cintas</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.supplies.map((supply: any, index: number) => (
-                <tr key={index}>
-                  <td className="px-4 py-2">
-                    <Input 
-                      value={supply.product}
-                      onChange={(e) => handleSupplyChange(index, 'product', e.target.value)}
-                    />
-                  </td>
-                  <td className="px-4 py-2">
-                    <Input 
-                      value={supply.quantity}
-                      onChange={(e) => handleSupplyChange(index, 'quantity', e.target.value)}
-                    />
-                  </td>
-                  <td className="px-4 py-2">
-                    <Input 
-                      value={supply.dosage}
-                      onChange={(e) => handleSupplyChange(index, 'dosage', e.target.value)}
-                    />
-                  </td>
-                  <td className="px-4 py-2">
-                    <Input 
-                      value={supply.fumigationType}
-                      onChange={(e) => handleSupplyChange(index, 'fumigationType', e.target.value)}
-                    />
-                  </td>
-                  <td className="px-4 py-2">
-                    <Input 
-                      value={supply.tapeCount}
-                      onChange={(e) => handleSupplyChange(index, 'tapeCount', e.target.value)}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={addSupply} 
-          className="mt-2"
-        >
-          Agregar Insumo
-        </Button>
-      </CollapsibleSection>
-      
-      {/* Firmas - colapsable pero abierta por defecto */}
-      <CollapsibleSection title="Firmas" defaultOpen={true}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Firma del Técnico</label>
-            <Input 
-              type="file" 
-              accept="image/*"
-              onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  handleChange('technicianSignature', URL.createObjectURL(e.target.files[0]));
-                }
-              }}
-            />
-            {data.technicianSignature && (
-              <div className="mt-2 p-2 border rounded-md">
-                <img 
-                  src={data.technicianSignature} 
-                  alt="Firma técnico" 
-                  className="h-20 object-contain"
-                />
-              </div>
-            )}
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Firma del Cliente</label>
-            <Input 
-              type="file" 
-              accept="image/*"
-              onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  handleChange('clientSignature', URL.createObjectURL(e.target.files[0]));
-                }
-              }}
-            />
-            {data.clientSignature && (
-              <div className="mt-2 p-2 border rounded-md">
-                <img 
-                  src={data.clientSignature} 
-                  alt="Firma cliente" 
-                  className="h-20 object-contain"
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      </CollapsibleSection>
-    </div>
-  );
-};
-
-// Componente para mostrar la información de fumigación (modo administrador)
-// Usa la misma estructura de secciones colapsables
-const FumigationView: FC<{ data: any; fumigationDetails: FumigationDetailResponse }> = ({ data, fumigationDetails }) => {
-  return (
-    <div className="space-y-4">
-      {/* Información básica - siempre visible */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3 mb-6">
-        <div>
-          <p className="text-sm font-medium text-gray-500">Nº Registro</p>
-          <p className="font-medium">{data.registrationNumber || fumigationDetails.lot.id}</p>
-        </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Empresa</p>
-          <p>{data.company || fumigationDetails.company.name}</p>
-        </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Fecha</p>
-          <p>{data.date ? new Date(data.date).toLocaleDateString() : "-"}</p>
-        </div>
-      </div>
-      
-      {/* Datos generales */}
-      <CollapsibleSection title="Datos Generales" defaultOpen={true}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3">
-          <div>
-            <p className="text-sm font-medium text-gray-500">Ubicación</p>
-            <p>{data.location || "-"}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Hora Inicio/Fin</p>
-            <p>{data.startTime || "-"} - {data.endTime || "-"}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Supervisor</p>
-            <p>{data.supervisor || "-"}</p>
-          </div>
-        </div>
-      </CollapsibleSection>
-      
-      {/* Resto de las secciones usando CollapsibleSection */}
-      <CollapsibleSection title="Personal que interviene">
-        {data.personnel && data.personnel.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className="px-4 py-2 text-left">Nombre Completo</th>
-                  <th className="px-4 py-2 text-left">Cargo</th>
-                  <th className="px-4 py-2 text-left">Firma</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.personnel.map((person: any, index: number) => (
-                  <tr key={index}>
-                    <td className="px-4 py-2">{person.name || "-"}</td>
-                    <td className="px-4 py-2">{person.role || "-"}</td>
-                    <td className="px-4 py-2">
-                      {person.signature ? (
-                        <img 
-                          src={person.signature} 
-                          alt="Firma" 
-                          className="h-10 object-contain"
+              <CollapsibleSection title="Personal que Interviene" defaultOpen>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Seleccionar Técnico *</label>
+                    <Popover open={technicianComboOpen} onOpenChange={setTechnicianComboOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={technicianComboOpen}
+                          className={cn(
+                            "w-full justify-between",
+                            !fumigationData.selectedTechnician && "text-muted-foreground"
+                          )}
+                          disabled={!isEditable || fumigationReportSubmitted}
+                        >
+                          {selectedTechnician
+                            ? `${selectedTechnician.firstName} ${selectedTechnician.lastName}`
+                            : "Seleccione un técnico"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput placeholder="Buscar técnico..." />
+                          <CommandList>
+                            <CommandEmpty>No se encontraron técnicos.</CommandEmpty>
+                            <CommandGroup>
+                              {availableTechnicians.map((technician) => (
+                                <CommandItem
+                                  key={technician.id}
+                                  value={`${technician.firstName} ${technician.lastName}`}
+                                  onSelect={() => handleTechnicianSelect(technician.id.toString())}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      fumigationData.selectedTechnician === technician.id.toString()
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {technician.firstName} {technician.lastName}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  
+                  {fumigationData.technicians.map((technician, index) => (
+                    <div key={index} className="grid grid-cols-2 gap-4 p-4 border rounded">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Nombre Completo</label>
+                        <Input 
+                          value={technician.name}
+                          disabled
+                          className="bg-gray-100"
                         />
-                      ) : "-"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-gray-500">No hay personal registrado</p>
-        )}
-      </CollapsibleSection>
-      
-      <CollapsibleSection title="Información del Lote" defaultOpen={true}>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3">
-          <div>
-            <p className="text-sm font-medium text-gray-500">ID de Lote</p>
-            <p>{fumigationDetails.lot.id}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Dimensiones</p>
-            <p>{data.dimensions || "-"}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Toneladas</p>
-            <p>{data.tons || fumigationDetails.lot.tons}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Calidad</p>
-            <p>{data.quality || fumigationDetails.lot.quality}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500"># Sacos</p>
-            <p>{data.bags || fumigationDetails.lot.sacks}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Destino</p>
-            <p>{data.destination || fumigationDetails.lot.portDestination}</p>
-          </div>
-        </div>
-      </CollapsibleSection>
-      
-      <CollapsibleSection title="Condiciones Ambientales y de Seguridad">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="font-medium mb-3">Condiciones Ambientales</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Temperatura</p>
-                <p>{data.temperature ? `${data.temperature}°C` : "-"}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Humedad</p>
-                <p>{data.humidity ? `${data.humidity}%` : "-"}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div>
-            <h4 className="font-medium mb-3">Condiciones de Seguridad</h4>
-            <div className="space-y-2">
-              <div className="flex items-center">
-                <div className={`w-4 h-4 mr-2 border ${data.hazards?.electrical ? 'bg-blue-500' : 'bg-white'}`}></div>
-                <span>Peligro Eléctrico</span>
-              </div>
-              <div className="flex items-center">
-                <div className={`w-4 h-4 mr-2 border ${data.hazards?.falls ? 'bg-blue-500' : 'bg-white'}`}></div>
-                <span>Peligro de Caídas</span>
-              </div>
-              <div className="flex items-center">
-                <div className={`w-4 h-4 mr-2 border ${data.hazards?.runOver ? 'bg-blue-500' : 'bg-white'}`}></div>
-                <span>Peligro de Atropellos</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {data.observations && (
-          <div className="mt-4">
-            <h4 className="font-medium mb-2">Observaciones</h4>
-            <p className="p-3 bg-gray-50 rounded-md">{data.observations}</p>
-          </div>
-        )}
-      </CollapsibleSection>
-      
-      <CollapsibleSection title="Insumos Utilizados">
-        {data.supplies && data.supplies.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className="px-4 py-2 text-left">Producto</th>
-                  <th className="px-4 py-2 text-left">Cantidad</th>
-                  <th className="px-4 py-2 text-left">Dosis</th>
-                  <th className="px-4 py-2 text-left">Tipo de Fumigación</th>
-                  <th className="px-4 py-2 text-left"># Cintas</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.supplies.map((supply: any, index: number) => (
-                  <tr key={index}>
-                    <td className="px-4 py-2">{supply.product || "-"}</td>
-                    <td className="px-4 py-2">{supply.quantity || "-"}</td>
-                    <td className="px-4 py-2">{supply.dosage || "-"}</td>
-                    <td className="px-4 py-2">{supply.fumigationType || "-"}</td>
-                    <td className="px-4 py-2">{supply.tapeCount || "-"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-gray-500">No hay insumos registrados</p>
-        )}
-      </CollapsibleSection>
-      
-      <CollapsibleSection title="Firmas" defaultOpen={true}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="font-medium mb-2">Firma del Técnico</h4>
-            {data.technicianSignature ? (
-              <div className="p-2 border rounded-md">
-                <img 
-                  src={data.technicianSignature} 
-                  alt="Firma técnico" 
-                  className="h-20 object-contain"
-                />
-              </div>
-            ) : (
-              <p className="text-gray-500">No disponible</p>
-            )}
-          </div>
-          <div>
-            <h4 className="font-medium mb-2">Firma del Cliente</h4>
-            {data.clientSignature ? (
-              <div className="p-2 border rounded-md">
-                <img 
-                  src={data.clientSignature} 
-                  alt="Firma cliente" 
-                  className="h-20 object-contain"
-                />
-              </div>
-            ) : (
-              <p className="text-gray-500">No disponible</p>
-            )}
-          </div>
-        </div>
-      </CollapsibleSection>
-    </div>
-  );
-};
-
-// Props para el formulario de descarpe
-interface UncoveringFormProps {
-  data: any;
-  setData: (data: any) => void;
-  fumigationDetails: FumigationDetailResponse;
-}
-
-const UncoveringForm: FC<UncoveringFormProps> = ({ data, setData, fumigationDetails }) => {
-  const handleChange = (field: string, value: any) => {
-    setData({
-      ...data,
-      [field]: value
-    });
-  };
-  
-  const handlePersonnelChange = (index: number, field: string, value: any) => {
-    const updatedPersonnel = [...data.personnel];
-    updatedPersonnel[index] = { ...updatedPersonnel[index], [field]: value };
-    handleChange('personnel', updatedPersonnel);
-  };
-  
-  const addPersonnel = () => {
-    handleChange('personnel', [...data.personnel, { name: "", role: "", signature: null }]);
-  };
-  
-  return (
-    <div className="space-y-4">
-      {/* Información básica */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Nº Registro</label>
-          <Input 
-            value={data.registrationNumber}
-            onChange={(e) => handleChange('registrationNumber', e.target.value)}
-            className="max-w-xs"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Empresa</label>
-          <Input 
-            value={data.company}
-            onChange={(e) => handleChange('company', e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Fecha</label>
-          <Input 
-            type="date"
-            value={data.date}
-            onChange={(e) => handleChange('date', e.target.value)}
-            className="max-w-xs"
-          />
-        </div>
-      </div>
-      
-      {/* Resto de secciones adaptadas para uncovering */}
-      <CollapsibleSection title="Datos Generales" defaultOpen={true}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Ubicación</label>
-            <Input 
-              value={data.location}
-              onChange={(e) => handleChange('location', e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Hora Inicio</label>
-            <Input 
-              type="time"
-              value={data.startTime}
-              onChange={(e) => handleChange('startTime', e.target.value)}
-              className="max-w-xs"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Hora Fin</label>
-            <Input 
-              type="time"
-              value={data.endTime}
-              onChange={(e) => handleChange('endTime', e.target.value)}
-              className="max-w-xs"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Supervisor</label>
-            <Input 
-              value={data.supervisor}
-              onChange={(e) => handleChange('supervisor', e.target.value)}
-            />
-          </div>
-        </div>
-      </CollapsibleSection>
-      
-      {/* Personal - colapsable */}
-      <CollapsibleSection title="Personal que interviene">
-        <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 text-left">Nombre Completo</th>
-                <th className="px-4 py-2 text-left">Cargo</th>
-                <th className="px-4 py-2 text-left">Firma</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.personnel.map((person: any, index: number) => (
-                <tr key={index}>
-                  <td className="px-4 py-2">
-                    <Input 
-                      value={person.name}
-                      onChange={(e) => handlePersonnelChange(index, 'name', e.target.value)}
-                    />
-                  </td>
-                  <td className="px-4 py-2">
-                    <Input 
-                      value={person.role}
-                      onChange={(e) => handlePersonnelChange(index, 'role', e.target.value)}
-                    />
-                  </td>
-                  <td className="px-4 py-2">
-                    <Input 
-                      type="file" 
-                      accept="image/*"
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          handlePersonnelChange(index, 'signature', URL.createObjectURL(e.target.files[0]));
-                        }
-                      }}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={addPersonnel} 
-          className="mt-2"
-        >
-          Agregar Personal
-        </Button>
-      </CollapsibleSection>
-      
-      <CollapsibleSection title="Información del Lote" defaultOpen={true}>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">ID de Lote</label>
-            <Input value={fumigationDetails.lot.id} disabled />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Toneladas</label>
-            <Input 
-              type="number"
-              value={data.tons || fumigationDetails.lot.tons}
-              onChange={(e) => handleChange('tons', e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Calidad</label>
-            <Input 
-              value={data.quality || fumigationDetails.lot.quality}
-              onChange={(e) => handleChange('quality', e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium"># Sacos</label>
-            <Input 
-              type="number"
-              value={data.bags || fumigationDetails.lot.sacks}
-              onChange={(e) => handleChange('bags', e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Destino</label>
-            <Input 
-              value={data.destination || fumigationDetails.lot.portDestination}
-              onChange={(e) => handleChange('destination', e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Estado Cintas</label>
-            <select
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md"
-              value={data.tapeStatus ? "ok" : "notOk"}
-              onChange={(e) => handleChange('tapeStatus', e.target.value === "ok")}
-            >
-              <option value="ok">OK</option>
-              <option value="notOk">No OK</option>
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Tiempo Fumigación (horas)</label>
-            <Input 
-              type="number"
-              value={data.fumigationTime}
-              onChange={(e) => handleChange('fumigationTime', e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">PPM Fosfina</label>
-            <Input 
-              type="number"
-              value={data.ppmPhosphine}
-              onChange={(e) => handleChange('ppmPhosphine', e.target.value)}
-            />
-          </div>
-        </div>
-      </CollapsibleSection>
-      
-      <CollapsibleSection title="Condiciones de Seguridad">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="electrical-uncovering"
-              checked={data.hazards.electrical}
-              onCheckedChange={(checked) => {
-                handleChange('hazards', {
-                  ...data.hazards,
-                  electrical: !!checked
-                });
-              }}
-            />
-            <label htmlFor="electrical-uncovering" className="text-sm">
-              Peligro Eléctrico
-            </label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="falls-uncovering"
-              checked={data.hazards.falls}
-              onCheckedChange={(checked) => {
-                handleChange('hazards', {
-                  ...data.hazards,
-                  falls: !!checked
-                });
-              }}
-            />
-            <label htmlFor="falls-uncovering" className="text-sm">
-              Peligro de Caídas
-            </label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="runOver-uncovering"
-              checked={data.hazards.runOver}
-              onCheckedChange={(checked) => {
-                handleChange('hazards', {
-                  ...data.hazards,
-                  runOver: !!checked
-                });
-              }}
-            />
-            <label htmlFor="runOver-uncovering" className="text-sm">
-              Peligro de Atropellos
-            </label>
-          </div>
-        </div>
-      </CollapsibleSection>
-      
-      <CollapsibleSection title="Firmas" defaultOpen={true}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Firma del Técnico</label>
-            <Input 
-              type="file" 
-              accept="image/*"
-              onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  handleChange('technicianSignature', URL.createObjectURL(e.target.files[0]));
-                }
-              }}
-            />
-            {data.technicianSignature && (
-              <div className="mt-2 p-2 border rounded-md">
-                <img 
-                  src={data.technicianSignature} 
-                  alt="Firma técnico" 
-                  className="h-20 object-contain"
-                />
-              </div>
-            )}
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Firma del Cliente</label>
-            <Input 
-              type="file" 
-              accept="image/*"
-              onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  handleChange('clientSignature', URL.createObjectURL(e.target.files[0]));
-                }
-              }}
-            />
-            {data.clientSignature && (
-              <div className="mt-2 p-2 border rounded-md">
-                <img 
-                  src={data.clientSignature} 
-                  alt="Firma cliente" 
-                  className="h-20 object-contain"
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      </CollapsibleSection>
-    </div>
-  );
-};
-
-// Componente UncoveringView similar a FumigationView con secciones colapsables
-const UncoveringView: FC<{ data: any; fumigationDetails: FumigationDetailResponse }> = ({ data, fumigationDetails }) => {
-  return (
-    <div className="space-y-4">
-      {/* Información básica - siempre visible */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3 mb-6">
-        <div>
-          <p className="text-sm font-medium text-gray-500">Nº Registro</p>
-          <p className="font-medium">{data.registrationNumber || fumigationDetails.lot.id}</p>
-        </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Empresa</p>
-          <p>{data.company || fumigationDetails.company.name}</p>
-        </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Fecha</p>
-          <p>{data.date ? new Date(data.date).toLocaleDateString() : "-"}</p>
-        </div>
-      </div>
-      
-      {/* Resto de secciones colapsables */}
-      {/* Implementación similar a FumigationView */}
-      <CollapsibleSection title="Datos Generales" defaultOpen={true}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3">
-          <div>
-            <p className="text-sm font-medium text-gray-500">Ubicación</p>
-            <p>{data.location || "-"}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Hora Inicio/Fin</p>
-            <p>{data.startTime || "-"} - {data.endTime || "-"}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Supervisor</p>
-            <p>{data.supervisor || "-"}</p>
-          </div>
-        </div>
-      </CollapsibleSection>
-      
-      <CollapsibleSection title="Personal que interviene">
-        {data.personnel && data.personnel.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className="px-4 py-2 text-left">Nombre Completo</th>
-                  <th className="px-4 py-2 text-left">Cargo</th>
-                  <th className="px-4 py-2 text-left">Firma</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.personnel.map((person: any, index: number) => (
-                  <tr key={index}>
-                    <td className="px-4 py-2">{person.name || "-"}</td>
-                    <td className="px-4 py-2">{person.role || "-"}</td>
-                    <td className="px-4 py-2">
-                      {person.signature ? (
-                        <img 
-                          src={person.signature} 
-                          alt="Firma" 
-                          className="h-10 object-contain"
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Cargo</label>
+                        <Input 
+                          value={technician.role}
+                          disabled
+                          className="bg-gray-100"
                         />
-                      ) : "-"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-gray-500">No hay personal registrado</p>
-        )}
-      </CollapsibleSection>
-      
-      <CollapsibleSection title="Información del Lote" defaultOpen={true}>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3">
-          <div>
-            <p className="text-sm font-medium text-gray-500">ID de Lote</p>
-            <p>{fumigationDetails.lot.id}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Toneladas</p>
-            <p>{data.tons || fumigationDetails.lot.tons}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Calidad</p>
-            <p>{data.quality || fumigationDetails.lot.quality}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500"># Sacos</p>
-            <p>{data.bags || fumigationDetails.lot.sacks}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Destino</p>
-            <p>{data.destination || fumigationDetails.lot.portDestination}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Estado Cintas</p>
-            <p>{data.tapeStatus ? "OK" : "No OK"}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Tiempo Fumigación</p>
-            <p>{data.fumigationTime ? `${data.fumigationTime} horas` : "-"}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">PPM Fosfina</p>
-            <p>{data.ppmPhosphine || "-"}</p>
-          </div>
-        </div>
-      </CollapsibleSection>
-      
-      <CollapsibleSection title="Condiciones de Seguridad">
-        <div className="space-y-2">
-          <div className="flex items-center">
-            <div className={`w-4 h-4 mr-2 border ${data.hazards?.electrical ? 'bg-blue-500' : 'bg-white'}`}></div>
-            <span>Peligro Eléctrico</span>
-          </div>
-          <div className="flex items-center">
-            <div className={`w-4 h-4 mr-2 border ${data.hazards?.falls ? 'bg-blue-500' : 'bg-white'}`}></div>
-            <span>Peligro de Caídas</span>
-          </div>
-          <div className="flex items-center">
-            <div className={`w-4 h-4 mr-2 border ${data.hazards?.runOver ? 'bg-blue-500' : 'bg-white'}`}></div>
-            <span>Peligro de Atropellos</span>
-          </div>
-        </div>
-      </CollapsibleSection>
-      
-      <CollapsibleSection title="Firmas" defaultOpen={true}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="font-medium mb-2">Firma del Técnico</h4>
-            {data.technicianSignature ? (
-              <div className="p-2 border rounded-md">
-                <img 
-                  src={data.technicianSignature} 
-                  alt="Firma técnico" 
-                  className="h-20 object-contain"
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection title="Dimensiones del Lugar" defaultOpen>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Altura (m) *</label>
+                    <Input 
+                      type="number"
+                      step="0.1"
+                      value={fumigationData.dimensions.height}
+                      onChange={(e) => setFumigationData(prev => ({ 
+                        ...prev, 
+                        dimensions: { ...prev.dimensions, height: e.target.value }
+                      }))}
+                      disabled={!isEditable || fumigationReportSubmitted}
+                      placeholder="0.0"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Ancho (m) *</label>
+                    <Input 
+                      type="number"
+                      step="0.1"
+                      value={fumigationData.dimensions.width}
+                      onChange={(e) => setFumigationData(prev => ({ 
+                        ...prev, 
+                        dimensions: { ...prev.dimensions, width: e.target.value }
+                      }))}
+                      disabled={!isEditable || fumigationReportSubmitted}
+                      placeholder="0.0"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Largo (m) *</label>
+                    <Input 
+                      type="number"
+                      step="0.1"
+                      value={fumigationData.dimensions.length}
+                      onChange={(e) => setFumigationData(prev => ({ 
+                        ...prev, 
+                        dimensions: { ...prev.dimensions, length: e.target.value }
+                      }))}
+                      disabled={!isEditable || fumigationReportSubmitted}
+                      placeholder="0.0"
+                    />
+                  </div>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection title="Condiciones Ambientales" defaultOpen>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Temperatura (°C) *</label>
+                    <Input 
+                      type="number"
+                      value={fumigationData.environmentalConditions.temperature}
+                      onChange={(e) => setFumigationData(prev => ({ 
+                        ...prev, 
+                        environmentalConditions: { ...prev.environmentalConditions, temperature: e.target.value }
+                      }))}
+                      disabled={!isEditable || fumigationReportSubmitted}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Humedad (%) *</label>
+                    <Input 
+                      type="number"
+                      value={fumigationData.environmentalConditions.humidity}
+                      onChange={(e) => setFumigationData(prev => ({ 
+                        ...prev, 
+                        environmentalConditions: { ...prev.environmentalConditions, humidity: e.target.value }
+                      }))}
+                      disabled={!isEditable || fumigationReportSubmitted}
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection title="Condiciones de Seguridad Industrial" defaultOpen>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="electric"
+                      checked={fumigationData.hazards.electricDanger}
+                      onCheckedChange={(checked) => setFumigationData(prev => ({ 
+                        ...prev, 
+                        hazards: { ...prev.hazards, electricDanger: !!checked }
+                      }))}
+                      disabled={!isEditable || fumigationReportSubmitted}
+                    />
+                    <label htmlFor="electric" className="text-sm font-medium">
+                      Peligro eléctrico
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="falls"
+                      checked={fumigationData.hazards.fallingDanger}
+                      onCheckedChange={(checked) => setFumigationData(prev => ({ 
+                        ...prev, 
+                        hazards: { ...prev.hazards, fallingDanger: !!checked }
+                      }))}
+                      disabled={!isEditable || fumigationReportSubmitted}
+                    />
+                    <label htmlFor="falls" className="text-sm font-medium">
+                      Peligro de caídas
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="hit"
+                      checked={fumigationData.hazards.hitDanger}
+                      onCheckedChange={(checked) => setFumigationData(prev => ({ 
+                        ...prev, 
+                        hazards: { ...prev.hazards, hitDanger: !!checked }
+                      }))}
+                      disabled={!isEditable || fumigationReportSubmitted}
+                    />
+                    <label htmlFor="hit" className="text-sm font-medium">
+                      Peligro de golpes
+                    </label>
+                  </div>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection title="Suministros Utilizados" defaultOpen>
+                <div className="space-y-4">
+                  {fumigationData.supplies.map((supply, index) => (
+                    <div key={index} className="grid grid-cols-5 gap-4 p-4 border rounded">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Producto *</label>
+                        <Input 
+                          value={supply.name}
+                          onChange={(e) => handleSupplyChange(index, 'name', e.target.value)}
+                          disabled={!isEditable || fumigationReportSubmitted}
+                          placeholder="Nombre del producto"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Cantidad *</label>
+                        <Input 
+                          type="number"
+                          step="0.1"
+                          value={supply.quantity}
+                          onChange={(e) => handleSupplyChange(index, 'quantity', e.target.value)}
+                          disabled={!isEditable || fumigationReportSubmitted}
+                          placeholder="0.0"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Dosis *</label>
+                        <Input 
+                          value={supply.dosage}
+                          onChange={(e) => handleSupplyChange(index, 'dosage', e.target.value)}
+                          disabled={!isEditable || fumigationReportSubmitted}
+                          placeholder="ej: 5ml/m2"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Tipo *</label>
+                        <Input 
+                          value={supply.kindOfSupply}
+                          onChange={(e) => handleSupplyChange(index, 'kindOfSupply', e.target.value)}
+                          disabled={!isEditable || fumigationReportSubmitted}
+                          placeholder="Gas, Líquido, etc."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">N° Cintas *</label>
+                        <div className="flex gap-2">
+                          <Input 
+                            value={supply.numberOfStrips}
+                            onChange={(e) => handleSupplyChange(index, 'numberOfStrips', e.target.value)}
+                            disabled={!isEditable || fumigationReportSubmitted}
+                            placeholder="0"
+                          />
+                          {isEditable && !fumigationReportSubmitted && (
+                            <Button 
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeSupply(index)}
+                              disabled={fumigationData.supplies.length === 1}
+                            >
+                              <Minus size={16} />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {isEditable && !fumigationReportSubmitted && (
+                    <Button type="button" variant="outline" onClick={addSupply}>
+                      <Plus size={16} className="mr-2" />
+                      Agregar Suministro
+                    </Button>
+                  )}
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection title="Observaciones">
+                <textarea 
+                  className="w-full min-h-[100px] p-3 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={fumigationData.observations}
+                  onChange={(e) => setFumigationData(prev => ({ ...prev, observations: e.target.value }))}
+                  disabled={!isEditable || fumigationReportSubmitted}
+                  placeholder="Observaciones adicionales..."
                 />
+              </CollapsibleSection>
+
+              <CollapsibleSection title="Firmas">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Firma del Técnico</label>
+                    <div className="h-32 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center text-gray-500">
+                      Firma digital (pendiente de implementar)
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Firma del Cliente</label>
+                    <div className="h-32 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center text-gray-500">
+                      Firma digital (pendiente de implementar)
+                    </div>
+                  </div>
+                </div>
+              </CollapsibleSection>
+            </TabsContent>
+
+            <TabsContent value="uncovering" className="flex-1 overflow-auto px-8 py-4 m-0">
+              <div className="text-center py-8">
+                <p className="text-gray-500">Registro de Descarpe disponible después de completar el registro de fumigación</p>
               </div>
-            ) : (
-              <p className="text-gray-500">No disponible</p>
-            )}
-          </div>
-          <div>
-            <h4 className="font-medium mb-2">Firma del Cliente</h4>
-            {data.clientSignature ? (
-              <div className="p-2 border rounded-md">
-                <img 
-                  src={data.clientSignature} 
-                  alt="Firma cliente" 
-                  className="h-20 object-contain"
-                />
-              </div>
-            ) : (
-              <p className="text-gray-500">No disponible</p>
-            )}
-          </div>
+            </TabsContent>
+          </Tabs>
         </div>
-      </CollapsibleSection>
-    </div>
+
+        <div className="flex-shrink-0">
+          {isEditable && !fumigationReportSubmitted && (
+            <div className="flex justify-end gap-4 px-8 py-6 border-t border-gray-300 bg-white rounded-b-lg">
+              <Button variant="outline" onClick={onClose}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={() => setShowConfirmDialog(true)}
+                className="bg-[#003595] hover:bg-[#002060]"
+              >
+                Subir Evidencias
+              </Button>
+            </div>
+          )}
+
+          {!isEditable && (
+            <div className="flex justify-end gap-4 px-8 py-6 border-t border-gray-300 bg-white rounded-b-lg">
+              <Button variant="outline" onClick={onClose}>
+                Cerrar
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar envío de evidencias</DialogTitle>
+            <DialogDescription>
+              ¿Está seguro de que desea subir las evidencias de fumigación? Una vez enviadas, no podrá modificar la información.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSubmitFumigationReport} className="bg-[#003595] hover:bg-[#002060]">
+              Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
