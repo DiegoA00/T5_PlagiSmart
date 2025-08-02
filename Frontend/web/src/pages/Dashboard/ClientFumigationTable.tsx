@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import clientData from "./data/fumigacionPorCliente.json";
+import clientData from "./Data/fumigacionPorCliente.json";
 
 export default function ClientFumigationTable() {
   const [filtro, setFiltro] = useState("");
