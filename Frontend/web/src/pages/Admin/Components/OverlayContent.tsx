@@ -122,7 +122,7 @@ export const OverlayContent: FC<OverlayContentProps> = ({
                 ) : (
                   <span className="ml-2">
                     {request.applicationData?.company?.legalRepresentative ? 
-                      `${request.applicationData.company.legalRepresentative.name || ''} ${request.applicationData.company.legalRepresentative.lastName || ''}`.trim() || "-" : 
+                      `${request.applicationData.company.legalRepresentative.firstName || ''} ${request.applicationData.company.legalRepresentative.lastName || ''}`.trim() || "-" : 
                       "-"}
                   </span>
                 )}
@@ -165,7 +165,9 @@ export const OverlayContent: FC<OverlayContentProps> = ({
               request.applicationData?.fumigations?.map((fumigation) => (
                 <div key={fumigation.id} className="mb-6">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold">Lote #{fumigation.id}</span>
+                    <span className="font-semibold">
+                      Lote #{fumigation.lotNumber}
+                    </span>
                     <label className="flex items-center gap-2 text-sm">
                       Seleccionar Lote:
                       <input
@@ -191,15 +193,15 @@ export const OverlayContent: FC<OverlayContentProps> = ({
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
                       <div className="col-span-2"># Toneladas</div>
-                      <div className="col-span-3">{fumigation.tons}</div>
+                      <div className="col-span-3">{fumigation.ton || "-"}</div>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
                       <div className="col-span-2">Calidad Grado</div>
-                      <div className="col-span-3">{fumigation.grade}</div>
+                      <div className="col-span-3">{fumigation.quality || "-"}</div>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm">
                       <div className="col-span-2"># Sacos</div>
-                      <div className="col-span-3">{fumigation.sacks}</div>
+                      <div className="col-span-3">{fumigation.sacks || "-"}</div>
                     </div>
                     {fumigation.message && (
                       <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-t border-[#003595]">

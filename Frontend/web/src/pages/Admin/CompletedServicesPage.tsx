@@ -25,23 +25,27 @@ export default function CompletedServicesPage() {
     { header: "Representante", key: "representative" },
     { header: "Teléfono", key: "phoneNumber" },
     { header: "Ubicación", key: "location" },
+    { 
+      header: "Fecha Planificada", 
+      key: "plannedDate",
+      render: (value: string) => value ? new Date(value).toLocaleDateString() : "-"
+    },
   ];
 
   const handleViewDetails = async (fumigation: FumigationListItem) => {
-    const lotId = parseInt(fumigation.lotNumber.replace(/\D/g, '')) || fumigations.indexOf(fumigation) + 1;
-    setSelectedLotId(lotId);
-    await loadFumigationDetails(lotId);
+    // Ahora usar el ID real de la API
+    setSelectedLotId(fumigation.id);
+    await loadFumigationDetails(fumigation.id);
   };
 
   const handleViewEvidence = async (fumigation: FumigationListItem) => {
-    const lotId = parseInt(fumigation.lotNumber.replace(/\D/g, '')) || fumigations.indexOf(fumigation) + 1;
-    setSelectedLotId(lotId);
+    setSelectedLotId(fumigation.id);
     setShowingEvidence(true);
-    await loadFumigationDetails(lotId);
+    await loadFumigationDetails(fumigation.id);
   };
 
   const handleGenerateCertificate = (fumigation: FumigationListItem) => {
-    console.log("Generando certificado para:", fumigation.lotNumber);
+    console.log("Generando certificado para lote ID:", fumigation.id);
     // Implementar lógica de generación de certificado
   };
 

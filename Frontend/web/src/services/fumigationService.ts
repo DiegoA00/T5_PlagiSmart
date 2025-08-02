@@ -1,5 +1,38 @@
 import apiClient from "./api/apiService";
-import { FumigationApplication, ApiFumigationApplication, FumigationListItem, FumigationDetailResponse } from "@/types/request";
+import { 
+  FumigationApplication, 
+  ApiFumigationApplication, 
+  FumigationListItem, 
+  FumigationDetailResponse,
+  PaginatedResponse,
+  PageableRequest
+} from "@/types/request";
+
+const formatSortParams = (sort?: string[]): string | undefined => {
+  if (!sort || sort.length === 0) return undefined;
+  return sort.join(',');
+};
+
+const createEmptyPaginatedResponse = <T>(): PaginatedResponse<T> => ({
+  totalPages: 0,
+  totalElements: 0,
+  size: 0,
+  content: [],
+  number: 0,
+  sort: { empty: true, unsorted: true, sorted: false },
+  first: true,
+  last: true,
+  numberOfElements: 0,
+  pageable: {
+    offset: 0,
+    sort: { empty: true, unsorted: true, sorted: false },
+    unpaged: false,
+    paged: true,
+    pageNumber: 0,
+    pageSize: 0
+  },
+  empty: true
+});
 
 export const fumigationService = {
   getApplicationById: async (id: string): Promise<FumigationApplication> => {
@@ -11,84 +44,146 @@ export const fumigationService = {
     }
   },
 
-  getAllApplications: async (): Promise<ApiFumigationApplication[]> => {
+  getAllApplications: async (pageableRequest?: PageableRequest): Promise<PaginatedResponse<ApiFumigationApplication>> => {
     try {
-      const [pendingApps, rejectedApps] = await Promise.all([
-        fumigationService.getPendingApplications(),
-        fumigationService.getRejectedApplications()
-      ]);
+      const defaultPageable: PageableRequest = {
+        page: 0,
+        size: 50,
+        sort: ["id"]
+      };
+
+      const pageable = { ...defaultPageable, ...pageableRequest };
       
-      const allApplications = [...pendingApps, ...rejectedApps];
-      return allApplications;
+      const params: any = {
+        status: 'pending',
+        page: pageable.page,
+        size: pageable.size
+      };
+
+      if (pageable.sort && pageable.sort.length > 0) {
+        params.sort = formatSortParams(pageable.sort);
+      }
+      
+      const response = await apiClient.get('/fumigation-applications', { params });
+      
+      return response.data || createEmptyPaginatedResponse<ApiFumigationApplication>();
     } catch (error: any) {
-      throw new Error(error.message || "Error al cargar todas las solicitudes");
+      if (error.response?.status >= 500) {
+        return createEmptyPaginatedResponse<ApiFumigationApplication>();
+      }
+      
+      throw new Error(error.response?.data?.message || "Error al cargar todas las solicitudes");
     }
   },
 
-  getPendingApplications: async (): Promise<ApiFumigationApplication[]> => {
+  getPendingApplications: async (pageableRequest?: PageableRequest): Promise<PaginatedResponse<ApiFumigationApplication>> => {
     try {
-      const response = await apiClient.get('/fumigation-applications', {
-        params: { status: 'PENDING' }
-      });
+      const defaultPageable: PageableRequest = {
+        page: 0,
+        size: 50,
+        sort: ["id"]
+      };
+
+      const pageable = { ...defaultPageable, ...pageableRequest };
       
-      if (Array.isArray(response.data)) {
-        return response.data;
-      } else {
-        throw new Error("Formato de datos inesperado");
+      const params: any = {
+        status: 'PENDING',
+        page: pageable.page,
+        size: pageable.size
+      };
+
+      if (pageable.sort && pageable.sort.length > 0) {
+        params.sort = formatSortParams(pageable.sort);
       }
+      
+      const response = await apiClient.get('/fumigation-applications', { params });
+      
+      return response.data || createEmptyPaginatedResponse<ApiFumigationApplication>();
     } catch (error: any) {
+      if (error.response?.status >= 500) {
+        return createEmptyPaginatedResponse<ApiFumigationApplication>();
+      }
+      
       throw new Error(`Error al cargar solicitudes pendientes: ${error.response?.data?.message || error.message}`);
     }
   },
 
-  getRejectedApplications: async (): Promise<ApiFumigationApplication[]> => {
+  getRejectedApplications: async (pageableRequest?: PageableRequest): Promise<PaginatedResponse<ApiFumigationApplication>> => {
     try {
-      const response = await apiClient.get('/fumigation-applications', {
-        params: { status: 'REJECTED' }
-      });
+      const defaultPageable: PageableRequest = {
+        page: 0,
+        size: 50,
+        sort: ["id"]
+      };
+
+      const pageable = { ...defaultPageable, ...pageableRequest };
       
-      if (Array.isArray(response.data)) {
-        return response.data;
-      } else {
-        throw new Error("Formato de datos inesperado");
+      const params: any = {
+        status: 'REJECTED',
+        page: pageable.page,
+        size: pageable.size
+      };
+
+      if (pageable.sort && pageable.sort.length > 0) {
+        params.sort = formatSortParams(pageable.sort);
       }
+      
+      const response = await apiClient.get('/fumigation-applications', { params });
+      
+      return response.data || createEmptyPaginatedResponse<ApiFumigationApplication>();
     } catch (error: any) {
+      if (error.response?.status >= 500) {
+        return createEmptyPaginatedResponse<ApiFumigationApplication>();
+      }
+      
       throw new Error(`Error al cargar solicitudes rechazadas: ${error.response?.data?.message || error.message}`);
     }
   },
 
-  getFumigationsByStatus: async (status: string): Promise<FumigationListItem[]> => {
+  getFumigationsByStatus: async (
+    status: string, 
+    pageableRequest?: PageableRequest
+  ): Promise<PaginatedResponse<FumigationListItem>> => {
     try {
-      const response = await apiClient.get('/fumigations', {
-        params: { status }
-      });
+      const defaultPageable: PageableRequest = {
+        page: 0,
+        size: 50,
+        sort: ["id"]
+      };
+
+      const pageable = { ...defaultPageable, ...pageableRequest };
       
-      if (Array.isArray(response.data)) {
-        return response.data;
-      } else {
-        throw new Error("Formato de datos inesperado");
+      const params: any = {
+        status,
+        page: pageable.page,
+        size: pageable.size
+      };
+
+      if (pageable.sort && pageable.sort.length > 0) {
+        params.sort = formatSortParams(pageable.sort);
       }
+      
+      const response = await apiClient.get('/fumigations', { params });
+      
+      return response.data || createEmptyPaginatedResponse<FumigationListItem>();
     } catch (error: any) {
+      if (error.response?.status >= 500) {
+        return createEmptyPaginatedResponse<FumigationListItem>();
+      }
+      
       throw new Error(`Error al cargar fumigaciones con status ${status}: ${error.response?.data?.message || error.message}`);
     }
   },
 
   getFumigationDetails: async (id: number): Promise<FumigationDetailResponse> => {
     try {
-      console.log(`🔍 Enviando petición a /fumigations/info/${id}`);
-      console.log(`📋 ID del lote: ${id} (tipo: ${typeof id})`);
-      console.warn(`⚠️  TEMPORAL: Usando ID extraído del lotNumber. Pendiente que backend incluya 'id' en GET /fumigations`);
-      
       const response = await apiClient.get(`/fumigations/info/${id}`);
-      
-      console.log(`✅ Respuesta recibida para ID ${id}:`, response.data);
       
       return response.data;
     } catch (error: any) {
-      console.error(`❌ Error al obtener detalles del lote ID ${id}:`, error.response?.data || error.message);
       
       if (error.response?.status === 404) {
-        throw new Error(`No se encontró el lote con ID ${id}. Esto puede deberse a que el ID fue extraído del número de lote y no corresponde al ID real del registro.`);
+        throw new Error(`No se encontró el lote con ID ${id}.`);
       }
       
       throw new Error(error.response?.data?.message || "Error al obtener detalles de la fumigación");

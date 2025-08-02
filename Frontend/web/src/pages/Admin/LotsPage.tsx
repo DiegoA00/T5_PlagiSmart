@@ -25,36 +25,23 @@ export default function LotsPage() {
     { header: "Representante", key: "representative" },
     { header: "Teléfono", key: "phoneNumber" },
     { header: "Ubicación", key: "location" },
+    { 
+      header: "Fecha Planificada", 
+      key: "plannedDate",
+      render: (value: string) => value ? new Date(value).toLocaleDateString() : "-"
+    },
   ];
 
-  const extractLotId = (fumigation: FumigationListItem): number => {
-    // TODO: TEMPORAL - El backend debería incluir el 'id' en la respuesta de GET /fumigations
-    // Por ahora extraemos un ID numérico del lotNumber o usamos el índice
-    const numericId = parseInt(fumigation.lotNumber.replace(/\D/g, ''));
-    const fallbackId = fumigations.indexOf(fumigation) + 1;
-    const finalId = numericId || fallbackId;
-    
-    console.log(`🔢 LotsPage: Extrayendo ID del lote (TEMPORAL)`);
-    console.log(`📝 Número de lote: "${fumigation.lotNumber}"`);
-    console.log(`🧮 ID numérico extraído: ${numericId}`);
-    console.log(`🔄 ID fallback (índice + 1): ${fallbackId}`);
-    console.log(`✅ ID final a usar: ${finalId}`);
-    console.warn(`⚠️  Esta lógica es temporal hasta que el backend incluya el 'id' real`);
-    
-    return finalId;
-  };
-
   const handleViewDetails = async (fumigation: FumigationListItem) => {
-    const lotId = extractLotId(fumigation);
-    setSelectedLotId(lotId);
-    await loadFumigationDetails(lotId);
+    // Ahora podemos usar el ID real de la API
+    setSelectedLotId(fumigation.id);
+    await loadFumigationDetails(fumigation.id);
   };
 
   const handleViewEvidence = async (fumigation: FumigationListItem) => {
-    const lotId = extractLotId(fumigation);
-    setSelectedLotId(lotId);
+    setSelectedLotId(fumigation.id);
     setShowingEvidence(true);
-    await loadFumigationDetails(lotId);
+    await loadFumigationDetails(fumigation.id);
   };
 
   const handleCloseDetails = () => {

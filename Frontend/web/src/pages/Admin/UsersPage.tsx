@@ -5,7 +5,9 @@ import { Overlay } from "@/layouts/Overlay";
 import { TopBar } from "@/layouts/TopBar";
 import { UsersTable, User } from "./Components/UsersTable";
 import { RoleChangeModal } from "./Components/RoleChangeModal";
-import { usersService, ApiUser } from "@/services/usersService";
+import { usersService } from "@/services/usersService";
+import { ApiUser } from "@/types/request";
+import { Layout } from "@/layouts/Layout";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -51,10 +53,14 @@ export default function UsersPage() {
     setError("");
     
     try {
-      const apiUsers = await usersService.getAllUsers();
+      const response = await usersService.getAllUsers();
+      // Extraer content de la respuesta paginada
+      const apiUsers = response.content || [];
       const mappedUsers = apiUsers.map(mapApiUserToUser);
       setUsers(mappedUsers);
       setFilteredUsers(mappedUsers);
+      
+      console.log(`📊 Total de usuarios cargados: ${mappedUsers.length} de ${response.totalElements}`);
     } catch (err: any) {
       setError(err.message || "Error desconocido");
       console.error("Error fetching users:", err);
@@ -70,7 +76,9 @@ export default function UsersPage() {
     setError("");
     
     try {
-      const apiUsers = await usersService.getUsersByRole(role);
+      const response = await usersService.getUsersByRole(role);
+      // Extraer content de la respuesta paginada
+      const apiUsers = response.content || [];
       const mappedUsers = apiUsers.map(mapApiUserToUser);
       setUsers(mappedUsers);
       setFilteredUsers(mappedUsers);
@@ -99,14 +107,11 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="flex h-screen flex-col">
-      <TopBar />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
-        <main className="flex-1 p-10 bg-white overflow-y-auto">
-          <header className="flex justify-between items-start mb-8">
-            <div>
-              <h2 className="text-3xl font-bold mb-1">Gestión de Usuarios</h2>
+    <Layout>
+      <main className="flex-1 p-10 bg-white overflow-y-auto">
+        <header className="flex justify-between items-start mb-8">
+          <div>
+            <h2 className="text-3xl font-bold mb-1">Gestión de Usuarios</h2>
               <p className="text-gray-500">
                 Administra los usuarios y sus roles en el sistema
               </p>
@@ -170,7 +175,6 @@ export default function UsersPage() {
             />
           </Overlay>
         </main>
-      </div>
-    </div>
+        </Layout>
   );
 }

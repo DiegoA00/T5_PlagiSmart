@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Layout } from "@/layouts/Layout";
 import { BaseTable } from "./Components/BaseTable";
-import { ApiFumigationApplication } from "@/types/request";
+import { ApiFumigationApplication, PaginatedResponse } from "@/types/request";
 import { Overlay } from "@/layouts/Overlay";
 import { OverlayContent } from "@/pages/Admin/Components/OverlayContent";
 import { fumigationService } from "@/services/fumigationService";
@@ -41,16 +41,18 @@ export default function RequestsPage() {
     setError(null);
 
     try {
-      let data: ApiFumigationApplication[];
+      let response: PaginatedResponse<ApiFumigationApplication>;
 
       if (selectedStatus === "all") {
-        data = await fumigationService.getAllApplications();
+        response = await fumigationService.getAllApplications();
       } else if (selectedStatus === "PENDING") {
-        data = await fumigationService.getPendingApplications();
+        response = await fumigationService.getPendingApplications();
       } else {
-        data = await fumigationService.getRejectedApplications();
+        response = await fumigationService.getRejectedApplications();
       }
 
+      // Extraer el contenido del array de la respuesta paginada
+      const data = response.content || [];
       setApplications(data);
       setFilteredApplications(data);
     } catch (err: any) {

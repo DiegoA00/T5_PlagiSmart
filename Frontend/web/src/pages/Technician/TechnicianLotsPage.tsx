@@ -27,20 +27,22 @@ export default function TechnicianLotsPage() {
     { header: "Representante", key: "representative" },
     { header: "Teléfono", key: "phoneNumber" },
     { header: "Ubicación", key: "location" },
+    { 
+      header: "Fecha Planificada", 
+      key: "plannedDate",
+      render: (value: string) => value ? new Date(value).toLocaleDateString() : "-"
+    },
   ];
 
   const handleViewDetails = async (fumigation: FumigationListItem) => {
-    // Extraer el ID del número de lote o usar un índice temporal
-    const lotId = parseInt(fumigation.lotNumber.replace(/\D/g, '')) || fumigations.indexOf(fumigation) + 1;
-    setSelectedLotId(lotId);
-    await loadFumigationDetails(lotId);
+    setSelectedLotId(fumigation.id);
+    await loadFumigationDetails(fumigation.id);
   };
 
   const handleRegisterEvidence = async (fumigation: FumigationListItem) => {
-    const lotId = parseInt(fumigation.lotNumber.replace(/\D/g, '')) || fumigations.indexOf(fumigation) + 1;
-    setSelectedLotId(lotId);
+    setSelectedLotId(fumigation.id);
     setShowingEvidence(true);
-    await loadFumigationDetails(lotId);
+    await loadFumigationDetails(fumigation.id);
   };
 
   const handleCloseLotDetails = () => {
@@ -59,7 +61,7 @@ export default function TechnicianLotsPage() {
 
   if (error) {
     return (
-      <Layout>
+      <Layout userName="Técnico">
         <div className="p-10">
           <div className="text-red-500">Error: {error}</div>
         </div>
@@ -68,7 +70,7 @@ export default function TechnicianLotsPage() {
   }
 
   return (
-    <Layout>
+    <Layout userName="Técnico">
       <div className="p-10">
         <header className="mb-8">
           <h2 className="text-3xl font-bold mb-1">Lotes Asignados</h2>
@@ -105,6 +107,7 @@ export default function TechnicianLotsPage() {
           />
         )}
 
+        {/* Overlay para información del lote */}
         <Overlay
           open={!!selectedLotId && !showingEvidence}
           onClose={handleCloseLotDetails}
@@ -116,6 +119,7 @@ export default function TechnicianLotsPage() {
           />
         </Overlay>
 
+        {/* Overlay para registrar evidencias - usando EvidenceOverlay en modo editable */}
         <Overlay
           open={!!selectedLotId && showingEvidence}
           onClose={handleCloseLotDetails}
@@ -123,7 +127,7 @@ export default function TechnicianLotsPage() {
           <EvidenceOverlay 
             fumigationDetails={fumigationDetails}
             loading={detailsLoading}
-            isEditable={true}
+            isEditable={true} // Modo técnico (edición)
             onClose={handleCloseLotDetails} 
             onSave={handleSaveEvidence}
           />
