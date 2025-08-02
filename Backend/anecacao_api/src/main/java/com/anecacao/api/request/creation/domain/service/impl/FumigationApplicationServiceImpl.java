@@ -10,18 +10,18 @@ import com.anecacao.api.request.creation.data.entity.Company;
 import com.anecacao.api.request.creation.data.entity.FumigationApplication;
 import com.anecacao.api.request.creation.data.entity.Status;
 import com.anecacao.api.request.creation.data.mapper.FumigationApplicationMapper;
+import com.anecacao.api.request.creation.data.mapper.FumigationApplicationSummaryMapper;
 import com.anecacao.api.request.creation.data.repository.FumigationApplicationRepository;
 import com.anecacao.api.request.creation.domain.service.CompanyService;
 import com.anecacao.api.request.creation.domain.exception.FumigationApplicationNotFoundException;
 import com.anecacao.api.auth.domain.exception.UnauthorizedAccessException;
 import com.anecacao.api.request.creation.domain.service.FumigationApplicationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +30,7 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
     private final UserService userService;
     private final CompanyService companyService;
     private final FumigationApplicationMapper mapper;
+    private final FumigationApplicationSummaryMapper summaryMapper;
 
     @Override
     public FumigationApplicationResponseDTO createFumigationApplication(FumigationApplicationDTO dto, String jwt) {
@@ -75,70 +76,19 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
     }
 
     @Override
-    public List<FumigationApplicationSummaryDTO> getFumigationApplicationsByStatus(String status) {
-        // Validar y convertir el status
-        Status statusEnum;
+    public Page<FumigationApplicationSummaryDTO> getFumigationApplicationsByStatus(String status, Pageable pageable) {
+        Status statusEnum = parseAndValidateStatus(status);
+        Page<FumigationApplication> applications = repository.findByFumigationStatus(statusEnum, pageable);
+        return applications.map(app -> summaryMapper.toSummaryDto(app, status.toUpperCase()));
+    }
+
+    private Status parseAndValidateStatus(String status) {
         try {
-            statusEnum = Status.valueOf(status.toUpperCase());
+            return Status.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid status: " + status + ". Valid values are: " +
                     Arrays.toString(Status.values()));
         }
-
-        // Obtener las aplicaciones que tienen fumigaciones con el estado especificado
-        List<FumigationApplication> applications = repository.findByFumigationStatus(statusEnum);
-
-        // Mapear a DTOs
-        return applications.stream()
-                .map(app -> {
-                    FumigationApplicationSummaryDTO dto = new FumigationApplicationSummaryDTO();
-                    dto.setId(app.getId());
-
-                    // Company name
-                    dto.setCompanyName(app.getCompany() != null ? app.getCompany().getName() : "Unknown");
-
-                    // Representative (firstName + lastName)
-                    if (app.getCompany() != null && app.getCompany().getLegalRepresentative() != null) {
-                        User rep = app.getCompany().getLegalRepresentative();
-                        String fullName = (rep.getFirstName() != null ? rep.getFirstName() : "") + " " +
-                                (rep.getLastName() != null ? rep.getLastName() : "");
-                        dto.setRepresentative(fullName.trim());
-                    } else {
-                        dto.setRepresentative("Unknown");
-                    }
-
-                    // Location - primero intentar obtener de fumigation, si no hay usar address de company
-                    String location = app.getFumigations().stream()
-                            .filter(f -> f.getLocation() != null && !f.getLocation().isEmpty())
-                            .map(f -> f.getLocation())
-                            .findFirst()
-                            .orElse(app.getCompany() != null ? app.getCompany().getAddress() : "No location");
-                    dto.setLocation(location);
-
-                    // Local date - obtener de actualFumigationDate o dateTime
-                    String localDate = app.getFumigations().stream()
-                            .map(f -> {
-                                // Primero intentar actualFumigationDate
-                                if (f.getActualFumigationDate() != null) {
-                                    return f.getActualFumigationDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-                                }
-                                // Si no hay, usar dateTime
-                                else if (f.getDateTime() != null) {
-                                    return f.getDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-                                }
-                                return null;
-                            })
-                            .filter(date -> date != null)
-                            .findFirst()
-                            .orElse("No date");
-                    dto.setLocalDate(localDate);
-
-                    // Status
-                    dto.setStatus(status.toUpperCase());
-
-                    return dto;
-                })
-                .collect(Collectors.toList());
     }
 
 }

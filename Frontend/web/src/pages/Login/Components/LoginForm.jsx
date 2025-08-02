@@ -1,26 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import { loginService, authService } from "../../../services/auth/loginService";
+import { loginService } from "../../../services/auth/loginService";
 import { useRoleRedirect } from "../../../hooks/useRoleRedirect";
+import { useAuth } from "@/context/AuthContext";
 
 const LoginForm = () => {
   const navigate = useNavigate();
   const redirect = useRoleRedirect();
-
-  useEffect(() => {
-    const checkSession = async () => {
-      if (authService.isAuthenticated()) {
-        try {
-          await loginService.validateSession();
-          redirect();
-        } catch (error) {
-          console.log("Sesión expirada o inválida");
-        }
-      }
-    };
-    checkSession();
-  }, [redirect]);
+  const { login } = useAuth();
 
   const [form, setForm] = useState({
     email: "",
@@ -48,8 +36,11 @@ const LoginForm = () => {
 
     try {
       const { email, password, rememberMe } = form;
+      
       const response = await loginService.login(email, password, rememberMe);
+      
       if (response.success) {
+        await login(response);
         redirect();
       }
     } catch (err) {

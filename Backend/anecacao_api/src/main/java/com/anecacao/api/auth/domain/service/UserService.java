@@ -3,8 +3,8 @@ package com.anecacao.api.auth.domain.service;
 import com.anecacao.api.auth.data.dto.*;
 import com.anecacao.api.auth.data.entity.RoleName;
 import com.anecacao.api.auth.data.entity.User;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface UserService {
     UserRegistrationResponseDTO registerUser(UserRegistrationRequestDTO userRequestDTO);
@@ -23,7 +23,7 @@ public interface UserService {
 
     void createAdminUserIfNotExist();
 
-    List<UserResponseDTO> getUsersByRole(String role);
+    Page<UserResponseDTO> getUsersByRole(String role, Pageable pageable);
 
-    List<UserResponseDTO> getAllUsers();
+    Page<UserResponseDTO> getAllUsers(Pageable pageable);
 }

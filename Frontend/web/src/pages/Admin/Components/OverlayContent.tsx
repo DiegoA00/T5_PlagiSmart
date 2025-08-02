@@ -1,45 +1,45 @@
-import { FC, useState, useEffect } from "react";
+import { FC } from "react";
 import { Request } from "@/types/request";
 import { Button } from "@/components/ui/button";
-import { Overlay } from "@/layouts/Overlay";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useRequestApproval } from "@/hooks/useRequestApproval";
+import { ClientDataSection } from "./ClientDataSection";
+import { FumigationLotCard } from "./FumigationLotCard";
+import { ObservationModal } from "./ObservationModal";
+import { SuccessModal } from "./SuccessModal";
 
-export const OverlayContent: FC<{
+interface OverlayContentProps {
   request: Request;
-  onClose?: () => void;
-}> = ({ request, onClose }) => {
-  const [selectedLots, setSelectedLots] = useState<string[]>([]);
-  const [showSuccess, setShowSuccess] = useState(false);
+  onClose: () => void;
+  onRefresh: () => void;
+  isLoading?: boolean;
+  error?: string | null;
+}
 
-  useEffect(() => {
-    setSelectedLots([]);
-    setShowSuccess(false);
-  }, [request]);
-
-  const allSelected = selectedLots.length === request.lots.length && request.lots.length > 0;
-
-  const handleLotCheckbox = (lotId: string) => {
-    setSelectedLots((prev) =>
-      prev.includes(lotId)
-        ? prev.filter((id) => id !== lotId)
-        : [...prev, lotId]
-    );
-  };
-
-  const handleSelectAll = () => {
-    if (allSelected) {
-      setSelectedLots([]);
-    } else {
-      setSelectedLots(request.lots.map((lot) => lot.id));
-    }
-  };
-
-  const handleApprove = () => {
-    setShowSuccess(true);
-    setTimeout(() => {
-      setShowSuccess(false);
-      if (onClose) onClose();
-    }, 2500);
-  };
+export const OverlayContent: FC<OverlayContentProps> = ({ 
+  request, 
+  onClose,
+  onRefresh,
+  isLoading = false,
+  error = null
+}) => {
+  const {
+    selectedLots,
+    showObservationForm,
+    tempObservation,
+    setTempObservation,
+    showSuccess,
+    successMessage,
+    isProcessing,
+    handleSelectLot,
+    handleSelectAll,
+    handleAddObservation,
+    handleSaveObservation,
+    handleCancelObservation,
+    getLotObservation,
+    handleApprove,
+    handleRejectAll
+  } = useRequestApproval(request, onClose, onRefresh);
 
   return (
     <>
@@ -48,140 +48,103 @@ export const OverlayContent: FC<{
           Revisión de Solicitud de Servicio de Fumigación
         </div>
         <div className="overflow-y-auto px-8 py-6" style={{ maxHeight: "70vh" }}>
-          <div>
-            <div className="text-base font-semibold mb-2 border-b pb-2 border-[#003595]">
-              Datos Generales del Cliente
+          {error && (
+            <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+              <p className="font-medium">Error al cargar datos del servidor:</p>
+              <p>{error}</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 mb-6">
-              <div>
-                <span className="font-medium">Nombre de la Empresa:</span>
-                <span className="ml-2">{request.companyName || request.client}</span>
-              </div>
-              <div>
-                <span className="font-medium">Razón Social:</span>
-                <span className="ml-2">{request.companyLegalName || "-"}</span>
-              </div>
-              <div>
-                <span className="font-medium">RUC:</span>
-                <span className="ml-2">{request.ruc || "-"}</span>
-              </div>
-              <div>
-                <span className="font-medium">Dirección:</span>
-                <span className="ml-2">{request.address || "-"}</span>
-              </div>
-              <div>
-                <span className="font-medium">Teléfono:</span>
-                <span className="ml-2">{request.phone || "-"}</span>
-              </div>
-              <div>
-                <span className="font-medium">Nombre Representante Legal:</span>
-                <span className="ml-2">{request.legalRep || "-"}</span>
-              </div>
-              <div>
-                <span className="font-medium">Contacto Planta:</span>
-                <span className="ml-2">{request.plantContact || "-"}</span>
-              </div>
-              <div>
-                <span className="font-medium">Consignatario (Opcional):</span>
-                <span className="ml-2">{request.consignee || "-"}</span>
-              </div>
-            </div>
-          </div>
+          )}
+          
+          <ClientDataSection request={request} isLoading={isLoading} />
+          
           <div>
             <div className="text-base font-semibold mb-2 border-b pb-2 border-[#003595]">
               Datos de Fumigación por Lote
             </div>
-            {request.lots.map((lot) => (
-              <div key={lot.id} className="mb-6">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold">Lote #{lot.id}</span>
-                  <label className="flex items-center gap-2 text-sm">
-                    Seleccionar Lote:
-                    <input
-                      type="checkbox"
-                      className="accent-[#003595]"
-                      checked={selectedLots.includes(lot.id)}
-                      onChange={() => handleLotCheckbox(lot.id)}
-                    />
-                  </label>
-                </div>
-                <div className="border rounded bg-white">
-                  <div className="grid grid-cols-2 md:grid-cols-5 text-xs font-semibold text-[#003595] border-b border-[#003595] px-4 py-2">
-                    <div className="col-span-2">DETALLE</div>
-                    <div className="col-span-3">VALOR</div>
+            
+            {isLoading ? (
+              Array(2).fill(0).map((_, index) => (
+                <div key={`skeleton-${index}`} className="mb-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <Skeleton className="h-6 w-24" />
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
-                    <div className="col-span-2">Fecha y Hora de Fumigación</div>
-                    <div className="col-span-3">{lot.fumigationDate}</div>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
-                    <div className="col-span-2">Puerto de Destino</div>
-                    <div className="col-span-3">{lot.destinationPort}</div>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
-                    <div className="col-span-2"># Toneladas</div>
-                    <div className="col-span-3">{lot.tons}</div>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
-                    <div className="col-span-2">Calidad Grado</div>
-                    <div className="col-span-3">{lot.grade}</div>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm">
-                    <div className="col-span-2"># Sacos</div>
-                    <div className="col-span-3">{lot.sacks}</div>
+                  <div className="border rounded bg-white p-4">
+                    <Skeleton className="h-4 w-full mb-4" />
+                    <Skeleton className="h-4 w-full mb-4" />
+                    <Skeleton className="h-4 w-full mb-4" />
+                    <Skeleton className="h-4 w-full mb-4" />
+                    <Skeleton className="h-4 w-full" />
                   </div>
                 </div>
+              ))
+            ) : (
+              request.applicationData?.fumigations?.map((fumigation) => (
+                <FumigationLotCard
+                  key={fumigation.id}
+                  fumigation={fumigation}
+                  isSelected={selectedLots.includes(fumigation.id.toString())}
+                  observation={getLotObservation(fumigation.id)}
+                  onSelectLot={handleSelectLot}
+                  onAddObservation={handleAddObservation}
+                />
+              ))
+            )}
+            
+            {!isLoading && request.applicationData?.fumigations?.length && request.applicationData.fumigations.length > 0 && (
+              <div className="flex items-center gap-2 mt-2">
+                <input
+                  type="checkbox"
+                  className="accent-[#003595]"
+                  id="selectAllLots"
+                  checked={selectedLots.length === (request.applicationData?.fumigations?.length ?? 0)}
+                  onChange={handleSelectAll}
+                />
+                <label htmlFor="selectAllLots" className="text-sm text-[#003595]">
+                  Seleccionar Todos los Lotes
+                </label>
               </div>
-            ))}
-            <div className="flex items-center gap-2 mt-2">
-              <input
-                type="checkbox"
-                className="accent-[#003595]"
-                id="selectAllLots"
-                checked={allSelected}
-                onChange={handleSelectAll}
-              />
-              <label htmlFor="selectAllLots" className="text-sm text-[#003595]">
-                Seleccionar Todos los Lotes
-              </label>
-            </div>
+            )}
           </div>
         </div>
+        
         <div className="flex justify-end gap-4 px-8 py-6 border-t border-[#003595] bg-white rounded-b-lg">
           <Button
             variant="secondary"
-            className="bg-[#003595] text-white hover:bg-[#002060]"
+            className="bg-gray-500 text-white hover:bg-gray-600"
             onClick={onClose}
+            disabled={isProcessing}
           >
             Cancelar Revisión
           </Button>
+          
+          <Button
+            className="bg-red-600 hover:bg-red-700 text-white"
+            onClick={handleRejectAll}
+            disabled={isLoading || isProcessing}
+          >
+            {isProcessing ? "Procesando..." : "Rechazar Toda la Solicitud"}
+          </Button>
+          
           <Button
             className="bg-green-600 hover:bg-green-700 text-white"
             onClick={handleApprove}
-            disabled={selectedLots.length === 0}
+            disabled={isLoading || selectedLots.length === 0 || isProcessing}
           >
-            Aprobar Lotes Seleccionados
+            {isProcessing ? "Procesando..." : "Aprobar Lotes Seleccionados"}
           </Button>
         </div>
       </div>
-      <Overlay open={showSuccess} onClose={() => setShowSuccess(false)}>
-        <div className="flex flex-col items-center justify-center p-10">
-          <div className="text-4xl mb-4 text-green-600">✔</div>
-          <div className="text-lg font-semibold mb-2 text-[#003595]">¡Aprobación exitosa!</div>
-          <div className="text-sm text-gray-700 mb-4 text-center">
-            Los lotes seleccionados han sido aprobados correctamente.
-          </div>
-          <Button
-            className="bg-[#003595] text-white hover:bg-[#002060] mt-2"
-            onClick={() => {
-              setShowSuccess(false);
-              if (onClose) onClose();
-            }}
-          >
-            Cerrar
-          </Button>
-        </div>
-      </Overlay>
+      
+      <ObservationModal
+        isOpen={showObservationForm !== null}
+        lotNumber={request.applicationData?.fumigations?.find(f => f.id === showObservationForm)?.lotNumber}
+        observation={tempObservation}
+        onObservationChange={setTempObservation}
+        onSave={handleSaveObservation}
+        onCancel={handleCancelObservation}
+      />
+      
+      <SuccessModal isOpen={showSuccess} message={successMessage} />
     </>
   );
 };
