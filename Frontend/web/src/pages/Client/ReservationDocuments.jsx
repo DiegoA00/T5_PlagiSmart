@@ -16,7 +16,7 @@ function ReservationDocuments() {
           title: "Registro de Fumigación",
           fileName: "Registro_Fumigacion",
           content: {
-            mainTitle: "Registro de Fumigación",
+            mainTitle: "REGISTRO DE FUMIGACIÓN",
             subtitle: `Código de Reserva: ${codigoReserva}`,
             sections: [
               {
@@ -148,41 +148,107 @@ function ReservationDocuments() {
           }
         },
         {
-          id: "certificado-fumigacion",
-          title: "Certificado de Fumigación",
-          fileName: "Certificado_Fumigacion",
+          type: "registro-descarpe",
+          title: "Registro de Descarpe",
+          fileName: "Registro_Descarpe",
           content: {
-            mainTitle: "CERTIFICADO DE FUMIGACIÓN",
-            subtitle: `Certificado No. CERT-${codigoReserva}`,
+            mainTitle: "REGISTRO DE DESCARPE",
+            subtitle: `Código de Reserva: ${codigoReserva}`,
             sections: [
               {
-                type: "grid",
+                type: "header",
                 data: [
-                  { label: "Fecha de Fumigación", value: new Date().toLocaleDateString() },
-                  { label: "Producto Tratado", value: "Cacao" },
-                  { label: "Cantidad", value: "100 toneladas" },
-                  { label: "Método de Fumigación", value: "Fosfina" },
-                  { label: "Tiempo de Exposición", value: "72 horas" },
-                  { label: "Temperatura", value: "25°C" }
+                  { label: "Empresa", value: "[Nombre de la Empresa]" },
+                  { label: "Ubicación", value: "[Ubicación de la Fumigación]" },
+                  { label: "Fecha", value: new Date().toLocaleDateString() },
+                  { label: "Hora/Inicio", value: new Date().toLocaleTimeString() },
+                  { label: "Hora/Fin", value: new Date().toLocaleTimeString() },
+                  { label: "Supervisor", value: "[Nombre del Supervisor]" }
                 ]
               },
               {
-                type: "list",
-                title: "Plagas Controladas",
-                items: [
-                  "Tribolium castaneum (Gorgojo castaño)",
-                  "Oryzaephilus surinamensis (Gorgojo dentado)",
-                  "Cryptolestes ferrugineus (Gorgojo herrumbroso)"
+                type: "personal-info",
+                data: [
+                  {
+                    name: "[Nombre de Personal 1]",
+                    position: "[Cargo de Personal 1]"
+                  },
+                  {
+                    name: "[Nombre de Personal 2]",
+                    position: "[Cargo de Personal 2]"
+                  },
+                  {
+                    name: "[Nombre de Personal 3]",
+                    position: "[Cargo de Personal 3]"
+                  },
+                  {
+                    name: "[Nombre de Personal 4]",
+                    position: "[Cargo de Personal 4]"
+                  },
+                  {
+                    name: "[Nombre de Personal 5]",
+                    position: "[Cargo de Personal 5]"
+                  }
                 ]
               },
               {
-                type: "text",
-                content: "Se certifica que el producto mencionado ha sido sometido a tratamiento de fumigación y cumple con los estándares fitosanitarios requeridos para su comercialización y exportación."
+                type: "lot-details",
+                data: [
+                  {
+                    lot: "[Número de Lote 1]",
+                    tons: "[Toneladas de Lote 1]",
+                    quality: "[calidad de Lote 1]",
+                    sacks: "[Número de sacos de Lote 1]",
+                    destination: "[Destino de Lote 1]",
+                    ribbonsStatus: "[Estado de cintas de Lote 1]",
+                    fumigationTime: "[Tiempo de Fumigación de Lote 1]",
+                    ppmFosfine: "[PPM Fosfina de Lote 1]"
+                  },
+                  {
+                    lot: "[Número de Lote 2]",
+                    tons: "[Toneladas de Lote 2]",
+                    quality: "[calidad de Lote 2]",
+                    sacks: "[Número de sacos de Lote 2]",
+                    destination: "[Destino de Lote 2]",
+                    ribbonsStatus: "[Estado de cintas de Lote 2]",
+                    fumigationTime: "[Tiempo de Fumigación de Lote 2]",
+                    ppmFosfine: "[PPM Fosfina de Lote 2]"
+                  },
+                  {
+                    lot: "[Número de Lote 3]",
+                    tons: "[Toneladas de Lote 3]",
+                    quality: "[calidad de Lote 3]",
+                    sacks: "[Número de sacos de Lote 3]",
+                    destination: "[Destino de Lote 3]",
+                    ribbonsStatus: "[Estado de cintas de Lote 3]",
+                    fumigationTime: "[Tiempo de Fumigación de Lote 3]",
+                    ppmFosfine: "[PPM Fosfina de Lote 3]"
+                  },
+                  {
+                    lot: "[Número de Lote 4]",
+                    tons: "[Toneladas de Lote 4]",
+                    quality: "[calidad de Lote 4]",
+                    sacks: "[Número de sacos de Lote 4]",
+                    destination: "[Destino de Lote 4]",
+                    ribbonsStatus: "[Estado de cintas de Lote 4]",
+                    fumigationTime: "[Tiempo de Fumigación de Lote 4]",
+                    ppmFosfine: "[PPM Fosfina de Lote 4]"
+                  },
+                  {
+                    lot: "[Número de Lote 5]",
+                    tons: "[Toneladas de Lote 5]",
+                    quality: "[calidad de Lote 5]",
+                    sacks: "[Número de sacos de Lote 5]",
+                    destination: "[Destino de Lote 5]",
+                    ribbonsStatus: "[Estado de cintas de Lote 5]",
+                    fumigationTime: "[Tiempo de Fumigación de Lote 5]",
+                    ppmFosfine: "[PPM Fosfina de Lote 5]"
+                  }
+                ]
               },
               {
-                type: "single-signature",
-                signature: "Ingeniero Responsable",
-                subtitle: "Registro Profesional: XXX-XXX"
+                type: "signatures",
+                signatures: ["Técnico Responsable Anecacao", "Cliente"]
               }
             ]
           }
@@ -190,100 +256,381 @@ function ReservationDocuments() {
       ],
       "000002": [
         {
-          id: "certificado-fumigacion",
-          title: "Certificado de Fumigación",
-          fileName: "Certificado_Fumigacion",
+          type: "registro-fumigacion",
+          title: "Registro de Fumigación",
+          fileName: "Registro_Fumigacion",
           content: {
-            mainTitle: "CERTIFICADO DE FUMIGACIÓN",
-            subtitle: `Certificado No. CERT-${codigoReserva}`,
-            sections: [
-              {
-                type: "grid",
-                data: [
-                  { label: "Fecha de Fumigación", value: new Date().toLocaleDateString() },
-                  { label: "Producto Tratado", value: "Cacao" },
-                  { label: "Cantidad", value: "150 toneladas" },
-                  { label: "Método de Fumigación", value: "Fosfina" },
-                  { label: "Tiempo de Exposición", value: "48 horas" },
-                  { label: "Temperatura", value: "23°C" }
-                ]
-              },
-              {
-                type: "text",
-                content: "Se certifica que el producto mencionado ha sido sometido a tratamiento de fumigación y cumple con los estándares fitosanitarios requeridos."
-              },
-              {
-                type: "single-signature",
-                signature: "Ingeniero Responsable",
-                subtitle: "Registro Profesional: XXX-XXX"
-              }
-            ]
-          }
-        }
-      ],
-      "000003": [
-        {
-          id: "acta-conformidad",
-          title: "Acta de Conformidad",
-          fileName: "Acta_Conformidad",
-          content: {
-            mainTitle: "ACTA DE CONFORMIDAD",
+            mainTitle: "REGISTRO DE FUMIGACIÓN",
             subtitle: `Código de Reserva: ${codigoReserva}`,
             sections: [
               {
-                type: "grid",
+                type: "header",
                 data: [
-                  { label: "Fecha de Emisión", value: new Date().toLocaleDateString() },
-                  { label: "Cliente", value: "[Nombre del Cliente]" },
-                  { label: "Servicio", value: "Fumigación de Cacao" },
-                  { label: "Toneladas", value: "200" }
+                  { label: "Empresa", value: "[Nombre de la Empresa]" },
+                  { label: "Ubicación", value: "[Ubicación de la Fumigación]" },
+                  { label: "Fecha", value: new Date().toLocaleDateString() },
+                  { label: "Hora/Inicio", value: new Date().toLocaleTimeString() },
+                  { label: "Hora/Fin", value: new Date().toLocaleTimeString() },
+                  { label: "Supervisor", value: "[Nombre del Supervisor]" }
+                ]
+              },
+              {
+                type: "personal-info",
+                data: [
+                  {
+                    name: "[Nombre de Personal 1]",
+                    position: "[Cargo de Personal 1]"
+                  },
+                  {
+                    name: "[Nombre de Personal 2]",
+                    position: "[Cargo de Personal 2]"
+                  },
+                  {
+                    name: "[Nombre de Personal 3]",
+                    position: "[Cargo de Personal 3]"
+                  },
+                  {
+                    name: "[Nombre de Personal 4]",
+                    position: "[Cargo de Personal 4]"
+                  },
+                  {
+                    name: "[Nombre de Personal 5]",
+                    position: "[Cargo de Personal 5]"
+                  }
+                ]
+              },
+              {
+                type: "request-details",
+                data: [
+                  {
+                    lot: "[Número de Lote 1]",
+                    dimension: "[Dimensiones de Lote 1]",
+                    tons: "[Toneladas de Lote 1]",
+                    quality: "[calidad de Lote 1]",
+                    sacks: "[Número de sacos de Lote 1]",
+                    destination: "[Destino de Lote 1]"
+                  },
+                  {
+                    lot: "[Número de Lote 2]",
+                    dimension: "[Dimensiones de Lote 2]",
+                    tons: "[Toneladas de Lote 2]",
+                    quality: "[calidad de Lote 2]",
+                    sacks: "[Número de sacos de Lote 2]",
+                    destination: "[Destino de Lote 2]"
+                  },
+                  {
+                    lot: "[Número de Lote 3]",
+                    dimension: "[Dimensiones de Lote 3]",
+                    tons: "[Toneladas de Lote 3]",
+                    quality: "[calidad de Lote 3]",
+                    sacks: "[Número de sacos de Lote 3]",
+                    destination: "[Destino de Lote 3]"
+                  },
+                  {
+                    lot: "[Número de Lote 4]",
+                    dimension: "[Dimensiones de Lote 4]",
+                    tons: "[Toneladas de Lote 4]",
+                    quality: "[calidad de Lote 4]",
+                    sacks: "[Número de sacos de Lote 4]",
+                    destination: "[Destino de Lote 4]"
+                  },
+                  {
+                    lot: "[Número de Lote 5]",
+                    dimension: "[Dimensiones de Lote 5]",
+                    tons: "[Toneladas de Lote 5]",
+                    quality: "[calidad de Lote 5]",
+                    sacks: "[Número de sacos de Lote 5]",
+                    destination: "[Destino de Lote 5]"
+                  }
+                ]
+              },
+              {
+                type: "supplies-details",
+                data: [
+                  {
+                    product: "Fosfina",
+                    quantity: "50 kg",
+                    dose: "Aplicación según protocolo",
+                    fumigationMethod: "Fumigación a presión",
+                    ribbonsNumber: "5",
+                  },
+                  {
+                    product: "Diatomita",
+                    quantity: "20 kg",
+                    dose: "Aplicación según protocolo",
+                    fumigationMethod: "Fumigación a presión",
+                    ribbonsNumber: "3",
+                  },
+                  {
+                    product: "Aerosol Insecticida",
+                    quantity: "10 kg",
+                    dose: "Aplicación según protocolo",
+                    fumigationMethod: "Fumigación a presión",
+                    ribbonsNumber: "2",
+                  },
+                  {
+                    product: "Trampa de Feromonas",
+                    quantity: "5 unidades",
+                    dose: "Instalación según protocolo",
+                    fumigationMethod: "Fumigación a presión",
+                    ribbonsNumber: "1",
+                  },
+                  {
+                    product: "Equipo de Protección Personal (EPP)",
+                    quantity: "5 juegos",
+                    dose: "Uso obligatorio durante la fumigación",
+                    fumigationMethod: "Fumigación a presión",
+                    ribbonsNumber: "0",
+                  }
                 ]
               },
               {
                 type: "signatures",
-                signatures: ["Firma del Cliente", "Firma del Prestador"]
+                signatures: ["Técnico Responsable Anecacao", "Cliente"]
+              }
+            ]
+          }
+        },
+      ],
+      "000003": [
+        {
+          type: "registro-fumigacion",
+          title: "Registro de Fumigación",
+          fileName: "Registro_Fumigacion",
+          content: {
+            mainTitle: "REGISTRO DE FUMIGACIÓN",
+            subtitle: `Código de Reserva: ${codigoReserva}`,
+            sections: [
+              {
+                type: "header",
+                data: [
+                  { label: "Empresa", value: "[Nombre de la Empresa]" },
+                  { label: "Ubicación", value: "[Ubicación de la Fumigación]" },
+                  { label: "Fecha", value: new Date().toLocaleDateString() },
+                  { label: "Hora/Inicio", value: new Date().toLocaleTimeString() },
+                  { label: "Hora/Fin", value: new Date().toLocaleTimeString() },
+                  { label: "Supervisor", value: "[Nombre del Supervisor]" }
+                ]
+              },
+              {
+                type: "personal-info",
+                data: [
+                  {
+                    name: "[Nombre de Personal 1]",
+                    position: "[Cargo de Personal 1]"
+                  },
+                  {
+                    name: "[Nombre de Personal 2]",
+                    position: "[Cargo de Personal 2]"
+                  },
+                  {
+                    name: "[Nombre de Personal 3]",
+                    position: "[Cargo de Personal 3]"
+                  },
+                  {
+                    name: "[Nombre de Personal 4]",
+                    position: "[Cargo de Personal 4]"
+                  },
+                  {
+                    name: "[Nombre de Personal 5]",
+                    position: "[Cargo de Personal 5]"
+                  }
+                ]
+              },
+              {
+                type: "request-details",
+                data: [
+                  {
+                    lot: "[Número de Lote 1]",
+                    dimension: "[Dimensiones de Lote 1]",
+                    tons: "[Toneladas de Lote 1]",
+                    quality: "[calidad de Lote 1]",
+                    sacks: "[Número de sacos de Lote 1]",
+                    destination: "[Destino de Lote 1]"
+                  },
+                  {
+                    lot: "[Número de Lote 2]",
+                    dimension: "[Dimensiones de Lote 2]",
+                    tons: "[Toneladas de Lote 2]",
+                    quality: "[calidad de Lote 2]",
+                    sacks: "[Número de sacos de Lote 2]",
+                    destination: "[Destino de Lote 2]"
+                  },
+                  {
+                    lot: "[Número de Lote 3]",
+                    dimension: "[Dimensiones de Lote 3]",
+                    tons: "[Toneladas de Lote 3]",
+                    quality: "[calidad de Lote 3]",
+                    sacks: "[Número de sacos de Lote 3]",
+                    destination: "[Destino de Lote 3]"
+                  },
+                  {
+                    lot: "[Número de Lote 4]",
+                    dimension: "[Dimensiones de Lote 4]",
+                    tons: "[Toneladas de Lote 4]",
+                    quality: "[calidad de Lote 4]",
+                    sacks: "[Número de sacos de Lote 4]",
+                    destination: "[Destino de Lote 4]"
+                  },
+                  {
+                    lot: "[Número de Lote 5]",
+                    dimension: "[Dimensiones de Lote 5]",
+                    tons: "[Toneladas de Lote 5]",
+                    quality: "[calidad de Lote 5]",
+                    sacks: "[Número de sacos de Lote 5]",
+                    destination: "[Destino de Lote 5]"
+                  }
+                ]
+              },
+              {
+                type: "supplies-details",
+                data: [
+                  {
+                    product: "Fosfina",
+                    quantity: "50 kg",
+                    dose: "Aplicación según protocolo",
+                    fumigationMethod: "Fumigación a presión",
+                    ribbonsNumber: "5",
+                  },
+                  {
+                    product: "Diatomita",
+                    quantity: "20 kg",
+                    dose: "Aplicación según protocolo",
+                    fumigationMethod: "Fumigación a presión",
+                    ribbonsNumber: "3",
+                  },
+                  {
+                    product: "Aerosol Insecticida",
+                    quantity: "10 kg",
+                    dose: "Aplicación según protocolo",
+                    fumigationMethod: "Fumigación a presión",
+                    ribbonsNumber: "2",
+                  },
+                  {
+                    product: "Trampa de Feromonas",
+                    quantity: "5 unidades",
+                    dose: "Instalación según protocolo",
+                    fumigationMethod: "Fumigación a presión",
+                    ribbonsNumber: "1",
+                  },
+                  {
+                    product: "Equipo de Protección Personal (EPP)",
+                    quantity: "5 juegos",
+                    dose: "Uso obligatorio durante la fumigación",
+                    fumigationMethod: "Fumigación a presión",
+                    ribbonsNumber: "0",
+                  }
+                ]
+              },
+              {
+                type: "signatures",
+                signatures: ["Técnico Responsable Anecacao", "Cliente"]
               }
             ]
           }
         },
         {
-          id: "informe-tecnico",
-          title: "Informe Técnico de Fumigación",
-          fileName: "Informe_Tecnico",
+          type: "registro-descarpe",
+          title: "Registro de Descarpe",
+          fileName: "Registro_Descarpe",
           content: {
-            mainTitle: "INFORME TÉCNICO DE FUMIGACIÓN",
-            subtitle: `Informe No. INF-${codigoReserva}`,
+            mainTitle: "REGISTRO DE DESCARPE",
+            subtitle: `Código de Reserva: ${codigoReserva}`,
             sections: [
               {
-                type: "grid",
+                type: "header",
                 data: [
-                  { label: "Fecha de Inicio", value: new Date().toLocaleDateString() },
-                  { label: "Fecha de Finalización", value: new Date().toLocaleDateString() },
-                  { label: "Responsable Técnico", value: "Ing. [Nombre]" },
-                  { label: "Lote Tratado", value: `LT-${codigoReserva}` },
-                  { label: "Ubicación", value: "Bodega Principal" },
-                  { label: "Condiciones Climáticas", value: "Óptimas" }
+                  { label: "Empresa", value: "[Nombre de la Empresa]" },
+                  { label: "Ubicación", value: "[Ubicación de la Fumigación]" },
+                  { label: "Fecha", value: new Date().toLocaleDateString() },
+                  { label: "Hora/Inicio", value: new Date().toLocaleTimeString() },
+                  { label: "Hora/Fin", value: new Date().toLocaleTimeString() },
+                  { label: "Supervisor", value: "[Nombre del Supervisor]" }
                 ]
               },
               {
-                type: "ordered-list",
-                title: "Procedimiento Aplicado",
-                items: [
-                  "Inspección inicial del producto",
-                  "Sellado hermético del área de tratamiento",
-                  "Aplicación de fumigante según protocolo",
-                  "Monitoreo continuo de concentración",
-                  "Ventilación y verificación de residuos"
+                type: "personal-info",
+                data: [
+                  {
+                    name: "[Nombre de Personal 1]",
+                    position: "[Cargo de Personal 1]"
+                  },
+                  {
+                    name: "[Nombre de Personal 2]",
+                    position: "[Cargo de Personal 2]"
+                  },
+                  {
+                    name: "[Nombre de Personal 3]",
+                    position: "[Cargo de Personal 3]"
+                  },
+                  {
+                    name: "[Nombre de Personal 4]",
+                    position: "[Cargo de Personal 4]"
+                  },
+                  {
+                    name: "[Nombre de Personal 5]",
+                    position: "[Cargo de Personal 5]"
+                  }
                 ]
               },
               {
-                type: "text",
-                title: "Resultados Obtenidos",
-                content: "El tratamiento de fumigación se ejecutó exitosamente, alcanzando una mortalidad del 100% en las plagas objetivo. Los niveles de residuos se encuentran por debajo de los límites máximos permitidos. El producto está apto para su comercialización."
+                type: "lot-details",
+                data: [
+                  {
+                    lot: "[Número de Lote 1]",
+                    tons: "[Toneladas de Lote 1]",
+                    quality: "[calidad de Lote 1]",
+                    sacks: "[Número de sacos de Lote 1]",
+                    destination: "[Destino de Lote 1]",
+                    ribbonsStatus: "[Estado de cintas de Lote 1]",
+                    fumigationTime: "[Tiempo de Fumigación de Lote 1]",
+                    ppmFosfine: "[PPM Fosfina de Lote 1]"
+                  },
+                  {
+                    lot: "[Número de Lote 2]",
+                    tons: "[Toneladas de Lote 2]",
+                    quality: "[calidad de Lote 2]",
+                    sacks: "[Número de sacos de Lote 2]",
+                    destination: "[Destino de Lote 2]",
+                    ribbonsStatus: "[Estado de cintas de Lote 2]",
+                    fumigationTime: "[Tiempo de Fumigación de Lote 2]",
+                    ppmFosfine: "[PPM Fosfina de Lote 2]"
+                  },
+                  {
+                    lot: "[Número de Lote 3]",
+                    tons: "[Toneladas de Lote 3]",
+                    quality: "[calidad de Lote 3]",
+                    sacks: "[Número de sacos de Lote 3]",
+                    destination: "[Destino de Lote 3]",
+                    ribbonsStatus: "[Estado de cintas de Lote 3]",
+                    fumigationTime: "[Tiempo de Fumigación de Lote 3]",
+                    ppmFosfine: "[PPM Fosfina de Lote 3]"
+                  },
+                  {
+                    lot: "[Número de Lote 4]",
+                    tons: "[Toneladas de Lote 4]",
+                    quality: "[calidad de Lote 4]",
+                    sacks: "[Número de sacos de Lote 4]",
+                    destination: "[Destino de Lote 4]",
+                    ribbonsStatus: "[Estado de cintas de Lote 4]",
+                    fumigationTime: "[Tiempo de Fumigación de Lote 4]",
+                    ppmFosfine: "[PPM Fosfina de Lote 4]"
+                  },
+                  {
+                    lot: "[Número de Lote 5]",
+                    tons: "[Toneladas de Lote 5]",
+                    quality: "[calidad de Lote 5]",
+                    sacks: "[Número de sacos de Lote 5]",
+                    destination: "[Destino de Lote 5]",
+                    ribbonsStatus: "[Estado de cintas de Lote 5]",
+                    fumigationTime: "[Tiempo de Fumigación de Lote 5]",
+                    ppmFosfine: "[PPM Fosfina de Lote 5]"
+                  }
+                ]
               },
               {
                 type: "signatures",
-                signatures: ["Técnico Responsable", "Supervisor de Calidad"]
+                signatures: ["Técnico Responsable Anecacao", "Cliente"]
               }
             ]
           }
@@ -293,21 +640,45 @@ function ReservationDocuments() {
           title: "Certificado de Fumigación",
           fileName: "Certificado_Fumigacion",
           content: {
-            mainTitle: "CERTIFICADO DE FUMIGACIÓN",
+            mainTitle: "CERTIFICATE OF FUMIGATION",
             subtitle: `Certificado No. CERT-${codigoReserva}`,
             sections: [
               {
+                type: "text",
+                content1: "ANECACAO as an approved entity to provide cocoa-beans fumigation services with the certificate",
+                content2: "No. 467-E.S.V., has provide the fumigation service under Agrocalidad's fumigation rulers and",
+                content3: "regulations in its resolution 024-A."
+              },
+              {
                 type: "grid",
                 data: [
-                  { label: "Fecha de Fumigación", value: new Date().toLocaleDateString() },
-                  { label: "Producto Tratado", value: "Cacao" },
-                  { label: "Cantidad", value: "200 toneladas" }
+                  { label: "Export Company Address", value: "BABAHOYO EXPORT S.A." },
+                  { label: "DATE OF THE FUMIGATION", value: new Date().toLocaleDateString() },
+                  { label: "FUMIGATED PRODUCT", value: "Cocoa Beans" },
+                  { label: "TYPE/CLASS OF BEANS", value: "Fine Flavour" },
+                  { label: "LOT No.", value: "LOT-12345" },
+                  { label: "NUMBER OF FUMIGATED BAGS", value: "100" },
+                  { label: "COUNTRY/DESTINATION CITY", value: "PASIR GUDANG, MALAYSIA" },
+                  { label: "CONSIGNEE", value: "Guang Chong Cocoa Manufacturer Sdn. Bhd. Plo 273, Jalan Timal 2, 81700 Pasir Gudang, Johor, Malaysia" },
+                  { label: "COMPANY NAME", value: "ANECACAO" },
+                  { label: "PERMIT/REGISTRATION", value: "467-E.S.V." },
+                  { label: "NAME OF THE TECHNICAL FUMIGATOR", value: "Ing. Cristian Noboa" },
+                  { label: "NAME OF THE PRODUCT USED", value: "GASTOXIN" },
+                  { label: "FUMIGATION SYSTEM", value: "Piked/Pills" },
+                  { label: "TIME FOR ACTION", value: "120 hours" },
+                  { label: "APPLIED DOSE", value: "5 grams of Phosphine/Cubic Meter" },
+                  { label: "ACTIVE COMPONENT", value: "Aluminum Phosphide - Phosphine" },
+                  { label: "ROOM TEMPERATURE", value: "25°C" },
+                  { label: "WASTES REMOVED BY", value: "Equaquímica" },
+                  { label: "FUMIGATION END DATE", value: new Date().toLocaleDateString() }
                 ]
               },
               {
                 type: "single-signature",
-                signature: "Ingeniero Responsable",
-                subtitle: "Registro Profesional: XXX-XXX"
+                signature: "AUTHORIZED SIGNATURE",
+              },
+              {
+                type: "footer"
               }
             ]
           }
@@ -325,25 +696,25 @@ function ReservationDocuments() {
     switch (section.type) {
       case 'header':
         return (
-          <>
-          <div className="grid grid-cols-1 gap-4 mb-4">
-            {section.data[0].label && (
-              <p>
-                <strong>{section.data[0].label}:</strong> {section.data[0].value}
-              </p>
-            )}
-            {section.data[1].label && (
-              <p>
-                <strong>{section.data[1].label}:</strong> {section.data[1].value}
-              </p>
-            )}
+          <div>
+            <div className="grid grid-cols-1 gap-4 mb-4">
+              {section.data[0].label && (
+                <p>
+                  <strong>{section.data[0].label}:</strong> {section.data[0].value}
+                </p>
+              )}
+              {section.data[1].label && (
+                <p>
+                  <strong>{section.data[1].label}:</strong> {section.data[1].value}
+                </p>
+              )}
+            </div>
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              {section.data.slice(2).map((item, i) => (
+                <p key={i}><strong>{item.label}:</strong> {item.value}</p>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            {section.data.slice(2).map((item, i) => (
-              <p key={i}><strong>{item.label}:</strong> {item.value}</p>
-            ))}
-          </div>
-          </>
         );
 
       case 'personal-info':
@@ -351,9 +722,7 @@ function ReservationDocuments() {
           <table className="w-full mb-4 border">
             <thead>
               <tr>
-                <th className="p-2"></th>
-                <th className="p-2">Personal que interviene</th>
-                <th className="p-2"></th>
+                <th className="p-2" colSpan={3}>Personal que interviene</th>
               </tr>
               <tr className="bg-gray-100">
                 <th className="p-2">Nombre</th>
@@ -377,11 +746,6 @@ function ReservationDocuments() {
         return (
           <div>
             <table className="w-full mb-4 border">
-              <colgroup>
-                <col span={2} />
-                <col span={6} />
-                <col span={2} />
-              </colgroup>
               <thead>
                 <tr className="bg-gray-100">
                   <th className='p-2' colSpan={2}># de lote</th>
@@ -458,12 +822,76 @@ function ReservationDocuments() {
             </table>
           </div>
         );
+      
+      case 'lot-details':
+        return (
+          <div>
+            <table className="w-full mb-4 border">
+              <thead>
+                <tr>
+                  <th className="p-2" colSpan={8}>Descripción del lote</th>
+                </tr>
+                <tr className="bg-gray-100">
+                  <th className='p-2'># de lote</th>
+                  <th className='p-2'>Toneladas</th>
+                  <th className='p-2'>Calidad</th>
+                  <th className='p-2'># de sacos</th>
+                  <th className='p-2'>Destino</th>
+                  <th className='p-2'>Estado de cintas</th>
+                  <th className='p-2'>Tiempo de Fumigación</th>
+                  <th className='p-2'>PPM Fosfina</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(section.data).map(([key, value], i) =>
+                  <tr key={i} className="border-b">
+                    <td className="p-2 text-center">{value.lot}</td>
+                    <td className="p-2 text-center">{value.tons}</td>
+                    <td className="p-2 text-center">{value.quality}</td>
+                    <td className="p-2 text-center">{value.sacks}</td>
+                    <td className="p-2 text-center">{value.destination}</td>
+                    <td className="p-2 text-center">{value.ribbonsStatus}</td>
+                    <td className="p-2 text-center">{value.fumigationTime}</td>
+                    <td className="p-2 text-center">{value.ppmFosfine}</td>
+                  </tr>
+                )}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th className="p-2 text-center" colSpan={12}>Condiciones de seguridad industrial</th>
+                </tr>
+                <tr>
+                  <th className="p-2" colSpan={2}>Peligro eléctrico</th>
+                  <th className='p-2' colSpan={2}>Peligro de caídas</th>
+                  <th className="p-2" colSpan={2}>Peligro de atropellos</th>
+                  <th className="p-2" colSpan={2}>Otro peligro</th>
+                </tr>
+                <tr>
+                  <td className="p-2 text-center" colSpan={2}>[Sí/No]</td>
+                  <td className="p-2 text-center" colSpan={2}>[Sí/No]</td>
+                  <td className="p-2 text-center" colSpan={2}>[Sí/No]</td>
+                  <td className="p-2 text-center" colSpan={2}>[Sí/No]</td>
+                </tr>
+              </tfoot>
+            </table>
+            <caption className="w-full flex justify-end mt-2 text-xs text-gray-600 mb-2">
+              Nota: Si las condiciones no son adecuadas, no iniciar la actividad.
+            </caption>
+          </div>
+        );
 
       case 'grid':
         return (
-          <div key={index} className="grid grid-cols-2 gap-4 mb-4">
+          <div className='py-25 px-40'>
             {section.data.map((item, i) => (
-              <p key={i}><strong>{item.label}:</strong> {item.value}</p>
+              <div key={i} className="grid grid-cols-2 gap-2">
+                <div className="p-2 text-left">
+                  <p><strong>{item.label}:</strong></p>
+                </div>
+                <div className="p-2 text-right">
+                  <p>{item.value}</p>
+                </div>
+              </div>
             ))}
           </div>
         );
@@ -471,32 +899,9 @@ function ReservationDocuments() {
       case 'text':
         return (
           <div key={index} className="mt-6">
-            {section.title && <h4 className="font-semibold mb-2">{section.title}:</h4>}
-            <p className="text-justify">{section.content}</p>
-          </div>
-        );
-      
-      case 'list':
-        return (
-          <div key={index} className="mt-6">
-            <h4 className="font-semibold mb-2">{section.title}:</h4>
-            <ul className="list-disc list-inside space-y-1">
-              {section.items.map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
-            </ul>
-          </div>
-        );
-      
-      case 'ordered-list':
-        return (
-          <div key={index} className="mt-6">
-            <h4 className="font-semibold mb-2">{section.title}:</h4>
-            <ol className="list-decimal list-inside space-y-1">
-              {section.items.map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
-            </ol>
+            <p className="text-center">{section.content1}</p>
+            <p className="text-center">{section.content2}</p>
+            <p className="text-center">{section.content3}</p>
           </div>
         );
       
@@ -515,14 +920,28 @@ function ReservationDocuments() {
       
       case 'single-signature':
         return (
-          <div key={index} className="mt-6 text-center signature-section">
+          <div key={index} className="mt-6 grid grid-cols-2 gap-8 text-center signature-section">
+            <div className="text-center">
+              <div className="pt-2 mt-16">
+                <p className="font-semibold">DRY SEAL</p>
+                <p className="text-xs">ANECACAO</p>
+              </div>
+            </div>
             <div className="border-t border-gray-400 pt-2 mt-16 signature-line inline-block">
               <p className="font-semibold">{section.signature}</p>
-              {section.subtitle && <p className="text-xs">{section.subtitle}</p>}
             </div>
           </div>
         );
       
+      case 'footer':
+        return (
+          <div key={index} className="pt-5">
+            <p className="text-center">E-mail: <a href={`mailto: administrativo@anecacao.com`}>administrativo@anecacao.com</a></p>
+            <p className="text-center">ECUADOR EXPORTS QUALITY</p>
+            <p className="text-center">WORLD'S FIRST GROWE OF FINE FLAVOUR COCOA</p>
+          </div>
+        );
+
       default:
         return null;
     }
