@@ -21,7 +21,20 @@ export const formatDate = (date: string | null | undefined): string => {
   if (!date) return "-";
   
   try {
-    const dateObj = new Date(date);
+    let dateObj: Date;
+    
+    if (date.includes('-') && date.split('-').length === 3) {
+      const parts = date.split('-');
+      if (parts[0].length === 2) {
+        const [day, month, year] = parts;
+        dateObj = new Date(`${year}-${month}-${day}`);
+      } else {
+        dateObj = new Date(date);
+      }
+    } else {
+      dateObj = new Date(date);
+    }
+    
     if (isNaN(dateObj.getTime())) return "-";
     
     const day = dateObj.getDate().toString().padStart(2, '0');
