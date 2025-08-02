@@ -5,7 +5,7 @@ export interface Company {
   phoneNumber: string;
   ruc: string;
   address: string;
-  legalRepresentative: LegalRepresentative;
+  legalRepresentative?: LegalRepresentative;
   cosigner?: string;
 }
 
@@ -26,10 +26,10 @@ export interface User {
 export interface Fumigation {
   id: number;
   lotNumber: string;
-  ton: number;  // Corregido de 'tons' a 'ton'
+  ton: number;
   portDestination: string;
   sacks: number;
-  quality: string;  // Corregido de 'grade' a 'quality'
+  quality: string;
   status: string;
   message: string;
   dateTime: string;
@@ -43,7 +43,6 @@ export interface FumigationApplication {
   createdAt?: string;
 }
 
-// Updated types for paginated responses
 export interface PageableRequest {
   page: number;
   size: number;
@@ -79,7 +78,6 @@ export interface PaginatedResponse<T> {
   empty: boolean;
 }
 
-// Updated API response types
 export interface ApiFumigationApplication {
   id: number;
   companyName: string;
@@ -100,13 +98,26 @@ export interface FumigationListItem {
 }
 
 export interface FumigationDetailResponse {
-  id: number;
-  company: Company;
-  fumigations: Fumigation[];
-  createdAt: string;
+  company: {
+    id: number;
+    name: string;
+    businessName: string;
+    phoneNumber: string;
+    ruc: string;
+    address: string;
+  };
+  lot: {
+    id: number;
+    lotNumber: string;
+    tons: number;
+    quality: string;
+    sacks: number;
+    portDestination: string;
+  };
+  representative: string;
+  plannedDate: string;
 }
 
-// User types for paginated user endpoints
 export interface ApiUser {
   id: number;
   firstName: string;

@@ -3,6 +3,7 @@ import { Request } from "@/types/request";
 import { Button } from "@/components/ui/button";
 import { Overlay } from "@/layouts/Overlay";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatDateTime } from "@/utils/dateUtils";
 
 interface OverlayContentProps {
   request: Request;
@@ -184,23 +185,23 @@ export const OverlayContent: FC<OverlayContentProps> = ({
                       <div className="col-span-3">VALOR</div>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
-                      <div className="col-span-2">Fecha y Hora de Fumigación</div>
-                      <div className="col-span-3">{fumigation.dateTime || "-"}</div>
+                      <div className="col-span-2">Fecha y Hora de Fumigación Planificada</div>
+                      <div className="col-span-3">{formatDateTime(fumigation.dateTime)}</div>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
                       <div className="col-span-2">Puerto de Destino</div>
                       <div className="col-span-3">{fumigation.portDestination || "-"}</div>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
-                      <div className="col-span-2"># Toneladas</div>
+                      <div className="col-span-2">Número de Toneladas</div>
                       <div className="col-span-3">{fumigation.ton || "-"}</div>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
-                      <div className="col-span-2">Calidad Grado</div>
+                      <div className="col-span-2">Calidad</div>
                       <div className="col-span-3">{fumigation.quality || "-"}</div>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm">
-                      <div className="col-span-2"># Sacos</div>
+                      <div className="col-span-2">Número de Sacos</div>
                       <div className="col-span-3">{fumigation.sacks || "-"}</div>
                     </div>
                     {fumigation.message && (

@@ -7,13 +7,13 @@ import { FumigationListItem } from "@/types/request";
 import { LotOverlayContent } from "../Admin/Components/LotOverlayContent";
 import { EvidenceOverlay } from "../Admin/Components/EvidenceOverlay";
 import { useFumigationData, useFumigationDetails } from "@/hooks/useFumigationData";
+import { formatDate } from "@/utils/dateUtils";
 
 export default function TechnicianLotsPage() {
   const [search, setSearch] = useState("");
   const [selectedLotId, setSelectedLotId] = useState<number | null>(null);
   const [showingEvidence, setShowingEvidence] = useState(false);
 
-  // Usar el hook para obtener lotes con status "APPROVED" (lotes asignados al técnico)
   const { fumigations, loading, error } = useFumigationData("APPROVED");
   const { fumigationDetails, loading: detailsLoading, loadFumigationDetails, clearDetails } = useFumigationDetails();
 
@@ -30,7 +30,7 @@ export default function TechnicianLotsPage() {
     { 
       header: "Fecha Planificada", 
       key: "plannedDate",
-      render: (value: string) => value ? new Date(value).toLocaleDateString() : "-"
+      render: (value: string) => formatDate(value)
     },
   ];
 
@@ -39,29 +39,21 @@ export default function TechnicianLotsPage() {
     await loadFumigationDetails(fumigation.id);
   };
 
-  const handleRegisterEvidence = async (fumigation: FumigationListItem) => {
+  const handleUploadEvidence = async (fumigation: FumigationListItem) => {
     setSelectedLotId(fumigation.id);
     setShowingEvidence(true);
     await loadFumigationDetails(fumigation.id);
   };
 
-  const handleCloseLotDetails = () => {
+  const handleCloseDetails = () => {
     setSelectedLotId(null);
     setShowingEvidence(false);
     clearDetails();
   };
 
-  const handleSaveEvidence = (evidenceData: any) => {
-    console.log("Guardando evidencias:", evidenceData);
-    // Aquí iría el código para enviar los datos al servidor
-    // Por ahora solo mostramos los datos en la consola
-    alert("Evidencias guardadas correctamente");
-    handleCloseLotDetails();
-  };
-
   if (error) {
     return (
-      <Layout userName="Técnico">
+      <Layout>
         <div className="p-10">
           <div className="text-red-500">Error: {error}</div>
         </div>
@@ -69,14 +61,22 @@ export default function TechnicianLotsPage() {
     );
   }
 
+  if (loading) {
+    return (
+      <Layout>
+        <div className="p-10">
+          <div className="text-center py-8">Cargando lotes asignados...</div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
-    <Layout userName="Técnico">
+    <Layout>
       <div className="p-10">
         <header className="mb-8">
           <h2 className="text-3xl font-bold mb-1">Lotes Asignados</h2>
-          <p className="text-gray-500">
-            Gestiona las evidencias de fumigación y descarpe
-          </p>
+          <p className="text-gray-500">Gestiona los lotes asignados para fumigación</p>
         </header>
 
         <div className="flex gap-4 items-center mb-6">
@@ -88,48 +88,34 @@ export default function TechnicianLotsPage() {
           />
         </div>
 
-        {loading ? (
-          <div className="text-center py-8">Cargando lotes asignados...</div>
-        ) : (
-          <BaseTable
-            data={filteredFumigations}
-            columns={columns}
-            actions={[
-              {
-                label: "Ver Más Información",
-                onClick: handleViewDetails,
-              },
-              {
-                label: "Registrar Evidencias",
-                onClick: handleRegisterEvidence,
-              },
-            ]}
-          />
-        )}
+        <BaseTable
+          data={filteredFumigations}
+          columns={columns}
+          actions={[
+            {
+              label: "Ver Información",
+              onClick: handleViewDetails,
+            },
+            {
+              label: "Subir Evidencias",
+              onClick: handleUploadEvidence,
+            },
+          ]}
+        />
 
-        {/* Overlay para información del lote */}
-        <Overlay
-          open={!!selectedLotId && !showingEvidence}
-          onClose={handleCloseLotDetails}
-        >
+        <Overlay open={!!selectedLotId && !showingEvidence} onClose={handleCloseDetails}>
           <LotOverlayContent 
             fumigationDetails={fumigationDetails} 
             loading={detailsLoading}
-            onClose={handleCloseLotDetails} 
+            onClose={handleCloseDetails} 
           />
         </Overlay>
 
-        {/* Overlay para registrar evidencias - usando EvidenceOverlay en modo editable */}
-        <Overlay
-          open={!!selectedLotId && showingEvidence}
-          onClose={handleCloseLotDetails}
-        >
-          <EvidenceOverlay 
+        <Overlay open={!!selectedLotId && showingEvidence} onClose={handleCloseDetails}>
+          <EvidenceOverlay
             fumigationDetails={fumigationDetails}
             loading={detailsLoading}
-            isEditable={true} // Modo técnico (edición)
-            onClose={handleCloseLotDetails} 
-            onSave={handleSaveEvidence}
+            onClose={handleCloseDetails}
           />
         </Overlay>
       </div>

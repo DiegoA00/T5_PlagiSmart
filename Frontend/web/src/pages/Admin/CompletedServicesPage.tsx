@@ -6,13 +6,14 @@ import { BaseTable } from "./Components/BaseTable";
 import { FumigationListItem } from "@/types/request";
 import { LotOverlayContent } from "./Components/LotOverlayContent";
 import { useFumigationData, useFumigationDetails } from "@/hooks/useFumigationData";
+import { formatDate } from "@/utils/dateUtils";
 
 export default function CompletedServicesPage() {
   const [search, setSearch] = useState("");
   const [selectedLotId, setSelectedLotId] = useState<number | null>(null);
   const [showingEvidence, setShowingEvidence] = useState(false);
 
-  const { fumigations, loading, error } = useFumigationData("FINISHED");
+  const { fumigations, fumigationsResponse, loading, error } = useFumigationData("FINISHED");
   const { fumigationDetails, loading: detailsLoading, loadFumigationDetails, clearDetails } = useFumigationDetails();
 
   const filteredFumigations = fumigations.filter((fumigation) =>
@@ -28,12 +29,11 @@ export default function CompletedServicesPage() {
     { 
       header: "Fecha Planificada", 
       key: "plannedDate",
-      render: (value: string) => value ? new Date(value).toLocaleDateString() : "-"
+      render: (value: string) => formatDate(value)
     },
   ];
 
   const handleViewDetails = async (fumigation: FumigationListItem) => {
-    // Ahora usar el ID real de la API
     setSelectedLotId(fumigation.id);
     await loadFumigationDetails(fumigation.id);
   };
@@ -45,8 +45,7 @@ export default function CompletedServicesPage() {
   };
 
   const handleGenerateCertificate = (fumigation: FumigationListItem) => {
-    console.log("Generando certificado para lote ID:", fumigation.id);
-    // Implementar lógica de generación de certificado
+    alert(`Generando certificado para el lote ${fumigation.lotNumber || fumigation.id}`);
   };
 
   const handleCloseDetails = () => {
@@ -59,7 +58,14 @@ export default function CompletedServicesPage() {
     return (
       <Layout>
         <div className="p-10">
-          <div className="text-red-500">Error: {error}</div>
+          <div className="bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="text-red-800">
+              <strong>Error:</strong> {error}
+            </div>
+            <div className="text-red-600 text-sm mt-1">
+              Revisa la consola del navegador para más detalles.
+            </div>
+          </div>
         </div>
       </Layout>
     );
@@ -70,7 +76,12 @@ export default function CompletedServicesPage() {
       <div className="p-10">
         <header className="mb-8">
           <h2 className="text-3xl font-bold mb-1">Servicios finalizados</h2>
-          <p className="text-gray-500">Visualiza y gestiona los servicios completados</p>
+          <p className="text-gray-500">
+            Visualiza y gestiona los servicios completados
+            {fumigationsResponse && fumigationsResponse.totalElements > 0 && 
+              ` (${fumigationsResponse.totalElements} total${fumigationsResponse.totalElements !== 1 ? 'es' : ''})`
+            }
+          </p>
         </header>
 
         <div className="flex gap-4 items-center mb-6">
@@ -83,29 +94,52 @@ export default function CompletedServicesPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-8">Cargando servicios...</div>
+          <div className="text-center py-12">
+            <div className="text-lg">Cargando servicios finalizados...</div>
+            <div className="text-gray-500 text-sm mt-2">
+              Obteniendo fumigaciones con estado FINISHED
+            </div>
+          </div>
+        ) : fumigations.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-gray-500 text-lg">No hay servicios finalizados</div>
+            <div className="text-gray-400 text-sm mt-2">
+              No se encontraron fumigaciones con estado FINISHED.
+              {fumigationsResponse?.totalElements === 0 
+                ? " La base de datos parece estar vacía después del reinicio."
+                : " Puede que no haya servicios completados aún."
+              }
+            </div>
+          </div>
         ) : (
-          <BaseTable
-            data={filteredFumigations}
-            columns={columns}
-            actions={[
-              {
-                label: "Ver Más Información",
-                onClick: handleViewDetails,
-              },
-              {
-                label: "Ver Evidencias",
-                onClick: handleViewEvidence,
-              },
-              {
-                label: "Generar Certificado",
-                onClick: handleGenerateCertificate,
-              },
-            ]}
-          />
+          <>
+            {filteredFumigations.length !== fumigations.length && (
+              <div className="mb-4 text-sm text-gray-600">
+                Mostrando {filteredFumigations.length} de {fumigations.length} servicios (filtrados por "{search}")
+              </div>
+            )}
+            
+            <BaseTable
+              data={filteredFumigations}
+              columns={columns}
+              actions={[
+                {
+                  label: "Ver Más Información",
+                  onClick: handleViewDetails,
+                },
+                {
+                  label: "Ver Evidencias",
+                  onClick: handleViewEvidence,
+                },
+                {
+                  label: "Generar Certificado",
+                  onClick: handleGenerateCertificate,
+                },
+              ]}
+            />
+          </>
         )}
 
-        {/* Overlay para información del servicio */}
         <Overlay
           open={!!selectedLotId && !showingEvidence}
           onClose={handleCloseDetails}
@@ -117,7 +151,6 @@ export default function CompletedServicesPage() {
           />
         </Overlay>
 
-        {/* Overlay para evidencias */}
         <Overlay
           open={!!selectedLotId && showingEvidence}
           onClose={handleCloseDetails}

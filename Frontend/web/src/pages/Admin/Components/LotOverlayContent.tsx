@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { Button } from "@/components/ui/button";
 import { FumigationDetailResponse } from "@/types/request";
+import { formatDate } from "@/utils/dateUtils";
 
 export interface LotOverlayProps {
   fumigationDetails: FumigationDetailResponse | null;
@@ -52,7 +53,6 @@ export const LotOverlayContent: FC<LotOverlayProps> = ({
   }
   
   if (isEvidence) {
-    // Contenido para evidencias
     return (
       <div className="flex flex-col h-full">
         <div className="bg-[#003595] text-white rounded-t-lg px-8 py-5 text-lg font-semibold">
@@ -60,7 +60,6 @@ export const LotOverlayContent: FC<LotOverlayProps> = ({
         </div>
         <div className="overflow-y-auto px-8 py-6" style={{ maxHeight: "70vh" }}>
           <p className="text-gray-500">Las evidencias estarán disponibles próximamente</p>
-          {/* Aquí irá el contenido de las evidencias en el futuro */}
         </div>
         <div className="flex justify-end gap-4 px-8 py-6 border-t border-[#003595] bg-white rounded-b-lg">
           <Button
@@ -75,14 +74,12 @@ export const LotOverlayContent: FC<LotOverlayProps> = ({
     );
   }
 
-  // Contenido para ver más información
   return (
     <div className="flex flex-col h-full">
       <div className="bg-[#003595] text-white rounded-t-lg px-8 py-5 text-lg font-semibold">
         Información del Lote a Fumigar
       </div>
       <div className="overflow-y-auto px-8 py-6" style={{ maxHeight: "70vh" }}>
-        {/* Datos Generales del Cliente */}
         <div>
           <div className="text-base font-semibold mb-2 border-b pb-2 border-[#003595]">
             Datos Generales del Cliente
@@ -94,36 +91,27 @@ export const LotOverlayContent: FC<LotOverlayProps> = ({
             </div>
             <div>
               <span className="font-medium">Razón Social:</span>
-              <span className="ml-2">-</span>
+              <span className="ml-2">{fumigationDetails.company.businessName || "-"}</span>
             </div>
             <div>
               <span className="font-medium">RUC:</span>
-              <span className="ml-2">-</span>
+              <span className="ml-2">{fumigationDetails.company.ruc || "-"}</span>
             </div>
             <div>
               <span className="font-medium">Dirección:</span>
-              <span className="ml-2">-</span>
+              <span className="ml-2">{fumigationDetails.company.address || "-"}</span>
             </div>
             <div>
               <span className="font-medium">Teléfono:</span>
-              <span className="ml-2">-</span>
+              <span className="ml-2">{fumigationDetails.company.phoneNumber || "-"}</span>
             </div>
             <div>
               <span className="font-medium">Nombre Representante Legal:</span>
-              <span className="ml-2">-</span>
-            </div>
-            <div>
-              <span className="font-medium">Contacto Planta:</span>
-              <span className="ml-2">-</span>
-            </div>
-            <div>
-              <span className="font-medium">Consignatario (Opcional):</span>
-              <span className="ml-2">-</span>
+              <span className="ml-2">{fumigationDetails.representative || "-"}</span>
             </div>
           </div>
         </div>
 
-        {/* Datos del Servicio */}
         <div>
           <div className="text-base font-semibold mb-2 border-b pb-2 border-[#003595]">
             Datos de Servicio - Lote #{fumigationDetails.lot.lotNumber}
@@ -134,24 +122,24 @@ export const LotOverlayContent: FC<LotOverlayProps> = ({
               <div className="col-span-3">VALOR</div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
-              <div className="col-span-2">Fecha y Hora de Fumigación</div>
-              <div className="col-span-3">-</div>
+              <div className="col-span-2">Fecha y Hora Planificada</div>
+              <div className="col-span-3">{formatDate(fumigationDetails.plannedDate) || "-"}</div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
               <div className="col-span-2">Puerto de Destino</div>
-              <div className="col-span-3">{fumigationDetails.lot.portDestination}</div>
+              <div className="col-span-3">{fumigationDetails.lot.portDestination || "-"}</div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
               <div className="col-span-2">Número de Toneladas</div>
-              <div className="col-span-3">{fumigationDetails.lot.tons}</div>
+              <div className="col-span-3">{fumigationDetails.lot.tons || "-"}</div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm border-b border-[#003595]">
               <div className="col-span-2">Calidad</div>
-              <div className="col-span-3">{fumigationDetails.lot.quality}</div>
+              <div className="col-span-3">{fumigationDetails.lot.quality || "-"}</div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-5 px-4 py-2 text-sm">
               <div className="col-span-2">Número de Sacos</div>
-              <div className="col-span-3">{fumigationDetails.lot.sacks}</div>
+              <div className="col-span-3">{fumigationDetails.lot.sacks || "-"}</div>
             </div>
           </div>
         </div>
