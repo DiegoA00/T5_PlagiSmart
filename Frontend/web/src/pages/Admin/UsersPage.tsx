@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { Sidebar } from "@/layouts/Sidebar";
+import { Layout } from "@/layouts/Layout";
 import { Overlay } from "@/layouts/Overlay";
-import { TopBar } from "@/layouts/TopBar";
 import { UsersTable, User } from "./Components/UsersTable";
 import { RoleChangeModal } from "./Components/RoleChangeModal";
 import { usersService } from "@/services/usersService";
 import { ApiUser } from "@/types/request";
-import { Layout } from "@/layouts/Layout";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -17,6 +15,7 @@ export default function UsersPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [totalUsers, setTotalUsers] = useState(0);
 
   const roles = ["all", "admin", "client", "technician"];
 
@@ -43,7 +42,11 @@ export default function UsersPage() {
   }, [search, users]);
 
   const mapApiUserToUser = (apiUser: ApiUser): User => ({
-    ...apiUser,
+    id: apiUser.id,
+    nationalId: apiUser.id.toString(),
+    firstName: apiUser.firstName,
+    lastName: apiUser.lastName,
+    email: apiUser.email,
     roles: apiUser.role,
     companies: []
   });
@@ -54,18 +57,17 @@ export default function UsersPage() {
     
     try {
       const response = await usersService.getAllUsers();
-      // Extraer content de la respuesta paginada
       const apiUsers = response.content || [];
       const mappedUsers = apiUsers.map(mapApiUserToUser);
+      
       setUsers(mappedUsers);
       setFilteredUsers(mappedUsers);
-      
-      console.log(`📊 Total de usuarios cargados: ${mappedUsers.length} de ${response.totalElements}`);
+      setTotalUsers(response.totalElements || 0);
     } catch (err: any) {
       setError(err.message || "Error desconocido");
-      console.error("Error fetching users:", err);
       setUsers([]);
       setFilteredUsers([]);
+      setTotalUsers(0);
     } finally {
       setIsLoading(false);
     }
@@ -77,16 +79,17 @@ export default function UsersPage() {
     
     try {
       const response = await usersService.getUsersByRole(role);
-      // Extraer content de la respuesta paginada
       const apiUsers = response.content || [];
       const mappedUsers = apiUsers.map(mapApiUserToUser);
+      
       setUsers(mappedUsers);
       setFilteredUsers(mappedUsers);
+      setTotalUsers(response.totalElements || 0);
     } catch (err: any) {
       setError(err.message || "Error desconocido");
-      console.error("Error fetching users by role:", err);
       setUsers([]);
       setFilteredUsers([]);
+      setTotalUsers(0);
     } finally {
       setIsLoading(false);
     }
@@ -95,86 +98,101 @@ export default function UsersPage() {
   const handleChangeRole = async (email: string) => {
     try {
       await usersService.changeUserRole(email);
+      
       if (selectedRole === "all") {
         fetchAllUsers();
       } else {
         fetchUsersByRole(selectedRole);
       }
     } catch (err: any) {
-      console.error("Error changing role:", err);
       throw err;
     }
   };
 
   return (
     <Layout>
-      <main className="flex-1 p-10 bg-white overflow-y-auto">
-        <header className="flex justify-between items-start mb-8">
-          <div>
-            <h2 className="text-3xl font-bold mb-1">Gestión de Usuarios</h2>
-              <p className="text-gray-500">
-                Administra los usuarios y sus roles en el sistema
-              </p>
-            </div>
-          </header>
+      <div className="p-10">
+        <header className="mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Usuarios</h2>
+          <p className="text-gray-600">
+            Gestiona los usuarios del sistema
+            {totalUsers > 0 && ` (${totalUsers} total${totalUsers !== 1 ? 'es' : ''})`}
+          </p>
+        </header>
 
-          <div className="flex gap-4 mb-6">
-            <Input
-              placeholder="Buscar por nombre, email o rol"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="max-w-md"
-            />
-            
-            <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#003595] focus:border-transparent"
-            >
-              {roles.map(role => (
-                <option key={role} value={role}>
-                  {role === "all" ? "Todos los roles" : role}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {error && (
-            <div className="bg-red-100 text-red-700 p-4 rounded-md mb-6">
-              {error}
-            </div>
-          )}
-
-          {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <span className="animate-spin mr-2">⌛</span> Cargando usuarios...
-            </div>
-          ) : (
-            <>
-              <UsersTable 
-                data={filteredUsers} 
-                onChangeRole={setSelectedUser} 
-              />
-              
-              {filteredUsers.length === 0 && !isLoading && (
-                <div className="text-center py-8 text-gray-500">
-                  No se encontraron usuarios con los criterios de búsqueda.
-                </div>
-              )}
-            </>
-          )}
-
-          <Overlay
-            open={!!selectedUser}
-            onClose={() => setSelectedUser(null)}
+        <div className="flex gap-4 items-center mb-6">
+          <Input
+            placeholder="Buscar usuarios..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="max-w-md"
+          />
+          
+          <select
+            value={selectedRole}
+            onChange={(e) => setSelectedRole(e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-2"
           >
-            <RoleChangeModal
-              user={selectedUser}
-              onClose={() => setSelectedUser(null)}
-              onConfirm={handleChangeRole}
+            {roles.map((role) => (
+              <option key={role} value={role}>
+                {role === "all" ? "Todos los roles" : role}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+            <div className="text-red-800">
+              <strong>Error:</strong> {error}
+            </div>
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="text-lg">Cargando usuarios...</div>
+            <div className="text-gray-500 text-sm mt-2">
+              {selectedRole === "all" ? "Cargando todos los usuarios" : `Cargando usuarios con rol ${selectedRole}`}
+            </div>
+          </div>
+        ) : users.length === 0 && !error ? (
+          <div className="text-center py-12">
+            <div className="text-gray-500 text-lg">
+              {selectedRole === "all" 
+                ? "No hay usuarios en el sistema" 
+                : `No hay usuarios con rol ${selectedRole}`
+              }
+            </div>
+            <div className="text-gray-400 text-sm mt-2">
+              {totalUsers === 0 
+                ? "La base de datos parece estar vacía. Esto es normal después de un reinicio."
+                : "Prueba cambiar el filtro de rol o buscar con otros términos."
+              }
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="mb-4 text-sm text-gray-600">
+              Mostrando {filteredUsers.length} de {users.length} usuario{users.length !== 1 ? 's' : ''}
+              {filteredUsers.length !== users.length && ` (filtrados por "${search}")`}
+            </div>
+            
+            <UsersTable
+              data={filteredUsers}
+              onChangeRole={(user) => setSelectedUser(user)}
             />
-          </Overlay>
-        </main>
-        </Layout>
+          </>
+        )}
+
+        <Overlay open={!!selectedUser} onClose={() => setSelectedUser(null)}>
+          <RoleChangeModal
+            user={selectedUser}
+            onClose={() => setSelectedUser(null)}
+            onConfirm={handleChangeRole}
+          />
+        </Overlay>
+      </div>
+    </Layout>
   );
 }

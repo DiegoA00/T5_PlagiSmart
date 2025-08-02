@@ -44,7 +44,7 @@ export const RoleChangeModal: FC<RoleChangeModalProps> = ({ user, onClose, onCon
         
         <div className="text-sm mb-4">
           <div><strong>Email:</strong> {user.email}</div>
-          <div><strong>Roles actuales:</strong> {user.roles.map(role => role.name).join(", ")}</div>
+          <div><strong>Rol actual:</strong> {user.roles}</div>
         </div>
         
         {error && (
