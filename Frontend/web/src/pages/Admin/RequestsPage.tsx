@@ -51,7 +51,6 @@ export default function RequestsPage() {
         response = await fumigationService.getRejectedApplications();
       }
 
-      // Extraer el contenido del array de la respuesta paginada
       const data = response.content || [];
       setApplications(data);
       setFilteredApplications(data);
@@ -94,6 +93,10 @@ export default function RequestsPage() {
   const handleCloseOverlay = () => {
     setSelectedRequest(null);
     setError(null);
+  };
+
+  const handleRefresh = () => {
+    fetchApplications();
   };
 
   return (
@@ -161,6 +164,7 @@ export default function RequestsPage() {
             <OverlayContent
               request={selectedRequest as any}
               onClose={handleCloseOverlay}
+              onRefresh={handleRefresh}
               isLoading={isDetailLoading}
               error={error}
             />

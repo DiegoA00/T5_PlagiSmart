@@ -44,6 +44,17 @@ export const fumigationService = {
     }
   },
 
+  updateFumigationStatus: async (id: number, status: string, message: string = ""): Promise<void> => {
+    try {
+      await apiClient.put(`/fumigations/${id}/status`, {
+        status,
+        message
+      });
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || "Error al actualizar el estado de la fumigación");
+    }
+  },
+
   getAllApplications: async (pageableRequest?: PageableRequest): Promise<PaginatedResponse<ApiFumigationApplication>> => {
     try {
       const defaultPageable: PageableRequest = {
