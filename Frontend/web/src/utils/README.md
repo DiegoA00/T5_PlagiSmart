@@ -1,1 +1,0 @@
---> Funciones utilitarias o helpers

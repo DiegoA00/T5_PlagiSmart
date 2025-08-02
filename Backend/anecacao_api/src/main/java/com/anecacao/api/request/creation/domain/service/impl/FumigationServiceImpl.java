@@ -1,8 +1,13 @@
 package com.anecacao.api.request.creation.domain.service.impl;
 
 import com.anecacao.api.auth.data.entity.RoleName;
+import com.anecacao.api.auth.data.entity.User;
 import com.anecacao.api.request.creation.data.dto.request.FumigationCreationRequestDTO;
 import com.anecacao.api.request.creation.data.dto.request.UpdateStatusRequestDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationDetailDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationInfoDTO;
+import com.anecacao.api.request.creation.data.mapper.FumigationDetailMapper;
+import com.anecacao.api.request.creation.data.entity.Company;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
 import com.anecacao.api.request.creation.data.entity.Status;
 import com.anecacao.api.request.creation.data.repository.FumigationRepository;
@@ -16,7 +21,14 @@ import com.anecacao.api.request.creation.data.mapper.FumigationApplicationMapper
 import com.anecacao.api.request.creation.data.entity.FumigationApplication;
 import com.anecacao.api.auth.domain.exception.UnauthorizedAccessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +36,7 @@ public class FumigationServiceImpl implements FumigationService {
     private final FumigationRepository repository;
     private final UserService userService;
     private final FumigationApplicationMapper mapper;
+    private final FumigationDetailMapper detailMapper;
 
     @Override
     public void updateFumigationStatus(Long id, UpdateStatusRequestDTO updateStatusRequestDTO) {
@@ -79,7 +92,7 @@ public class FumigationServiceImpl implements FumigationService {
         fumigation.setTon(fumigationDTO.getTon());
         fumigation.setPortDestination(fumigationDTO.getPortDestination());
         fumigation.setSacks(fumigationDTO.getSacks());
-        fumigation.setGrade(fumigationDTO.getGrade());
+        //set quality
         fumigation.setDateTime(fumigationDTO.getDateTime());
     }
 
@@ -98,4 +111,66 @@ public class FumigationServiceImpl implements FumigationService {
 
         if (statusIsRejected && messageIsBlank) throw new FumigationValidationException();
     }
+
+    @Override
+    public FumigationInfoDTO getFumigationInfo(Long id, String token) {
+        Fumigation fumigation = repository.findById(id)
+                .orElseThrow(() -> new FumigationNotFoundException(id));
+
+        validateUserPermission(fumigation, token);
+        FumigationInfoDTO infoDTO = new FumigationInfoDTO();
+
+        Company company = fumigation.getFumigationApplication().getCompany();
+        FumigationInfoDTO.CompanyInfoDTO companyInfo = new FumigationInfoDTO.CompanyInfoDTO();
+        companyInfo.setId(company.getId());
+        companyInfo.setName(company.getName());
+        companyInfo.setBusinessName(company.getBusinessName());
+        companyInfo.setPhoneNumber(company.getPhoneNumber());
+        companyInfo.setRuc(company.getRuc());
+        companyInfo.setAddress(company.getAddress());
+        infoDTO.setCompany(companyInfo);
+
+        if (company.getLegalRepresentative() != null) {
+            User rep = company.getLegalRepresentative();
+            String fullName = (rep.getFirstName() != null ? rep.getFirstName() : "") + " " +
+                    (rep.getLastName() != null ? rep.getLastName() : "");
+            infoDTO.setRepresentative(fullName.trim());
+        } else {
+            infoDTO.setRepresentative("Unknown");
+        }
+
+        if (fumigation.getDateTime() != null) {
+            infoDTO.setPlannedDate(fumigation.getDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+        } else {
+            infoDTO.setPlannedDate("No date");
+        }
+
+        FumigationInfoDTO.LotInfoDTO lotInfo = new FumigationInfoDTO.LotInfoDTO();
+        lotInfo.setId(fumigation.getId());
+        lotInfo.setLotNumber(fumigation.getLotNumber());
+        lotInfo.setTons(fumigation.getTon());
+        lotInfo.setQuality(fumigation.getQuality());
+        lotInfo.setSacks(fumigation.getSacks().intValue());
+        lotInfo.setPortDestination(fumigation.getPortDestination().toString());
+        infoDTO.setLot(lotInfo);
+
+        return infoDTO;
+    }
+
+    @Override
+    public Page<FumigationDetailDTO> getFumigationsByStatus(String status, Pageable pageable) {
+        Status statusEnum = parseAndValidateStatus(status);
+        Page<Fumigation> fumigations = repository.findByStatus(statusEnum, pageable);
+        return fumigations.map(detailMapper::toDetailDto);
+    }
+
+    private Status parseAndValidateStatus(String status) {
+        try {
+            return Status.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status: " + status + ". Valid values are: " +
+                    Arrays.toString(Status.values()));
+        }
+    }
+
 }

@@ -1,6 +1,5 @@
 package com.anecacao.api.request.creation.data.dto.request;
 
-import com.anecacao.api.request.creation.data.entity.Grade;
 import com.anecacao.api.request.creation.data.entity.PortName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.DecimalMin;
@@ -17,6 +16,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FumigationCreationRequestDTO {
+    @NotNull(message = "Lot Number must not be null")
+    private String lotNumber;
+
     @NotNull(message = "Ton must not be null")
     @DecimalMin(value = "0.01", inclusive = true, message = "Ton must be greater than 0")
     private BigDecimal ton;
@@ -28,8 +30,8 @@ public class FumigationCreationRequestDTO {
     @Min(value = 1, message = "Sacks must be at least 1")
     private Long sacks;
 
-    @NotNull(message = "Grade must not be null")
-    private Grade grade;
+    @NotNull(message = "Quality must not be null")
+    private String quality;
 
     @NotNull(message = "Date and time must not be null")
     @JsonFormat(pattern = "dd-MM-yyyy HH:mm")

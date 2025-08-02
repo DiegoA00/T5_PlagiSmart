@@ -6,7 +6,7 @@ const adminOptions = [
   { label: "Solicitudes", path: "/admin/solicitudes" },
   { label: "Lotes a fumigar", path: "/admin/lotes" },
   { label: "Servicios finalizados", path: "/admin/servicios" },
-  { label: "Clientes", path: "/admin/clientes" },
+  { label: "Usuarios", path: "/admin/usuarios" },
   { label: "Configuración", path: "/admin/configuracion" },
 ];
 

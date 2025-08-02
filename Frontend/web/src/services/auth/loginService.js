@@ -18,6 +18,10 @@ export const authService = {
     }
   },
 
+  getToken() {
+    return localStorage.getItem(AUTH_TOKEN_KEY) || sessionStorage.getItem(AUTH_TOKEN_KEY);
+  },
+
   getAuthHeader() {
     const token = localStorage.getItem(AUTH_TOKEN_KEY) || sessionStorage.getItem(AUTH_TOKEN_KEY);
     const tokenType = localStorage.getItem(TOKEN_TYPE_KEY) || sessionStorage.getItem(TOKEN_TYPE_KEY) || 'Bearer';
@@ -39,7 +43,9 @@ export const authService = {
   },
 
   isAuthenticated() {
-    return !!this.getAuthHeader();
+    const hasToken = !!(localStorage.getItem(AUTH_TOKEN_KEY) || sessionStorage.getItem(AUTH_TOKEN_KEY));
+    const hasUserData = !!(localStorage.getItem(USER_DATA_KEY) || sessionStorage.getItem(USER_DATA_KEY));
+    return hasToken && hasUserData;
   }
 };
 
@@ -52,12 +58,17 @@ export const loginService = {
       });
 
       const { token, tokenType } = authResponse.data;
-      if (!token) throw new Error('Token no recibido del servidor');
-
-      apiClient.defaults.headers.common['Authorization'] = `${tokenType || 'Bearer'} ${token}`;
-      const userResponse = await apiClient.get('/users');
+      if (!token) {
+        throw new Error('Token no recibido del servidor');
+      }
+      
+      const userResponse = await apiClient.get('/users/me', {
+        headers: {
+          'Authorization': `${tokenType || 'Bearer'} ${token}`
+        }
+      });
+      
       const userData = userResponse.data;
-
       authService.setAuthData(token, tokenType, userData, rememberMe);
 
       return {
@@ -73,10 +84,34 @@ export const loginService = {
           status: 401
         };
       }
+      
       throw {
         success: false,
-        message: error.response?.data?.message || 'Error al iniciar sesión',
+        message: error.response?.data?.message || error.message || 'Error al iniciar sesión',
         status: error.response?.status || 500
+      };
+    }
+  },
+
+  validateSession: async () => {
+    try {
+      const authHeader = authService.getAuthHeader();
+      if (!authHeader) {
+        throw new Error('No session token found');
+      }
+      
+      const response = await apiClient.get('/users/me');
+      
+      return {
+        success: true,
+        user: response.data
+      };
+    } catch (error) {
+      authService.clearAuthData();
+      throw {
+        success: false,
+        message: 'Session expired or invalid',
+        status: error.response?.status || 401
       };
     }
   },

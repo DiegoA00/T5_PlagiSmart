@@ -18,6 +18,8 @@ import com.anecacao.api.request.creation.data.entity.Company;
 import com.anecacao.api.request.creation.domain.service.CompanyService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,10 +28,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -117,22 +119,31 @@ public class UserServiceImpl implements UserService {
     public void updateUsersRole(UserUpdateRoleDTO userUpdateRoleDTO) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        User user = userRepository.findByEmail(userUpdateRoleDTO.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found."));
+        User user = getUser(userUpdateRoleDTO);
 
         if (userUpdateRoleDTO.getEmail().equals(email)) throw new IllegalRoleChangeException();
 
         Role role = roleRepository.findByName(RoleName.ROLE_TECHNICIAN)
                 .orElseThrow(() -> new RuntimeException("Role not found."));
 
+        Role clientRole = roleRepository.findByName(RoleName.ROLE_CLIENT)
+                .orElseThrow(() -> new RuntimeException("Role not found."));
+
         user.getRoles().add(role);
+        user.getRoles().remove(clientRole);
         userRepository.save(user);
+    }
+
+    private User getUser(UserUpdateRoleDTO userUpdateRoleDTO) {
+        User user = userRepository.findByEmail(userUpdateRoleDTO.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found."));
+        return user;
     }
 
     @Override
     @Transactional
     public void createAdminUserIfNotExist() {
-        Optional<User> adminUser = userRepository.findByEmail("admin");
+        Optional<User> adminUser = userRepository.findByEmail("admin@admin.com");
 
         Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
                 .orElseThrow(() -> new RuntimeException("ADMIN role not found"));
@@ -140,7 +151,7 @@ public class UserServiceImpl implements UserService {
 
         if (adminUser.isEmpty()) {
             User user = new User();
-            user.setEmail("admin");
+            user.setEmail("admin@admin.com");
             user.setFirstName("admin");
             user.setRoles(Set.of(adminRole));
 
@@ -178,5 +189,60 @@ public class UserServiceImpl implements UserService {
         return user.getRoles().stream()
                 .anyMatch(role -> role.getName().equals(roleName));
     }
+
+    @Override
+    public Page<UserResponseDTO> getUsersByRole(String role, Pageable pageable) {
+        if (role == null) {
+            return Page.empty();
+        }
+
+        RoleName roleName;
+        try {
+            // Convertir el string del parámetro al enum RoleName
+            roleName = RoleName.valueOf("ROLE_" + role.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid role: " + role);
+        }
+
+        Page<User> users = userRepository.findByRoleName(roleName, pageable);
+
+        return users.map(user -> {
+            UserResponseDTO dto = new UserResponseDTO();
+            dto.setId(user.getId());
+            dto.setNationalId(user.getNationalId());
+            dto.setFirstName(user.getFirstName());
+            dto.setLastName(user.getLastName());
+            dto.setEmail(user.getEmail());
+            String userRole = user.getRoles().stream()
+                    .map(r -> r.getName().toString().replace("ROLE_", "").toLowerCase())
+                    .findFirst()
+                    .orElse("unknown");
+            dto.setRole(userRole);
+            return dto;
+        });
+    }
+
+    @Override
+    public Page<UserResponseDTO> getAllUsers(Pageable pageable) {
+        Page<User> usersPage = userRepository.findAll(pageable);
+
+        return usersPage.map(user -> {
+            UserResponseDTO dto = new UserResponseDTO();
+            dto.setId(user.getId());
+            dto.setNationalId(user.getNationalId());
+            dto.setFirstName(user.getFirstName());
+            dto.setLastName(user.getLastName());
+            dto.setEmail(user.getEmail());
+
+            String userRole = user.getRoles().stream()
+                    .map(role -> role.getName().toString().replace("ROLE_", "").toLowerCase())
+                    .findFirst()
+                    .orElse("no_role");
+
+            dto.setRole(userRole);
+            return dto;
+        });
+    }
+
 
 }

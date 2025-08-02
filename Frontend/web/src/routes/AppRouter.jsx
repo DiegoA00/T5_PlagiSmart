@@ -17,13 +17,14 @@ import PasswordRecovery from "../pages/Recovery/PasswordRecovery";
 import Dashboard from "../pages/Dashboard/Dashboard";
 import ClientHome from "@/pages/Client/ClientHome";
 
-import AdminHome from "@/pages/Admin/AdminHome";
-import Solicitudes from "@/pages/Admin/AdminHome";
+import Solicitudes from "@/pages/Admin/RequestsPage";
 import LotsInService from "../pages/Admin/LotsPage";
 import CompletedServicesPage from "@/pages/Admin/CompletedServicesPage";
+import UsersPage from "@/pages/Admin/UsersPage";
 
 import NotImplemented from "@/pages/NotImplemented";
 import TechnicianLotsPage from "@/pages/Technician/TechnicianLotsPage";
+import ProtectedRoute from "./ProtectedRouter";
 
 import AdminDashboard from "@/pages/Dashboard/AdminDashboard";
 
@@ -41,10 +42,48 @@ export default function AppRouter() {
         <Route path='/register/success' element={<RegisterSuccess />} />
         <Route path='/register/complete-profile' element={<CompleteProfile />} />
 
-        <Route path='*' element={<Navigate to='/login' />} />
+        <Route path='/dashboard' element={
+          <ProtectedRoute allowedRoles={['ROLE_ADMIN', 'ROLE_TECHNICIAN', 'ROLE_CLIENT']}>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+        
+        <Route path='/home/*' element={
+          <ProtectedRoute allowedRoles={['ROLE_CLIENT']}>
+            <ClientHome />
+          </ProtectedRoute>
+        } />
 
-        <Route path='/dashboard' element={<Dashboard />} />
-        <Route path='/home/*' element={<ClientHome />} />
+        <Route path='/admin/dashboard' element={
+          <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+            <NotImplemented />
+          </ProtectedRoute>
+        } />
+        <Route path='/admin/solicitudes' element={
+          <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+            <Solicitudes />
+          </ProtectedRoute>
+        } />
+        <Route path='/admin/lotes' element={
+          <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+            <LotsInService />
+          </ProtectedRoute>
+        } />
+        <Route path='/admin/servicios' element={
+          <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+            <CompletedServicesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/usuarios" element={
+          <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+            <UsersPage />
+          </ProtectedRoute>
+        } />
+        <Route path='/admin/configuracion' element={
+          <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+            <NotImplemented />
+          </ProtectedRoute>
+        } />
 
         <Route path='/admin/dashboard' element={<AdminDashboard />} />
         <Route path='/admin/solicitudes' element={<Solicitudes />} />
@@ -52,8 +91,12 @@ export default function AppRouter() {
         <Route path='/admin/servicios' element={<CompletedServicesPage />} />
         <Route path='/admin/clientes' element={<NotImplemented />} />
         <Route path='/admin/configuracion' element={<NotImplemented />} />
-
-        <Route path='/tecnico/lotes' element={<TechnicianLotsPage />} />
+        <Route path='/tecnico/lotes' element={
+          <ProtectedRoute allowedRoles={['ROLE_TECHNICIAN']}>
+            <TechnicianLotsPage />
+          </ProtectedRoute>
+        } />
+        <Route path='*' element={<Navigate to='/login' />} />
       </Routes>
     </Router>
   );

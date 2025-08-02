@@ -6,9 +6,12 @@ import com.anecacao.api.auth.domain.exception.UnauthorizedAccessException;
 import com.anecacao.api.auth.domain.service.UserService;
 import com.anecacao.api.request.creation.data.dto.request.FumigationCreationRequestDTO;
 import com.anecacao.api.request.creation.data.dto.request.UpdateStatusRequestDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationDetailDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationResponseDTO;
+import com.anecacao.api.request.creation.data.dto.response.FumigationSummaryDTO;
 import com.anecacao.api.request.creation.data.entity.*;
 import com.anecacao.api.request.creation.data.mapper.FumigationApplicationMapper;
+import com.anecacao.api.request.creation.data.mapper.FumigationMapper;
 import com.anecacao.api.request.creation.data.repository.FumigationRepository;
 import com.anecacao.api.request.creation.domain.exception.FumigationNotFoundException;
 import com.anecacao.api.request.creation.domain.exception.FumigationValidationException;
@@ -22,6 +25,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
@@ -40,6 +45,10 @@ class FumigationServiceImplTest {
 
     @Mock
     private FumigationApplicationMapper mapper;
+
+    @Mock
+    private FumigationMapper fumigationMapper;
+
 
     @InjectMocks
     private FumigationServiceImpl subject;
@@ -89,7 +98,7 @@ class FumigationServiceImplTest {
         verify(repository).save(fumigation);
 
         assertEquals(dto.getTon(), fumigation.getTon());
-        assertEquals(dto.getGrade(), fumigation.getGrade());
+        assertEquals(dto.getQuality(), fumigation.getQuality());
         assertEquals(dto.getPortDestination(), fumigation.getPortDestination());
     }
 
@@ -143,7 +152,7 @@ class FumigationServiceImplTest {
         dto.setTon(new BigDecimal("15.5"));
         dto.setSacks(100L);
         dto.setPortDestination(PortName.AMSTERDAM_HOLANDA);
-        dto.setGrade(Grade.GRADE_3);
+        dto.setQuality(Grade.GRADE_3.toString());
         dto.setDateTime(LocalDateTime.of(2024, 6, 1, 10, 0));
         return dto;
     }

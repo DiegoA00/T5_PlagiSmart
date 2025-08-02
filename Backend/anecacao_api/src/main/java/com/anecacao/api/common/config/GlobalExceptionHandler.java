@@ -2,6 +2,9 @@ package com.anecacao.api.common.config;
 
 import com.anecacao.api.auth.data.dto.ErrorResponseDTO;
 import com.anecacao.api.auth.domain.exception.*;
+import com.anecacao.api.reporting.domain.exception.IndustrialSafetyViolationException;
+import com.anecacao.api.reporting.domain.exception.InvalidFumigationStatusException;
+import com.anecacao.api.reporting.domain.service.exception.TechnicalRoleException;
 import com.anecacao.api.request.creation.domain.exception.CompanyNotFoundException;
 import com.anecacao.api.request.creation.domain.exception.FumigationNotFoundException;
 import com.anecacao.api.request.creation.domain.exception.FumigationValidationException;
@@ -118,6 +121,26 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalRoleChangeException.class)
     public ResponseEntity<ErrorResponseDTO> handleIllegalRoleChangeException(IllegalRoleChangeException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(buildResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(IndustrialSafetyViolationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleIndustrialSafetyViolationException(IndustrialSafetyViolationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(buildResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidFumigationStatusException.class)
+    public ResponseEntity<ErrorResponseDTO> handleInvalidFumigationStatusException(InvalidFumigationStatusException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(buildResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(CompanyAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponseDTO> handleCompanyAlreadyExistsException(CompanyAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(buildResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(TechnicalRoleException.class)
+    public ResponseEntity<ErrorResponseDTO> handleTechnicalRoleException(TechnicalRoleException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(buildResponse(ex.getMessage()));
     }
 
