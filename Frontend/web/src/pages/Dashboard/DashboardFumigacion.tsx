@@ -1,5 +1,5 @@
 import { useState } from "react";
-import data from "./data/fumigacionData.json";
+import data from "./Data/fumigacionData.json";
 import { SummaryCard } from "./SummaryCard";
 import { Filters } from "./Filters";
 import { MonthlyChart } from "./MonthlyChart";
