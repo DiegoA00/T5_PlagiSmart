@@ -1,8 +1,8 @@
 import { useParams } from 'react-router-dom';
 import NavbarClient from "./Components/NavbarClient";
 import Header from "./Components/Header";
+import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 function ReservationDocuments() {
   const { codigo } = useParams();
@@ -636,7 +636,7 @@ function ReservationDocuments() {
           }
         },
         {
-          id: "certificado-fumigacion",
+          type: "certificado-fumigacion",
           title: "Certificado de Fumigación",
           fileName: "Certificado_Fumigacion",
           content: {
@@ -882,9 +882,9 @@ function ReservationDocuments() {
 
       case 'grid':
         return (
-          <div className='py-25 px-40'>
+          <div className='py-25 px-30'>
             {section.data.map((item, i) => (
-              <div key={i} className="grid grid-cols-2 gap-2">
+              <div key={i} className="grid grid-cols-2 gap-30">
                 <div className="p-2 text-left">
                   <p><strong>{item.label}:</strong></p>
                 </div>
@@ -920,16 +920,18 @@ function ReservationDocuments() {
       
       case 'single-signature':
         return (
-          <div key={index} className="mt-6 grid grid-cols-2 gap-8 text-center signature-section">
-            <div className="text-center">
+          <div key={index} className="mt-6 grid grid-cols-8 gap-2 text-center signature-section">
+            <div className="text-center col-span-3">
               <div className="pt-2 mt-16">
                 <p className="font-semibold">DRY SEAL</p>
                 <p className="text-xs">ANECACAO</p>
               </div>
             </div>
-            <div className="border-t border-gray-400 pt-2 mt-16 signature-line inline-block">
+            <div className='col-span-2'></div>
+            <div className="border-t border-gray-400 pt-2 mt-16 signature-line inline-block text-center col-span-2">
               <p className="font-semibold">{section.signature}</p>
             </div>
+            <div></div>
           </div>
         );
       
@@ -969,7 +971,7 @@ function ReservationDocuments() {
 
       // Crear canvas del elemento con configuración mejorada
       const canvas = await html2canvas(element, {
-        scale: 1.5, // Reducir escala para mejor rendimiento
+        scale: 1.5,
         useCORS: true,
         backgroundColor: '#ffffff',
         allowTaint: false,
@@ -984,41 +986,61 @@ function ReservationDocuments() {
         el.style.display = originalDisplays[index] || '';
       });
 
-      // Crear PDF con dimensiones calculadas
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      
-      const imgWidth = pageWidth - 20; // Márgenes de 10mm a cada lado
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
       // Convertir canvas a imagen
       const imgData = canvas.toDataURL('image/png', 0.9);
       
-      // Si la imagen es más alta que la página, ajustar
-      if (imgHeight > pageHeight - 20) {
-        const scaledHeight = pageHeight - 20;
-        const scaledWidth = (canvas.width * scaledHeight) / canvas.height;
-        pdf.addImage(imgData, 'PNG', 10, 10, scaledWidth, scaledHeight);
+      // Nombre de archivo PDF
+      const pdfFileName = `${documentType}_${codigo}.pdf`;
+      
+      // GENERAR Y DESCARGAR SOLO PDF
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      // Dimensiones de la página A4
+      const pageWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm (corregido de 295 a 297)
+      const margin = 10; // Margen de 10mm
+      const availableWidth = pageWidth - (margin * 2);
+      const availableHeight = pageHeight - (margin * 2);
+
+      // Calcular dimensiones de la imagen respetando proporciones
+      let imgWidth = availableWidth;
+      let imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      // Si la imagen es muy alta, ajustar por altura y recalcular ancho
+      if (imgHeight > availableHeight) {
+        imgHeight = availableHeight;
+        imgWidth = (canvas.width * imgHeight) / canvas.height;
+      }
+
+      // Calcular posición para centrar la imagen
+      const xOffset = margin + (availableWidth - imgWidth) / 2;
+      const yOffset = margin + (availableHeight - imgHeight) / 2;
+
+      // Si el contenido cabe en una página, centrarlo
+      if (imgHeight <= availableHeight) {
+        pdf.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth, imgHeight);
       } else {
-        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+        // Si necesita múltiples páginas, usar el método original con márgenes
+        let heightLeft = imgHeight;
+        let position = margin;
+
+        pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+        heightLeft -= availableHeight;
+
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight + margin;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+          heightLeft -= availableHeight;
+        }
       }
-      
-      // Crear nombre del archivo
-      const fileName = `${documentType}_${codigo}.pdf`;
-      
-      // Crear blob y abrir en nueva pestaña
-      const pdfBlob = pdf.output('blob');
-      const url = URL.createObjectURL(pdfBlob);
-      
-      // Abrir en nueva pestaña
-      const newWindow = window.open(url, '_blank');
-      if (!newWindow) {
-        alert('Por favor, permite ventanas emergentes para ver el PDF.');
-      }
-      
-      // También descargar el archivo
-      pdf.save(fileName);
+
+      // Descargar solo el PDF
+      pdf.save(pdfFileName);
       
     } catch (error) {
       console.error('Error detallado al generar PDF:', error);
@@ -1032,8 +1054,6 @@ function ReservationDocuments() {
       let errorMessage = 'Error al generar el PDF. ';
       if (error.message.includes('canvas')) {
         errorMessage += 'Problema al capturar el contenido. ';
-      } else if (error.message.includes('jsPDF')) {
-        errorMessage += 'Problema al crear el PDF. ';
       }
       errorMessage += 'Por favor, intenta nuevamente o recarga la página.';
       
@@ -1065,8 +1085,7 @@ function ReservationDocuments() {
             {/* Renderizado dinámico de documentos */}
             {documents.map((document, docIndex) => (
               <div 
-                key={document.id}
-                id={document.id}
+                key={document.type}
                 className="bg-white border border-gray-200 rounded-lg shadow-sm mb-6 p-6 document-section"
                 style={{ backgroundColor: 'white', padding: '24px', border: '1px solid #e5e7eb' }}
               >
@@ -1075,16 +1094,17 @@ function ReservationDocuments() {
                     {document.title}
                   </h2>
                   <button
-                    onClick={() => handleConvertToPDF(document.fileName, document.id)}
+                    onClick={() => handleConvertToPDF(document.fileName, document.type)}
                     className="bg-[#003595] text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Convertir a PDF
                   </button>
                 </div>
                 
-                <div 
-                  className="border-2 border-gray-300 rounded-lg p-6 bg-gray-50 document-content"
-                  style={{ backgroundColor: 'white', padding: '24px', border: '2px solid black' }}
+                <div
+                  id={document.type}
+                  className="rounded-lg p-6 bg-gray-50 document-content"
+                  style={{ backgroundColor: 'white', padding: '24px'}}
                 >
                   <div className="text-center mb-6">
                     <h3 className="text-lg font-bold text-gray-800 document-title">
