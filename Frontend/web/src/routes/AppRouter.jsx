@@ -14,7 +14,6 @@ import MailRecovery from "../pages/Recovery/MailRecovery";
 import CodeRecovery from "../pages/Recovery/CodeRecovery";
 import PasswordRecovery from "../pages/Recovery/PasswordRecovery";
 
-import Dashboard from "../pages/Dashboard/Dashboard";
 import ClientHome from "@/pages/Client/ClientHome";
 
 import Solicitudes from "@/pages/Admin/RequestsPage";
@@ -42,12 +41,6 @@ export default function AppRouter() {
         <Route path='/register/success' element={<RegisterSuccess />} />
         <Route path='/register/complete-profile' element={<CompleteProfile />} />
 
-        <Route path='/dashboard' element={
-          <ProtectedRoute allowedRoles={['ROLE_ADMIN', 'ROLE_TECHNICIAN', 'ROLE_CLIENT']}>
-            <Dashboard />
-          </ProtectedRoute>
-        } />
-        
         <Route path='/home/*' element={
           <ProtectedRoute allowedRoles={['ROLE_CLIENT']}>
             <ClientHome />
@@ -56,7 +49,7 @@ export default function AppRouter() {
 
         <Route path='/admin/dashboard' element={
           <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
-            <NotImplemented />
+            <AdminDashboard />
           </ProtectedRoute>
         } />
         <Route path='/admin/solicitudes' element={
@@ -84,13 +77,7 @@ export default function AppRouter() {
             <NotImplemented />
           </ProtectedRoute>
         } />
-
-        <Route path='/admin/dashboard' element={<AdminDashboard />} />
-        <Route path='/admin/solicitudes' element={<Solicitudes />} />
-        <Route path='/admin/lotes' element={<LotsInService />} />
-        <Route path='/admin/servicios' element={<CompletedServicesPage />} />
-        <Route path='/admin/clientes' element={<NotImplemented />} />
-        <Route path='/admin/configuracion' element={<NotImplemented />} />
+        
         <Route path='/tecnico/lotes' element={
           <ProtectedRoute allowedRoles={['ROLE_TECHNICIAN']}>
             <TechnicianLotsPage />
