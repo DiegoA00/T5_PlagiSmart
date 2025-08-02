@@ -26,6 +26,8 @@ import NotImplemented from "@/pages/NotImplemented";
 import TechnicianLotsPage from "@/pages/Technician/TechnicianLotsPage";
 import ProtectedRoute from "./ProtectedRouter";
 
+import AdminDashboard from "@/pages/Dashboard/AdminDashboard";
+
 export default function AppRouter() {
   return (
     <Router>
@@ -83,12 +85,17 @@ export default function AppRouter() {
           </ProtectedRoute>
         } />
 
+        <Route path='/admin/dashboard' element={<AdminDashboard />} />
+        <Route path='/admin/solicitudes' element={<Solicitudes />} />
+        <Route path='/admin/lotes' element={<LotsInService />} />
+        <Route path='/admin/servicios' element={<CompletedServicesPage />} />
+        <Route path='/admin/clientes' element={<NotImplemented />} />
+        <Route path='/admin/configuracion' element={<NotImplemented />} />
         <Route path='/tecnico/lotes' element={
           <ProtectedRoute allowedRoles={['ROLE_TECHNICIAN']}>
             <TechnicianLotsPage />
           </ProtectedRoute>
         } />
-
         <Route path='*' element={<Navigate to='/login' />} />
       </Routes>
     </Router>
