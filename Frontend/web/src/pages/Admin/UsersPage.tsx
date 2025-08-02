@@ -18,7 +18,7 @@ export default function UsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const roles = ["all", "ROLE_ADMIN", "ROLE_CLIENT", "ROLE_TECHNICIAN"];
+  const roles = ["all", "admin", "client", "technician"];
 
   useEffect(() => {
     if (selectedRole === "all") {
