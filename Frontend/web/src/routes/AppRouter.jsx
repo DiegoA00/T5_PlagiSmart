@@ -20,12 +20,11 @@ import Solicitudes from "@/pages/Admin/RequestsPage";
 import LotsInService from "../pages/Admin/LotsPage";
 import CompletedServicesPage from "@/pages/Admin/CompletedServicesPage";
 import UsersPage from "@/pages/Admin/UsersPage";
+import AdminDashboard from "@/pages/Dashboard/AdminDashboard";
 
 import NotImplemented from "@/pages/NotImplemented";
 import TechnicianLotsPage from "@/pages/Technician/TechnicianLotsPage";
 import ProtectedRoute from "./ProtectedRouter";
-
-import AdminDashboard from "@/pages/Dashboard/AdminDashboard";
 
 export default function AppRouter() {
   return (
@@ -43,46 +42,32 @@ export default function AppRouter() {
 
         <Route path='/home/*' element={
           <ProtectedRoute allowedRoles={['ROLE_CLIENT']}>
-            <ClientHome />
+            <Routes>
+              <Route path='*' element={<ClientHome />} />
+            </Routes>
           </ProtectedRoute>
         } />
 
-        <Route path='/admin/dashboard' element={
+        <Route path='/admin/*' element={
           <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
-            <AdminDashboard />
+            <Routes>
+              <Route path='dashboard' element={<AdminDashboard />} />
+              <Route path='solicitudes' element={<Solicitudes />} />
+              <Route path='lotes' element={<LotsInService />} />
+              <Route path='servicios' element={<CompletedServicesPage />} />
+              <Route path='usuarios' element={<UsersPage />} />
+            </Routes>
           </ProtectedRoute>
         } />
-        <Route path='/admin/solicitudes' element={
-          <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
-            <Solicitudes />
-          </ProtectedRoute>
-        } />
-        <Route path='/admin/lotes' element={
-          <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
-            <LotsInService />
-          </ProtectedRoute>
-        } />
-        <Route path='/admin/servicios' element={
-          <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
-            <CompletedServicesPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/usuarios" element={
-          <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
-            <UsersPage />
-          </ProtectedRoute>
-        } />
-        <Route path='/admin/configuracion' element={
-          <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
-            <NotImplemented />
-          </ProtectedRoute>
-        } />
-        
-        <Route path='/tecnico/lotes' element={
+
+        <Route path='/tecnico/*' element={
           <ProtectedRoute allowedRoles={['ROLE_TECHNICIAN']}>
-            <TechnicianLotsPage />
+            <Routes>
+              <Route path='lotes' element={<TechnicianLotsPage />} />
+            </Routes>
           </ProtectedRoute>
         } />
+
         <Route path='*' element={<Navigate to='/login' />} />
       </Routes>
     </Router>
