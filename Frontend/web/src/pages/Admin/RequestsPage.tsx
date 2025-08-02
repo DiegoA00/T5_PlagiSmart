@@ -11,13 +11,13 @@ export default function RequestsPage() {
   const [applications, setApplications] = useState<ApiFumigationApplication[]>([]);
   const [filteredApplications, setFilteredApplications] = useState<ApiFumigationApplication[]>([]);
   const [search, setSearch] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("PENDING");
   const [selectedRequest, setSelectedRequest] = useState<ApiFumigationApplication | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const statuses = ["all", "PENDING", "REJECTED"];
+  const statuses = ["PENDING", "REJECTED"];
 
   useEffect(() => {
     fetchApplications();
@@ -43,9 +43,7 @@ export default function RequestsPage() {
     try {
       let response: PaginatedResponse<ApiFumigationApplication>;
 
-      if (selectedStatus === "all") {
-        response = await fumigationService.getAllApplications();
-      } else if (selectedStatus === "PENDING") {
+      if (selectedStatus === "PENDING") {
         response = await fumigationService.getPendingApplications();
       } else {
         response = await fumigationService.getRejectedApplications();
@@ -122,7 +120,7 @@ export default function RequestsPage() {
           >
             {statuses.map((status) => (
               <option key={status} value={status}>
-                {status === "all" ? "Todos los estados" : status}
+                {status === "PENDING" ? "Pendientes" : "Rechazadas"}
               </option>
             ))}
           </select>
