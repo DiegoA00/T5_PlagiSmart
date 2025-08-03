@@ -144,6 +144,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(buildResponse(ex.getMessage()));
     }
 
+    @ExceptionHandler(UserInvalidException.class)
+    public ResponseEntity<ErrorResponseDTO> handleUserInvalidException(UserInvalidException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(buildResponse(ex.getMessage()));
+    }
+
     private ErrorResponseDTO buildResponse (String message) {
         ErrorResponseDTO error = new ErrorResponseDTO();
         error.setMessage(message);

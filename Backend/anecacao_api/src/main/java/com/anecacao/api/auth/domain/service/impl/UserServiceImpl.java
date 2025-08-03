@@ -30,8 +30,6 @@ import org.springframework.security.core.Authentication;
 
 import java.util.Optional;
 import java.util.Set;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +54,7 @@ public class UserServiceImpl implements UserService {
                         .orElseThrow(() -> new RoleNotFoundException(RoleName.ROLE_CLIENT));
 
         User newUser = buildNewUser(userRequestDTO, Set.of(defaultRole));
+        newUser.setHasCompletedProfile(false);
 
         userRepository.save(newUser);
         userPasswordService.savePassword(newUser, userRequestDTO.getPassword());
@@ -79,12 +78,24 @@ public class UserServiceImpl implements UserService {
 
         user.setNationalId(request.getNationalId());
         user.setBirthday(request.getBirthday());
+        user.setCountry(request.getCountry());
+        user.setCity(request.getCity());
+        user.setPersonalPhone(request.getPersonalPhone());
 
         Company company = companyService.createNewCompany(request.getCompany(), user);
 
         user.getCompanies().add(company);
+        user.setHasCompletedProfile(true);
 
         userRepository.save(user);
+    }
+
+    @Override
+    public boolean hasCompletedProfile() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
+        return user.isHasCompletedProfile();
     }
 
     @Override
@@ -154,6 +165,7 @@ public class UserServiceImpl implements UserService {
             user.setEmail("admin@admin.com");
             user.setFirstName("admin");
             user.setRoles(Set.of(adminRole));
+            user.setHasCompletedProfile(true);
 
             userRepository.save(user);
 

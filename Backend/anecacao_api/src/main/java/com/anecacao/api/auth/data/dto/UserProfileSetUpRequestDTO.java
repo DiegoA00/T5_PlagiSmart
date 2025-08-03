@@ -17,6 +17,15 @@ public class UserProfileSetUpRequestDTO {
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate birthday;
 
-    @NotNull
+    @NotNull(message = "Company information is required")
     private CompanyCreationDTO company;
+
+    @NotNull(message = "Country is required")
+    private String country;
+
+    @NotNull(message = "City is required")
+    private String city;
+
+    @NotNull(message = "Personal phone is required")
+    private String personalPhone;
 }
