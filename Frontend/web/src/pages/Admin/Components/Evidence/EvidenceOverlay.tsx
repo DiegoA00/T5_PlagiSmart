@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { FumigationDetailResponse, ApiUser } from "@/types/request";
 import { usersService } from "@/services/usersService";
 import { reportsService } from "@/services/reportsService";
-import { toast } from "sonner";
 import { FumigationForm } from "./FumigationForm";
 import { UncoveringForm } from "./UncoveringForm";
 import { useFumigationData } from "./hooks/useFumigationData";
@@ -35,19 +34,21 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
     fumigationData,
     setFumigationData,
     validateFumigationForm,
+    validationErrors,
+    clearValidationErrors,
+    updateField,
+    addToArray,
+    removeFromArray,
     resetForm
   } = useFumigationData(fumigationDetails);
 
   useEffect(() => {
     const loadTechnicians = async () => {
       try {
-        console.log("Cargando técnicos...");
         const response = await usersService.getUsersByRole('TECHNICIAN');
-        console.log("Técnicos cargados:", response.content);
         setAvailableTechnicians(response.content);
       } catch (error) {
-        console.error("Error al cargar técnicos:", error);
-        toast.error("Error al cargar técnicos disponibles");
+        
       }
     };
 
@@ -56,33 +57,29 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
     }
   }, [isEditable]);
 
-  const handleSubmitFumigationReport = async () => {
-    if (isSubmitting) return; // Evitar doble clic
-    
-    console.log("Iniciando envío de reporte...");
-    
+  const handleSubmitClick = () => {
     if (!validateFumigationForm()) {
-      console.log("Validación fallida");
       return;
     }
+    
+    setShowConfirmDialog(true);
+  };
 
+  const handleSubmitFumigationReport = async () => {
+    if (isSubmitting) return;
+    
     setIsSubmitting(true);
 
     try {
-      // Formatear la fecha para el backend (dd-MM-yyyy)
       const formatDateForBackend = (dateString: string) => {
-        const date = new Date(dateString);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
+        const [year, month, day] = dateString.split('-');
         return `${day}-${month}-${year}`;
       };
 
-      // Formatear los datos según el backend espera
       const reportData = {
         id: fumigationDetails?.lot.id || 0,
         location: fumigationData.location.trim(),
-        date: formatDateForBackend(fumigationData.date), // Formato dd-MM-yyyy
+        date: formatDateForBackend(fumigationData.date),
         startTime: fumigationData.startTime,
         endTime: fumigationData.endTime,
         technicians: fumigationData.technicians.map(t => ({ id: t.id })),
@@ -110,15 +107,10 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
         observations: fumigationData.observations.trim() || ""
       };
 
-      console.log("Datos a enviar:", reportData);
-      console.log("Fecha formateada:", reportData.date);
-
       await reportsService.createFumigationReport(reportData);
       
-      // Solo un toast de éxito
       setFumigationReportSubmitted(true);
       setShowConfirmDialog(false);
-      toast.success("Reporte de fumigación enviado exitosamente");
       
       if (onClose) {
         setTimeout(() => {
@@ -126,26 +118,7 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
         }, 1500);
       }
     } catch (error) {
-      console.error("Error al enviar reporte:", error);
       
-      // Solo un toast de error específico
-      if (error instanceof Error) {
-        const errorMessage = error.message;
-        
-        if (errorMessage.includes('400')) {
-          toast.error("Error en los datos enviados. Verifique que todos los campos estén correctamente completados.");
-        } else if (errorMessage.includes('Invalid value') || errorMessage.includes('LocalDate')) {
-          toast.error("Error en el formato de fecha. Verifique que la fecha sea válida.");
-        } else if (errorMessage.includes('403')) {
-          toast.error("No tiene permisos para realizar esta acción.");
-        } else if (errorMessage.includes('401')) {
-          toast.error("Su sesión ha expirado. Por favor, inicie sesión nuevamente.");
-        } else {
-          toast.error(`Error al enviar el reporte: ${errorMessage}`);
-        }
-      } else {
-        toast.error("Error desconocido al enviar el reporte");
-      }
     } finally {
       setIsSubmitting(false);
     }
@@ -153,7 +126,6 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
 
   const handleTabChange = (value: string) => {
     if (value === "uncovering" && !fumigationReportSubmitted) {
-      toast.error("Debe completar el registro de fumigación antes de acceder al registro de descarpe");
       return;
     }
     setActiveTab(value);
@@ -188,12 +160,10 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
   return (
     <>
       <div className="flex flex-col h-full">
-        {/* Header fijo */}
         <div className="bg-[#003595] text-white rounded-t-lg px-8 py-5 text-lg font-semibold">
           Evidencias de Fumigación - Lote {fumigationDetails.lot.lotNumber}
         </div>
 
-        {/* Contenido con scroll limitado - siguiendo el patrón de OverlayContent */}
         <div className="overflow-y-auto px-8 py-6" style={{ maxHeight: "70vh" }}>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-4">
@@ -214,6 +184,10 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
                 availableTechnicians={availableTechnicians}
                 isEditable={isEditable}
                 fumigationReportSubmitted={fumigationReportSubmitted}
+                validationErrors={validationErrors}
+                updateField={updateField}
+                addToArray={addToArray}
+                removeFromArray={removeFromArray}
               />
             </TabsContent>
 
@@ -226,7 +200,6 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
           </Tabs>
         </div>
 
-        {/* Footer fijo */}
         <div className="flex justify-end gap-4 px-8 py-6 border-t border-gray-300 bg-white rounded-b-lg">
           {isEditable && !fumigationReportSubmitted && (
             <>
@@ -234,8 +207,8 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
                 Cancelar
               </Button>
               <Button 
-                onClick={() => setShowConfirmDialog(true)}
-                className="bg-[#003595] hover:bg-[#002060]"
+                onClick={handleSubmitClick}
+                className="bg-[#003595] hover:bg-[#002060] text-white"
                 disabled={isSubmitting}
               >
                 Subir Evidencias
@@ -272,7 +245,7 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
               </Button>
               <Button 
                 onClick={handleSubmitFumigationReport} 
-                className="bg-[#003595] hover:bg-[#002060]"
+                className="bg-[#003595] hover:bg-[#002060] text-white"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Enviando..." : "Confirmar"}

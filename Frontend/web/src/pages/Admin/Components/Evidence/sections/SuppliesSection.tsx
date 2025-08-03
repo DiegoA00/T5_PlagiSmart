@@ -3,20 +3,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Minus } from "lucide-react";
 import { CollapsibleSection } from "../shared/CollapsibleSection";
-import { FumigationData, Supply } from "../hooks/useFumigationData";
+import { FumigationData, Supply, ValidationErrors } from "../hooks/useFumigationData";
 
 interface SuppliesSectionProps {
   fumigationData: FumigationData;
   setFumigationData: React.Dispatch<React.SetStateAction<FumigationData>>;
   isEditable: boolean;
   fumigationReportSubmitted: boolean;
+  validationErrors?: ValidationErrors;
+  updateField: (field: keyof FumigationData, value: any) => void;
+  addToArray: (field: keyof FumigationData, item: any) => void;
+  removeFromArray: (field: keyof FumigationData, index: number) => void;
 }
 
 export const SuppliesSection: FC<SuppliesSectionProps> = ({
   fumigationData,
   setFumigationData,
   isEditable,
-  fumigationReportSubmitted
+  fumigationReportSubmitted,
+  validationErrors = {},
+  updateField,
+  addToArray,
+  removeFromArray
 }) => {
   const handleSupplyChange = (index: number, field: keyof Supply, value: string) => {
     if (field === 'quantity' || field === 'numberOfStrips') {
@@ -28,33 +36,25 @@ export const SuppliesSection: FC<SuppliesSectionProps> = ({
       }
     }
     
-    setFumigationData(prev => ({
-      ...prev,
-      supplies: prev.supplies.map((supply, i) => 
-        i === index ? { ...supply, [field]: value } : supply
-      )
-    }));
+    const newSupplies = fumigationData.supplies.map((supply, i) => 
+      i === index ? { ...supply, [field]: value } : supply
+    );
+    updateField('supplies', newSupplies);
   };
 
   const addSupply = () => {
-    setFumigationData(prev => ({
-      ...prev,
-      supplies: [...prev.supplies, { 
-        name: "", 
-        quantity: "", 
-        dosage: "", 
-        kindOfSupply: "", 
-        numberOfStrips: "" 
-      }]
-    }));
+    addToArray('supplies', { 
+      name: "", 
+      quantity: "", 
+      dosage: "", 
+      kindOfSupply: "", 
+      numberOfStrips: "" 
+    });
   };
 
   const removeSupply = (index: number) => {
     if (fumigationData.supplies.length > 1) {
-      setFumigationData(prev => ({
-        ...prev,
-        supplies: prev.supplies.filter((_, i) => i !== index)
-      }));
+      removeFromArray('supplies', index);
     }
   };
 
@@ -62,7 +62,7 @@ export const SuppliesSection: FC<SuppliesSectionProps> = ({
     <CollapsibleSection title="Suministros Utilizados" defaultOpen required>
       <div className="space-y-4">
         {fumigationData.supplies.map((supply, index) => (
-          <div key={index} className="grid grid-cols-5 gap-4 p-4 border rounded">
+          <div key={index} className={`grid grid-cols-5 gap-4 p-4 border rounded ${validationErrors.supplies ? 'border-red-200 bg-red-50' : ''}`}>
             <div>
               <label className="block text-sm font-medium mb-2 required-field">Producto</label>
               <Input 
@@ -70,6 +70,7 @@ export const SuppliesSection: FC<SuppliesSectionProps> = ({
                 onChange={(e) => handleSupplyChange(index, 'name', e.target.value)}
                 disabled={!isEditable || fumigationReportSubmitted}
                 placeholder="Nombre del producto"
+                className={`${validationErrors.supplies ? 'border-red-500 focus:border-red-500' : ''}`}
               />
             </div>
             <div>
@@ -82,6 +83,7 @@ export const SuppliesSection: FC<SuppliesSectionProps> = ({
                 onChange={(e) => handleSupplyChange(index, 'quantity', e.target.value)}
                 disabled={!isEditable || fumigationReportSubmitted}
                 placeholder="0.0"
+                className={`${validationErrors.supplies ? 'border-red-500 focus:border-red-500' : ''}`}
                 onKeyDown={(e) => {
                   if (e.key === '-' || e.key === 'e' || e.key === 'E') {
                     e.preventDefault();
@@ -96,6 +98,7 @@ export const SuppliesSection: FC<SuppliesSectionProps> = ({
                 onChange={(e) => handleSupplyChange(index, 'dosage', e.target.value)}
                 disabled={!isEditable || fumigationReportSubmitted}
                 placeholder="ej: 5ml/m2"
+                className={`${validationErrors.supplies ? 'border-red-500 focus:border-red-500' : ''}`}
               />
             </div>
             <div>
@@ -105,6 +108,7 @@ export const SuppliesSection: FC<SuppliesSectionProps> = ({
                 onChange={(e) => handleSupplyChange(index, 'kindOfSupply', e.target.value)}
                 disabled={!isEditable || fumigationReportSubmitted}
                 placeholder="Gas, Líquido, etc."
+                className={`${validationErrors.supplies ? 'border-red-500 focus:border-red-500' : ''}`}
               />
             </div>
             <div>
@@ -138,6 +142,9 @@ export const SuppliesSection: FC<SuppliesSectionProps> = ({
             </div>
           </div>
         ))}
+        {validationErrors.supplies && (
+          <p className="text-red-500 text-xs mt-1">{validationErrors.supplies}</p>
+        )}
         {isEditable && !fumigationReportSubmitted && (
           <Button type="button" variant="outline" onClick={addSupply}>
             <Plus size={16} className="mr-2" />

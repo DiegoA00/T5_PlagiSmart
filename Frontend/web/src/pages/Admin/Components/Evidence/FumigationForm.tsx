@@ -2,13 +2,14 @@ import { FC } from "react";
 import { ApiUser } from "@/types/request";
 import { GeneralInfoSection } from "./sections/GeneralInfoSection";
 import { PersonnelSection } from "./sections/PersonnelSection";
-import { DimensionsSection } from "./sections/DimensionsSection";
+import { LotDetailsSection } from "./sections/LotDetailsSection";
 import { EnvironmentalSection } from "./sections/EnvironmentalSection";
 import { SafetySection } from "./sections/SafetySection";
 import { SuppliesSection } from "./sections/SuppliesSection";
 import { ObservationsSection } from "./sections/ObservationsSection";
 import { SignaturesSection } from "./sections/SignaturesSection";
-import { FumigationData } from "./hooks/useFumigationData";
+import { ValidationErrorList } from "./components/ValidationErrorList";
+import { FumigationData, ValidationErrors } from "./hooks/useFumigationData";
 
 interface FumigationFormProps {
   fumigationData: FumigationData;
@@ -16,6 +17,10 @@ interface FumigationFormProps {
   availableTechnicians: ApiUser[];
   isEditable: boolean;
   fumigationReportSubmitted: boolean;
+  validationErrors: ValidationErrors;
+  updateField: (field: keyof FumigationData, value: any) => void;
+  addToArray: (field: keyof FumigationData, item: any) => void;
+  removeFromArray: (field: keyof FumigationData, index: number) => void;
 }
 
 export const FumigationForm: FC<FumigationFormProps> = ({
@@ -23,15 +28,23 @@ export const FumigationForm: FC<FumigationFormProps> = ({
   setFumigationData,
   availableTechnicians,
   isEditable,
-  fumigationReportSubmitted
+  fumigationReportSubmitted,
+  validationErrors,
+  updateField,
+  addToArray,
+  removeFromArray
 }) => {
   return (
     <div className="space-y-4">
+      <ValidationErrorList errors={validationErrors} />
+      
       <GeneralInfoSection
         fumigationData={fumigationData}
         setFumigationData={setFumigationData}
         isEditable={isEditable}
         fumigationReportSubmitted={fumigationReportSubmitted}
+        validationErrors={validationErrors}
+        updateField={updateField}
       />
 
       <PersonnelSection
@@ -42,11 +55,13 @@ export const FumigationForm: FC<FumigationFormProps> = ({
         fumigationReportSubmitted={fumigationReportSubmitted}
       />
 
-      <DimensionsSection
+      <LotDetailsSection
         fumigationData={fumigationData}
         setFumigationData={setFumigationData}
         isEditable={isEditable}
         fumigationReportSubmitted={fumigationReportSubmitted}
+        validationErrors={validationErrors}
+        updateField={updateField}
       />
 
       <EnvironmentalSection
@@ -54,6 +69,8 @@ export const FumigationForm: FC<FumigationFormProps> = ({
         setFumigationData={setFumigationData}
         isEditable={isEditable}
         fumigationReportSubmitted={fumigationReportSubmitted}
+        validationErrors={validationErrors}
+        updateField={updateField}
       />
 
       <SafetySection
@@ -68,6 +85,10 @@ export const FumigationForm: FC<FumigationFormProps> = ({
         setFumigationData={setFumigationData}
         isEditable={isEditable}
         fumigationReportSubmitted={fumigationReportSubmitted}
+        validationErrors={validationErrors}
+        updateField={updateField}
+        addToArray={addToArray}
+        removeFromArray={removeFromArray}
       />
 
       <ObservationsSection
@@ -77,7 +98,7 @@ export const FumigationForm: FC<FumigationFormProps> = ({
         fumigationReportSubmitted={fumigationReportSubmitted}
       />
 
-      <SignaturesSection
+      <SignaturesSection 
         isEditable={isEditable}
         fumigationReportSubmitted={fumigationReportSubmitted}
       />

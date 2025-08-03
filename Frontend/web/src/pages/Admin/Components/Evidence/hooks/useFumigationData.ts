@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { toast } from "sonner";
 
 export interface Supply {
   name: string;
@@ -26,8 +25,26 @@ export interface Hazards {
   hitDanger: boolean;
 }
 
+export interface LotDetails {
+  lotNumber: string;
+  tons: string;
+  quality: string;
+  sacks: string;
+  destination: string;
+}
+
+export interface ValidationErrors {
+  startTime?: string;
+  endTime?: string;
+  technicians?: string;
+  dimensions?: string;
+  temperature?: string;
+  humidity?: string;
+  supplies?: string;
+  timeRange?: string;
+}
+
 export interface FumigationData {
-  // General Info
   fumigationId: string;
   registrationNumber: string;
   company: string;
@@ -35,16 +52,14 @@ export interface FumigationData {
   date: string;
   startTime: string;
   endTime: string;
+  supervisor: string;
   
-  // Dimensions
-  totalArea: string;
-  treatedArea: string;
+  lotDetails: LotDetails;
+  
   dimensions: Dimensions;
   
-  // Environmental
   environmentalConditions: EnvironmentalConditions;
   
-  // Personnel
   selectedTechnician: string;
   technicians: Array<{
     id: number;
@@ -52,21 +67,22 @@ export interface FumigationData {
     role: string;
   }>;
   
-  // Safety
   hazards: Hazards;
   
-  // Supplies
   supplies: Supply[];
   
-  // Observations
   observations: string;
 }
 
 export const useFumigationData = (initialData?: any) => {
-  // Función para obtener la fecha actual en formato YYYY-MM-DD
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+
+  const clearValidationErrors = () => {
+    setValidationErrors({});
+  };
+
   const getCurrentDate = () => {
     const now = new Date();
-    // Asegurar que usamos la fecha local, no UTC
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
@@ -76,13 +92,19 @@ export const useFumigationData = (initialData?: any) => {
   const [fumigationData, setFumigationData] = useState<FumigationData>({
     fumigationId: initialData?.id?.toString() || "",
     registrationNumber: initialData?.registrationNumber || "",
-    company: initialData?.lot?.client?.businessName || "",
-    location: initialData?.lot?.location || "",
-    date: getCurrentDate(), // Usar fecha actual siempre
+    company: initialData?.company?.businessName || "",
+    location: initialData?.company?.address || "",
+    date: getCurrentDate(),
     startTime: "",
     endTime: "",
-    totalArea: initialData?.lot?.area?.toString() || "",
-    treatedArea: "",
+    supervisor: initialData?.representative || "",
+    lotDetails: {
+      lotNumber: initialData?.lot?.lotNumber || "",
+      tons: initialData?.lot?.tons?.toString() || "",
+      quality: initialData?.lot?.quality || "",
+      sacks: initialData?.lot?.sacks?.toString() || "",
+      destination: initialData?.lot?.portDestination || ""
+    },
     dimensions: {
       height: "",
       width: "",
@@ -118,8 +140,14 @@ export const useFumigationData = (initialData?: any) => {
       date: getCurrentDate(),
       startTime: "",
       endTime: "",
-      totalArea: "",
-      treatedArea: "",
+      supervisor: "",
+      lotDetails: {
+        lotNumber: "",
+        tons: "",
+        quality: "",
+        sacks: "",
+        destination: ""
+      },
       dimensions: {
         height: "",
         width: "",
@@ -145,132 +173,95 @@ export const useFumigationData = (initialData?: any) => {
       }],
       observations: ""
     });
+    setValidationErrors({});
   };
 
   const validateFumigationForm = (): boolean => {
-    console.log("Validando formulario:", fumigationData);
+    const errors: ValidationErrors = {};
     
-    // Validar ubicación
-    if (!fumigationData.location || fumigationData.location.trim() === "") {
-      toast.error("La ubicación es requerida");
-      return false;
-    }
-    
-    // Validar horarios
     if (!fumigationData.startTime || fumigationData.startTime.trim() === "") {
-      toast.error("La hora de inicio es requerida");
-      return false;
+      errors.startTime = "La hora de inicio es requerida";
     }
     
     if (!fumigationData.endTime || fumigationData.endTime.trim() === "") {
-      toast.error("La hora de finalización es requerida");
-      return false;
+      errors.endTime = "La hora de finalización es requerida";
     }
 
-    // Validar que la hora de fin sea posterior a la hora de inicio
-    if (fumigationData.startTime >= fumigationData.endTime) {
-      toast.error("La hora de finalización debe ser posterior a la hora de inicio");
-      return false;
+    if (fumigationData.startTime && fumigationData.endTime && fumigationData.startTime >= fumigationData.endTime) {
+      errors.timeRange = "La hora de finalización debe ser posterior a la hora de inicio";
     }
     
-    // Validar que haya al menos un técnico
     if (fumigationData.technicians.length === 0) {
-      toast.error("Se requiere al menos un técnico asignado");
-      return false;
+      errors.technicians = "Se requiere al menos un técnico asignado";
     }
     
-    // Validar dimensiones
     const { height, width, length } = fumigationData.dimensions;
     if (!height || !width || !length || height.trim() === "" || width.trim() === "" || length.trim() === "") {
-      toast.error("Todas las dimensiones son requeridas (altura, ancho y largo)");
-      return false;
+      errors.dimensions = "Todas las dimensiones son requeridas (altura, ancho y largo)";
+    } else {
+      const heightNum = parseFloat(height);
+      const widthNum = parseFloat(width);
+      const lengthNum = parseFloat(length);
+      
+      if (isNaN(heightNum) || isNaN(widthNum) || isNaN(lengthNum)) {
+        errors.dimensions = "Las dimensiones deben ser números válidos";
+      } else if (heightNum <= 0 || widthNum <= 0 || lengthNum <= 0) {
+        errors.dimensions = "Las dimensiones deben ser mayores a 0";
+      }
     }
     
-    const heightNum = parseFloat(height);
-    const widthNum = parseFloat(width);
-    const lengthNum = parseFloat(length);
-    
-    if (isNaN(heightNum) || isNaN(widthNum) || isNaN(lengthNum)) {
-      toast.error("Las dimensiones deben ser números válidos");
-      return false;
-    }
-    
-    if (heightNum <= 0 || widthNum <= 0 || lengthNum <= 0) {
-      toast.error("Las dimensiones deben ser mayores a 0");
-      return false;
-    }
-    
-    // Validar condiciones ambientales
     const { temperature, humidity } = fumigationData.environmentalConditions;
-    if (!temperature || !humidity || temperature.trim() === "" || humidity.trim() === "") {
-      toast.error("La temperatura y humedad son requeridas");
-      return false;
+    if (!temperature || temperature.trim() === "") {
+      errors.temperature = "La temperatura es requerida";
+    } else {
+      const tempNum = parseFloat(temperature);
+      if (isNaN(tempNum)) {
+        errors.temperature = "La temperatura debe ser un número válido";
+      }
     }
     
-    const tempNum = parseFloat(temperature);
-    const humidityNum = parseFloat(humidity);
-    
-    // Solo validar que la temperatura sea un número válido (sin rango)
-    if (isNaN(tempNum)) {
-      toast.error("La temperatura debe ser un número válido");
-      return false;
+    if (!humidity || humidity.trim() === "") {
+      errors.humidity = "La humedad es requerida";
+    } else {
+      const humidityNum = parseFloat(humidity);
+      if (isNaN(humidityNum) || humidityNum < 0 || humidityNum > 100) {
+        errors.humidity = "La humedad debe ser un número entre 0% y 100%";
+      }
     }
     
-    // Validar humedad dentro del rango 0-100%
-    if (isNaN(humidityNum) || humidityNum < 0 || humidityNum > 100) {
-      toast.error("La humedad debe ser un número entre 0% y 100%");
-      return false;
-    }
-    
-    // Validar suministros
     if (fumigationData.supplies.length === 0) {
-      toast.error("Se requiere al menos un suministro");
-      return false;
-    }
-    
-    for (let i = 0; i < fumigationData.supplies.length; i++) {
-      const supply = fumigationData.supplies[i];
-      
-      // Validar campos requeridos
-      if (!supply.name || supply.name.trim() === "") {
-        toast.error(`El nombre del producto es requerido en el suministro ${i + 1}`);
-        return false;
-      }
-      
-      if (!supply.quantity || supply.quantity.trim() === "") {
-        toast.error(`La cantidad es requerida en el suministro ${i + 1}`);
-        return false;
-      }
-      
-      if (!supply.dosage || supply.dosage.trim() === "") {
-        toast.error(`La dosis es requerida en el suministro ${i + 1}`);
-        return false;
-      }
-      
-      if (!supply.kindOfSupply || supply.kindOfSupply.trim() === "") {
-        toast.error(`El tipo de suministro es requerido en el suministro ${i + 1}`);
-        return false;
-      }
-      
-      // Validar que la cantidad sea un número válido y positivo
-      const quantityNum = parseFloat(supply.quantity);
-      if (isNaN(quantityNum) || quantityNum <= 0) {
-        toast.error(`La cantidad debe ser un número positivo en el suministro ${i + 1}`);
-        return false;
-      }
-      
-      // Validar número de cintas (opcional, pero si está presente debe ser válido)
-      if (supply.numberOfStrips && supply.numberOfStrips.trim() !== "") {
-        const stripsNum = parseFloat(supply.numberOfStrips);
-        if (isNaN(stripsNum) || stripsNum < 0) {
-          toast.error(`El número de cintas debe ser un número no negativo en el suministro ${i + 1}`);
-          return false;
+      errors.supplies = "Se requiere al menos un suministro";
+    } else {
+      for (let i = 0; i < fumigationData.supplies.length; i++) {
+        const supply = fumigationData.supplies[i];
+        
+        if (!supply.name || !supply.quantity || !supply.dosage || !supply.kindOfSupply ||
+            supply.name.trim() === "" || supply.quantity.trim() === "" || 
+            supply.dosage.trim() === "" || supply.kindOfSupply.trim() === "") {
+          errors.supplies = `Campos requeridos faltantes en el suministro ${i + 1}`;
+          break;
+        }
+        
+        const quantityNum = parseFloat(supply.quantity);
+        if (isNaN(quantityNum) || quantityNum <= 0) {
+          errors.supplies = `La cantidad debe ser un número positivo en el suministro ${i + 1}`;
+          break;
+        }
+        
+        if (supply.numberOfStrips && supply.numberOfStrips.trim() !== "") {
+          const stripsNum = parseFloat(supply.numberOfStrips);
+          if (isNaN(stripsNum) || stripsNum < 0) {
+            errors.supplies = `El número de cintas debe ser un número no negativo en el suministro ${i + 1}`;
+            break;
+          }
         }
       }
     }
     
-    console.log("Formulario válido - sin errores de validación");
-    return true;
+    setValidationErrors(errors);
+    
+    const hasErrors = Object.keys(errors).length > 0;
+    return !hasErrors;
   };
 
   const updateField = (field: keyof FumigationData, value: any) => {
@@ -278,6 +269,14 @@ export const useFumigationData = (initialData?: any) => {
       ...prev,
       [field]: value
     }));
+    
+    if (validationErrors[field as keyof ValidationErrors]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field as keyof ValidationErrors];
+        return newErrors;
+      });
+    }
   };
 
   const addToArray = (field: keyof FumigationData, item: any) => {
@@ -299,6 +298,8 @@ export const useFumigationData = (initialData?: any) => {
     setFumigationData,
     resetForm,
     validateFumigationForm,
+    validationErrors,
+    clearValidationErrors,
     updateField,
     addToArray,
     removeFromArray

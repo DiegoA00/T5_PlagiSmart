@@ -1,20 +1,24 @@
 import { FC } from "react";
 import { Input } from "@/components/ui/input";
 import { CollapsibleSection } from "../shared/CollapsibleSection";
-import { FumigationData } from "../hooks/useFumigationData";
+import { FumigationData, ValidationErrors } from "../hooks/useFumigationData";
 
 interface GeneralInfoSectionProps {
   fumigationData: FumigationData;
   setFumigationData: React.Dispatch<React.SetStateAction<FumigationData>>;
   isEditable: boolean;
   fumigationReportSubmitted: boolean;
+  validationErrors?: ValidationErrors;
+  updateField: (field: keyof FumigationData, value: any) => void;
 }
 
 export const GeneralInfoSection: FC<GeneralInfoSectionProps> = ({
   fumigationData,
   setFumigationData,
   isEditable,
-  fumigationReportSubmitted
+  fumigationReportSubmitted,
+  validationErrors = {},
+  updateField
 }) => {
   return (
     <CollapsibleSection title="Información General" defaultOpen>
@@ -36,12 +40,11 @@ export const GeneralInfoSection: FC<GeneralInfoSectionProps> = ({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2 required-field">Ubicación</label>
+          <label className="block text-sm font-medium mb-2">Ubicación</label>
           <Input 
             value={fumigationData.location}
-            onChange={(e) => setFumigationData(prev => ({ ...prev, location: e.target.value }))}
-            disabled={!isEditable || fumigationReportSubmitted}
-            placeholder="Ingrese la ubicación"
+            disabled
+            className="bg-gray-100"
           />
         </div>
         <div>
@@ -57,17 +60,37 @@ export const GeneralInfoSection: FC<GeneralInfoSectionProps> = ({
           <Input 
             type="time"
             value={fumigationData.startTime}
-            onChange={(e) => setFumigationData(prev => ({ ...prev, startTime: e.target.value }))}
+            onChange={(e) => updateField('startTime', e.target.value)}
             disabled={!isEditable || fumigationReportSubmitted}
+            className={`${validationErrors.startTime ? 'border-red-500 focus:border-red-500' : ''}`}
           />
+          {validationErrors.startTime && (
+            <p className="text-red-500 text-xs mt-1">{validationErrors.startTime}</p>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium mb-2 required-field">Hora de Finalización</label>
           <Input 
             type="time"
             value={fumigationData.endTime}
-            onChange={(e) => setFumigationData(prev => ({ ...prev, endTime: e.target.value }))}
+            onChange={(e) => updateField('endTime', e.target.value)}
             disabled={!isEditable || fumigationReportSubmitted}
+            className={`${validationErrors.endTime ? 'border-red-500 focus:border-red-500' : ''}`}
+          />
+          {validationErrors.endTime && (
+            <p className="text-red-500 text-xs mt-1">{validationErrors.endTime}</p>
+          )}
+          {validationErrors.timeRange && (
+            <p className="text-red-500 text-xs mt-1">{validationErrors.timeRange}</p>
+          )}
+        </div>
+        <div className="col-span-2">
+          <label className="block text-sm font-medium mb-2">Supervisor</label>
+          <Input 
+            value={fumigationData.supervisor}
+            onChange={(e) => updateField('supervisor', e.target.value)}
+            disabled={!isEditable || fumigationReportSubmitted}
+            placeholder="Nombre del supervisor"
           />
         </div>
       </div>
