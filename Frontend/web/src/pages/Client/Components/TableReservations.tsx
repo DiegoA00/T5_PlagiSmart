@@ -1,12 +1,17 @@
 // components/TableReservations.jsx
 import { FaFileAlt, FaEdit } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
-import PropTypes from 'prop-types';
 
-function TableReservations({ title, data, editableIndex }) {
+interface TableReservationsProps {
+  readonly title: string;
+  readonly data: readonly { codigo: string; servicio: string; fechaAprox: string; toneladas: number }[];
+  readonly editableIndex: number;
+}
+
+function TableReservations({ title, data, editableIndex }: TableReservationsProps) {
   const navigate = useNavigate();
 
-  const handleDocumentosClick = (codigo) => {
+  const handleDocumentosClick = (codigo: string) => {
     navigate(`/client/documentos/${codigo}`);
   };
 
@@ -60,11 +65,5 @@ function TableReservations({ title, data, editableIndex }) {
     </section>
   )
 }
-
-TableReservations.propTypes = {
-  title: PropTypes.string.isRequired,
-  data: PropTypes.arrayOf(PropTypes.object).isRequired,
-  editableIndex: PropTypes.number.isRequired
-};
 
 export default TableReservations

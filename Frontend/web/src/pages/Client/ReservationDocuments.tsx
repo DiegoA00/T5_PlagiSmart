@@ -1,15 +1,84 @@
-import { useParams } from 'react-router-dom';
-import NavbarClient from "./Components/NavbarClient";
-import Header from "./Components/Header";
+import { Layout } from "../../layouts/Layout";
 import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
+import { useParams } from "react-router";
+
+interface HeaderData {
+  label: string;
+  value: string;
+}
+
+interface PersonalInfo {
+  name: string;
+  position: string;
+}
+
+interface RequestDetail {
+  lot: string;
+  dimension: string;
+  tons: string;
+  quality: string;
+  sacks: string;
+  destination: string;
+}
+
+interface SupplyDetail {
+  product: string;
+  quantity: string;
+  dose: string;
+  fumigationMethod: string;
+  ribbonsNumber: string;
+}
+
+interface LotDetail {
+  lot: string;
+  tons: string;
+  quality: string;
+  sacks: string;
+  destination: string;
+  ribbonsStatus: string;
+  fumigationTime: string;
+  ppmFosfine: string;
+}
+
+interface GridData {
+  label: string;
+  value: string;
+}
+
+interface DocumentSection {
+  type: 'header' | 'personal-info' | 'request-details' | 'supplies-details' | 'lot-details' | 'signatures' | 'single-signature' | 'text' | 'grid' | 'footer';
+  data?: any[];
+  signatures?: string[];
+  signature?: string;
+  content1?: string;
+  content2?: string;
+  content3?: string;
+}
+
+interface DocumentContent {
+  mainTitle: string;
+  subtitle: string;
+  sections: DocumentSection[];
+}
+
+interface Document {
+  type: string;
+  title: string;
+  fileName: string;
+  content: DocumentContent;
+}
+
+type DocumentsData = Record<string, Document[]>;
 
 function ReservationDocuments() {
-  const { codigo } = useParams();
+  const { codigo } = useParams<{ codigo: string }>();
 
   // Simulación de datos de documentos por reserva - esto vendría de una API
-  const getDocumentsByReservation = (codigoReserva) => {
-    const allDocuments = {
+  const getDocumentsByReservation = (codigoReserva: string | undefined): Document[] => {
+    if (!codigoReserva) return [];
+    
+    const allDocuments: DocumentsData = {
       "000001": [
         {
           type: "registro-fumigacion",
@@ -692,26 +761,26 @@ function ReservationDocuments() {
   const documents = getDocumentsByReservation(codigo);
 
   // Función para renderizar diferentes tipos de secciones
-  const renderSection = (section, index) => {
+  const renderSection = (section: DocumentSection, index: number) => {
     switch (section.type) {
       case 'header':
         return (
           <div>
             <div className="grid grid-cols-1 gap-4 mb-4">
-              {section.data[0].label && (
+              {section.data?.[0]?.label && (
                 <p>
                   <strong>{section.data[0].label}:</strong> {section.data[0].value}
                 </p>
               )}
-              {section.data[1].label && (
+              {section.data?.[1]?.label && (
                 <p>
                   <strong>{section.data[1].label}:</strong> {section.data[1].value}
                 </p>
               )}
             </div>
             <div className="grid grid-cols-3 gap-4 mb-4">
-              {section.data.slice(2).map((item, i) => (
-                <p key={i}><strong>{item.label}:</strong> {item.value}</p>
+              {section.data?.slice(2).map((item: any, i: number) => (
+                <p key={`header-item-${i}-${item.label || i}`}><strong>{item.label}:</strong> {item.value}</p>
               ))}
             </div>
           </div>
@@ -731,8 +800,8 @@ function ReservationDocuments() {
               </tr>
             </thead>
             <tbody>
-              {Object.entries(section.data).map(([key, value], i) => (
-                <tr key={i} className="border-b">
+              {section.data?.map((value: any, i: number) => (
+                <tr key={`personal-${i}-${value.name || i}`} className="border-b">
                   <td className="p-2 text-center">{value.name}</td>
                   <td className="p-2 text-center">{value.position}</td>
                   <td className="p-2 text-center">{"Firma de " + value.name}</td>
@@ -757,8 +826,8 @@ function ReservationDocuments() {
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(section.data).map(([key, value], i) =>
-                  <tr key={i} className="border-b">
+                {section.data?.map((value: any, i: number) =>
+                  <tr key={`request-${i}-${value.lot || i}`} className="border-b">
                     <td className="p-2 text-center" colSpan={2}>{value.lot}</td>
                     <td className="p-2 text-center" colSpan={2}>{value.dimension}</td>
                     <td className="p-2 text-center" colSpan={2}>{value.tons}</td>
@@ -809,8 +878,8 @@ function ReservationDocuments() {
                 </tr>
               </thead>
               <tbody>
-                {section.data.map((item, i) => (
-                  <tr key={i} className="border-b">
+                {section.data?.map((item: any, i: number) => (
+                  <tr key={`supply-${i}-${item.product || i}`} className="border-b">
                     <td className="p-2 text-center">{item.product}</td>
                     <td className="p-2 text-center">{item.quantity}</td>
                     <td className="p-2 text-center">{item.dose}</td>
@@ -843,8 +912,8 @@ function ReservationDocuments() {
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(section.data).map(([key, value], i) =>
-                  <tr key={i} className="border-b">
+                {section.data?.map((value: any, i: number) =>
+                  <tr key={`lot-${i}-${value.lot || i}`} className="border-b">
                     <td className="p-2 text-center">{value.lot}</td>
                     <td className="p-2 text-center">{value.tons}</td>
                     <td className="p-2 text-center">{value.quality}</td>
@@ -883,8 +952,8 @@ function ReservationDocuments() {
       case 'grid':
         return (
           <div className='py-25 px-30'>
-            {section.data.map((item, i) => (
-              <div key={i} className="grid grid-cols-2 gap-30">
+            {section.data?.map((item: any, i: number) => (
+              <div key={`grid-${i}-${item.label || i}`} className="grid grid-cols-2 gap-30">
                 <div className="p-2 text-left">
                   <p><strong>{item.label}:</strong></p>
                 </div>
@@ -908,8 +977,8 @@ function ReservationDocuments() {
       case 'signatures':
         return (
           <div key={index} className="mt-6 grid grid-cols-2 gap-8 signature-section">
-            {section.signatures.map((signature, i) => (
-              <div key={i} className="text-center">
+            {section.signatures?.map((signature: string, i: number) => (
+              <div key={`signature-${i}-${signature.replace(/\s+/g, '-').toLowerCase()}`} className="text-center">
                 <div className="border-t border-gray-400 pt-2 mt-16 signature-line">
                   <p className="font-semibold">{signature}</p>
                 </div>
@@ -949,8 +1018,8 @@ function ReservationDocuments() {
     }
   };
 
-  const handleConvertToPDF = async (documentType, elementId) => {
-    let elementsToHide = [];
+  const handleConvertToPDF = async (documentType: string, elementId: string) => {
+    let elementsToHide: HTMLElement[] = [];
     
     try {
       // Obtener el elemento específico del documento
@@ -1042,7 +1111,7 @@ function ReservationDocuments() {
       // Descargar solo el PDF
       pdf.save(pdfFileName);
       
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error detallado al generar PDF:', error);
       
       // Asegurar que los elementos se restauren incluso si hay error
@@ -1052,7 +1121,7 @@ function ReservationDocuments() {
       
       // Mensaje de error más específico
       let errorMessage = 'Error al generar el PDF. ';
-      if (error.message.includes('canvas')) {
+      if (error instanceof Error && error.message.includes('canvas')) {
         errorMessage += 'Problema al capturar el contenido. ';
       }
       errorMessage += 'Por favor, intenta nuevamente o recarga la página.';
@@ -1062,81 +1131,77 @@ function ReservationDocuments() {
   };
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
-      <Header />
-      <div className="flex h-full">
-        <NavbarClient />
-        <main className="flex-1 bg-white overflow-y-scroll scrollbar-hide">
-          <div className="px-6 py-4 pb-12">
-            <div className="mb-6 no-print">
-              <h1 className="text-2xl font-bold text-[#003595] mb-2">
-                Documentos de Reserva - {codigo}
-              </h1>
-              <p className="text-gray-600">
-                Gestiona y descarga los documentos relacionados con tu reserva
-              </p>
-              {documents.length === 0 && (
-                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-yellow-800">No hay documentos disponibles para esta reserva.</p>
-                </div>
-              )}
-            </div>
+    <Layout>
+      <main className="flex-1 bg-white overflow-y-scroll scrollbar-hide">
+        <div className="px-6 py-4 pb-12">
+          <div className="mb-6 no-print">
+            <h1 className="text-2xl font-bold text-[#003595] mb-2">
+              Documentos de Reserva - {codigo}
+            </h1>
+            <p className="text-gray-600">
+              Gestiona y descarga los documentos relacionados con tu reserva
+            </p>
+            {documents.length === 0 && (
+              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-yellow-800">No hay documentos disponibles para esta reserva.</p>
+              </div>
+            )}
+          </div>
 
-            {/* Renderizado dinámico de documentos */}
-            {documents.map((document, docIndex) => (
-              <div 
-                key={document.type}
-                className="bg-white border border-gray-200 rounded-lg shadow-sm mb-6 p-6 document-section"
-                style={{ backgroundColor: 'white', padding: '24px', border: '1px solid #e5e7eb' }}
+          {/* Renderizado dinámico de documentos */}
+          {documents.map((document, docIndex) => (
+            <div 
+              key={document.type}
+              className="bg-white border border-gray-200 rounded-lg shadow-sm mb-6 p-6 document-section"
+              style={{ backgroundColor: 'white', padding: '24px', border: '1px solid #e5e7eb' }}
+            >
+              <div className="flex justify-between items-center mb-4 no-print">
+                <h2 className="text-xl font-semibold text-[#003595]">
+                  {document.title}
+                </h2>
+                <button
+                  onClick={() => handleConvertToPDF(document.fileName, document.type)}
+                  className="bg-[#003595] text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Convertir a PDF
+                </button>
+              </div>
+              
+              <div
+                id={document.type}
+                className="rounded-lg p-6 bg-gray-50 document-content"
+                style={{ backgroundColor: 'white', padding: '24px'}}
               >
-                <div className="flex justify-between items-center mb-4 no-print">
-                  <h2 className="text-xl font-semibold text-[#003595]">
-                    {document.title}
-                  </h2>
-                  <button
-                    onClick={() => handleConvertToPDF(document.fileName, document.type)}
-                    className="bg-[#003595] text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Convertir a PDF
-                  </button>
+                <div className="text-center mb-6">
+                  <h3 className="text-lg font-bold text-gray-800 document-title">
+                    {document.content.mainTitle}
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-2">
+                    {document.content.subtitle}
+                  </p>
                 </div>
                 
-                <div
-                  id={document.type}
-                  className="rounded-lg p-6 bg-gray-50 document-content"
-                  style={{ backgroundColor: 'white', padding: '24px'}}
-                >
-                  <div className="text-center mb-6">
-                    <h3 className="text-lg font-bold text-gray-800 document-title">
-                      {document.content.mainTitle}
-                    </h3>
-                    <p className="text-sm text-gray-600 mt-2">
-                      {document.content.subtitle}
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-4 text-sm">
-                    {document.content.sections.map((section, sectionIndex) => 
-                      renderSection(section, sectionIndex)
-                    )}
-                  </div>
+                <div className="space-y-4 text-sm">
+                  {document.content.sections.map((section, sectionIndex) => 
+                    renderSection(section, sectionIndex)
+                  )}
                 </div>
               </div>
-            ))}
-
-            {/* Botón para regresar */}
-            <div className="text-center mt-8 mb-8 no-print">
-              <button
-                onClick={() => window.history.back()}
-                className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-              >
-                Regresar a Reservas
-              </button>
             </div>
+          ))}
+
+          {/* Botón para regresar */}
+          <div className="text-center mt-8 mb-8 no-print">
+            <button
+              onClick={() => window.history.back()}
+              className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Regresar a Reservas
+            </button>
           </div>
-        </main>
-      </div>
-    </div>
+        </div>
+      </main>
+    </Layout>
   );
 }
 
