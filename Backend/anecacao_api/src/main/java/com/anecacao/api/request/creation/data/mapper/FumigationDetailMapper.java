@@ -26,7 +26,7 @@ public interface FumigationDetailMapper {
 
     default String formatPlannedDate(Fumigation fumigation) {
         if (fumigation.getDateTime() != null) {
-            return fumigation.getDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+            return fumigation.getDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
         }
         return "No date";
     }

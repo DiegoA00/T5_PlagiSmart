@@ -2,23 +2,50 @@ package com.anecacao.api.reporting.controller;
 
 import com.anecacao.api.common.data.dto.MessageDTO;
 import com.anecacao.api.reporting.data.dto.CleanupReportDTO;
+import com.anecacao.api.reporting.data.dto.response.CleanupReportResponseDTO;
 import com.anecacao.api.reporting.data.dto.FumigationReportDTO;
+import com.anecacao.api.reporting.data.dto.response.FumigationReportResponseDTO;
+import com.anecacao.api.reporting.data.dto.response.PageResponseDTO;
 import com.anecacao.api.reporting.domain.exception.IndustrialSafetyViolationException;
 import com.anecacao.api.reporting.domain.service.ReportsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/reports")
 @RequiredArgsConstructor
 public class ReportRestController {
     private final ReportsService reportsService;
+
+    @GetMapping("/fumigations")
+    public ResponseEntity<PageResponseDTO<FumigationReportResponseDTO>> getAllFumigationReports(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection
+    ) {
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        return ResponseEntity.ok(reportsService.getAllFumigationReports(pageable));
+    }
+
+    @GetMapping("/fumigations/{id}")
+    public ResponseEntity<FumigationReportResponseDTO> getFumigationReportById(@PathVariable Long id) {
+        return ResponseEntity.ok(reportsService.getFumigationReportById(id));
+    }
+
+    @GetMapping("/fumigations/by-fumigation/{fumigationId}")
+    public ResponseEntity<FumigationReportResponseDTO> getFumigationReportByFumigationId(@PathVariable Long fumigationId) {
+        return ResponseEntity.ok(reportsService.getFumigationReportByFumigationId(fumigationId));
+    }
 
     @PostMapping("/fumigations")
     public ResponseEntity<MessageDTO> createFumigationReport(
@@ -47,4 +74,27 @@ public class ReportRestController {
                 HttpStatus.CREATED
         );
     }
+
+    @GetMapping("/cleanup")
+    public ResponseEntity<PageResponseDTO<CleanupReportResponseDTO>> getAllCleanupReports(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection
+    ) {
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        return ResponseEntity.ok(reportsService.getAllCleanupReports(pageable));
+    }
+
+    @GetMapping("/cleanup/{id}")
+    public ResponseEntity<CleanupReportResponseDTO> getCleanupReportById(@PathVariable Long id) {
+        return ResponseEntity.ok(reportsService.getCleanupReportById(id));
+    }
+
+    @GetMapping("/cleanup/by-fumigation/{fumigationId}")
+    public ResponseEntity<CleanupReportResponseDTO> getCleanupReportByFumigationId(@PathVariable Long fumigationId) {
+        return ResponseEntity.ok(reportsService.getCleanupReportByFumigationId(fumigationId));
+    }
+
 }
