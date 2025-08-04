@@ -19,6 +19,8 @@ public interface UserService {
   
     boolean hasRole(String userId, RoleName roleName);
 
+    boolean hasCompletedProfile();
+
     void updateUsersRole(UserUpdateRoleDTO userUpdateRoleDTO);
 
     void createAdminUserIfNotExist();

@@ -2,6 +2,7 @@ package com.anecacao.api.request.creation.domain.service.impl;
 
 import com.anecacao.api.auth.data.entity.RoleName;
 import com.anecacao.api.auth.data.entity.User;
+import com.anecacao.api.auth.domain.exception.UserInvalidException;
 import com.anecacao.api.auth.domain.service.UserService;
 import com.anecacao.api.request.creation.data.dto.request.FumigationApplicationDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 
 @Service
@@ -34,6 +36,8 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
 
     @Override
     public FumigationApplicationResponseDTO createFumigationApplication(FumigationApplicationDTO dto, String jwt) {
+        if (!userService.hasCompletedProfile()) throw new UserInvalidException();
+
         Company company = findCompany(jwt, dto.getCompany().getId());
         FumigationApplication newFumigation = saveNewFumigationApplication(dto, company, Status.PENDING);
 
@@ -42,7 +46,6 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
 
     @Override
     public FumigationApplicationResponseDTO getFumigationApplicationById(Long id, String token) {
-
         FumigationApplication fumigationApplication = repository.findById(id)
                 .orElseThrow(() -> new FumigationApplicationNotFoundException(id));
 
@@ -70,6 +73,7 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
     private FumigationApplication saveNewFumigationApplication (FumigationApplicationDTO dto, Company company, Status status) {
         FumigationApplication newApplication = mapper.toEntity(dto);
         newApplication.setCompany(company);
+        newApplication.setCreatedAt(LocalDate.now());
         newApplication.getFumigations().forEach(f -> f.setStatus(status));
 
         return repository.save(newApplication);
