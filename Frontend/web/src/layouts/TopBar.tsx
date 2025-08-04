@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { loginService, authService } from "../services/auth/loginService";
+import { useAuth } from "@/context/AuthContext";
 
 interface TopBarProps {
   userImage?: string;
@@ -14,13 +15,14 @@ interface TopBarProps {
 
 export const TopBar: FC<TopBarProps> = ({ userImage = "/avatar.png" }) => {
   const navigate = useNavigate();
+  const { hasRole } = useAuth();
   const [displayName, setDisplayName] = useState("");
 
   useEffect(() => {
     const userData = authService.getUserData();
-    if (userData && userData.firstName && userData.lastName) {
+    if (userData?.firstName && userData?.lastName) {
       setDisplayName(`${userData.firstName} ${userData.lastName}`);
-    } else if (userData && userData.email) {
+    } else if (userData?.email) {
       setDisplayName(userData.email);
     } else {
       setDisplayName("");
@@ -30,6 +32,17 @@ export const TopBar: FC<TopBarProps> = ({ userImage = "/avatar.png" }) => {
   const handleLogout = () => {
     loginService.logout();
     navigate('/login');
+  };
+
+  const handleProfileClick = () => {
+    if (hasRole(['ROLE_ADMIN'])) {
+      navigate('/admin/profile');
+    } else if (hasRole(['ROLE_CLIENT'])) {
+      navigate('/client/profile');
+    } else {
+      // Fallback en caso de que no tenga rol definido
+      navigate('/profile');
+    }
   };
 
   return (
@@ -56,7 +69,7 @@ export const TopBar: FC<TopBarProps> = ({ userImage = "/avatar.png" }) => {
           </div>
           <DropdownMenuItem 
             className="cursor-pointer"
-            onClick={() => navigate('/profile')}
+            onClick={handleProfileClick}
           >
             Perfil
           </DropdownMenuItem>

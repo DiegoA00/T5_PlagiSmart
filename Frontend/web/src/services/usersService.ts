@@ -1,6 +1,17 @@
 import apiClient from "./api/apiService";
 import { ApiUser, PaginatedResponse, PageableRequest } from "@/types/request";
 
+// DTO para actualizar información del usuario
+export interface UpdateUserDTO {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  address: string;
+  country: string;
+  city: string;
+  gender: string;
+}
+
 // Función helper para convertir array sort a string
 const formatSortParams = (sort?: string[]): string | undefined => {
   if (!sort || sort.length === 0) return undefined;
@@ -98,6 +109,24 @@ export const usersService = {
       await apiClient.put('/users/role', { email });
     } catch (error: any) {
       throw new Error(error.response?.data?.message || "Error al cambiar el rol");
+    }
+  },
+
+  updateUserProfile: async (profileData: UpdateUserDTO): Promise<ApiUser> => {
+    try {
+      const response = await apiClient.put('/users/profile', profileData);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || "Error al actualizar el perfil del usuario");
+    }
+  },
+
+  getCurrentUser: async (): Promise<ApiUser> => {
+    try {
+      const response = await apiClient.get('/users/me');
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || "Error al obtener información del usuario");
     }
   }
 };
