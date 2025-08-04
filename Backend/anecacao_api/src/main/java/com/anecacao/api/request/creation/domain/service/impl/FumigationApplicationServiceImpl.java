@@ -2,6 +2,7 @@ package com.anecacao.api.request.creation.domain.service.impl;
 
 import com.anecacao.api.auth.data.entity.RoleName;
 import com.anecacao.api.auth.data.entity.User;
+import com.anecacao.api.auth.domain.exception.UserInvalidException;
 import com.anecacao.api.auth.domain.service.UserService;
 import com.anecacao.api.request.creation.data.dto.request.FumigationApplicationDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
@@ -17,12 +18,12 @@ import com.anecacao.api.request.creation.domain.exception.FumigationApplicationN
 import com.anecacao.api.auth.domain.exception.UnauthorizedAccessException;
 import com.anecacao.api.request.creation.domain.service.FumigationApplicationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +36,8 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
 
     @Override
     public FumigationApplicationResponseDTO createFumigationApplication(FumigationApplicationDTO dto, String jwt) {
+        if (!userService.hasCompletedProfile()) throw new UserInvalidException();
+
         Company company = findCompany(jwt, dto.getCompany().getId());
         FumigationApplication newFumigation = saveNewFumigationApplication(dto, company, Status.PENDING);
 
@@ -43,7 +46,6 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
 
     @Override
     public FumigationApplicationResponseDTO getFumigationApplicationById(Long id, String token) {
-
         FumigationApplication fumigationApplication = repository.findById(id)
                 .orElseThrow(() -> new FumigationApplicationNotFoundException(id));
 
@@ -71,16 +73,17 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
     private FumigationApplication saveNewFumigationApplication (FumigationApplicationDTO dto, Company company, Status status) {
         FumigationApplication newApplication = mapper.toEntity(dto);
         newApplication.setCompany(company);
+        newApplication.setCreatedAt(LocalDate.now());
         newApplication.getFumigations().forEach(f -> f.setStatus(status));
 
         return repository.save(newApplication);
     }
 
     @Override
-    public List<FumigationApplicationSummaryDTO> getFumigationApplicationsByStatus(String status) {
+    public Page<FumigationApplicationSummaryDTO> getFumigationApplicationsByStatus(String status, Pageable pageable) {
         Status statusEnum = parseAndValidateStatus(status);
-        List<FumigationApplication> applications = repository.findByFumigationStatus(statusEnum);
-        return summaryMapper.toSummaryDtoList(applications, status.toUpperCase());
+        Page<FumigationApplication> applications = repository.findByFumigationStatus(statusEnum, pageable);
+        return applications.map(app -> summaryMapper.toSummaryDto(app, status.toUpperCase()));
     }
 
     private Status parseAndValidateStatus(String status) {

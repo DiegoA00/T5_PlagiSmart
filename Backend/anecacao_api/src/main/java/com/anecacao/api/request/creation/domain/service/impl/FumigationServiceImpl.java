@@ -21,6 +21,8 @@ import com.anecacao.api.request.creation.data.mapper.FumigationApplicationMapper
 import com.anecacao.api.request.creation.data.entity.FumigationApplication;
 import com.anecacao.api.auth.domain.exception.UnauthorizedAccessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -156,10 +158,10 @@ public class FumigationServiceImpl implements FumigationService {
     }
 
     @Override
-    public List<FumigationDetailDTO> getFumigationsByStatus(String status) {
+    public Page<FumigationDetailDTO> getFumigationsByStatus(String status, Pageable pageable) {
         Status statusEnum = parseAndValidateStatus(status);
-        List<Fumigation> fumigations = repository.findByStatus(statusEnum);
-        return detailMapper.toDetailDtoList(fumigations);
+        Page<Fumigation> fumigations = repository.findByStatus(statusEnum, pageable);
+        return fumigations.map(detailMapper::toDetailDto);
     }
 
     private Status parseAndValidateStatus(String status) {

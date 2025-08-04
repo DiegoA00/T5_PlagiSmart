@@ -6,8 +6,7 @@ const adminOptions = [
   { label: "Solicitudes", path: "/admin/solicitudes" },
   { label: "Lotes a fumigar", path: "/admin/lotes" },
   { label: "Servicios finalizados", path: "/admin/servicios" },
-  { label: "Clientes", path: "/admin/clientes" },
-  { label: "Configuración", path: "/admin/configuracion" },
+  { label: "Usuarios", path: "/admin/usuarios" },
 ];
 
 export function Sidebar() {

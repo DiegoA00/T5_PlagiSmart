@@ -5,14 +5,13 @@ import com.anecacao.api.request.creation.data.dto.request.UpdateStatusRequestDTO
 import com.anecacao.api.request.creation.data.dto.response.FumigationDetailDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationInfoDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationResponseDTO;
-import com.anecacao.api.request.creation.data.dto.response.FumigationSummaryDTO;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface FumigationService {
     FumigationResponseDTO updateFumigation(Long fumigationId, FumigationCreationRequestDTO fumigationDTO, String token);
     FumigationResponseDTO getFumigationById(Long id, String token);
     void updateFumigationStatus(Long id, UpdateStatusRequestDTO updateStatusRequestDTO);
     FumigationInfoDTO getFumigationInfo(Long id, String token);
-    List<FumigationDetailDTO> getFumigationsByStatus(String status);
+    Page<FumigationDetailDTO> getFumigationsByStatus(String status, Pageable pageable);
 }

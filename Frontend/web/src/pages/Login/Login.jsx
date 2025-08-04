@@ -1,18 +1,27 @@
 import { useEffect } from "react";
 import LoginForm from "./Components/LoginForm";
 import LoginHeader from "./Components/LoginHeader";
-import { authService } from "../../services/auth/loginService";
 import { useRoleRedirect } from "../../hooks/useRoleRedirect";
+import { useAuth } from "@/context/AuthContext";
 import "../../App.css";
 
 const Login = () => {
   const redirect = useRoleRedirect();
+  const { isAuthenticated, loading } = useAuth();
 
   useEffect(() => {
-    if (authService.isAuthenticated()) {
+    if (!loading && isAuthenticated) {
       redirect();
     }
-  }, [redirect]);
+  }, [isAuthenticated, loading, redirect]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <span className="animate-spin mr-2">⌛</span> Cargando...
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-white px-10 py-6 gap-10">

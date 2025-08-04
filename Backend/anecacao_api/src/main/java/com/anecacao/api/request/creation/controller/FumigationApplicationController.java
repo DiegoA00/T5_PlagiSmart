@@ -6,6 +6,8 @@ import com.anecacao.api.request.creation.data.dto.response.FumigationApplication
 import com.anecacao.api.request.creation.domain.service.FumigationApplicationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -39,11 +41,11 @@ public class FumigationApplicationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<FumigationApplicationSummaryDTO>> getFumigationApplicationsByStatus(
-            @RequestParam(name = "status", required = true) String status
+    public ResponseEntity<Page<FumigationApplicationSummaryDTO>> getFumigationApplicationsByStatus(
+            @RequestParam(name = "status", required = true) String status,
+            Pageable pageable
     ) {
-        List<FumigationApplicationSummaryDTO> applications = fumigationApplicationService.getFumigationApplicationsByStatus(status);
+        Page<FumigationApplicationSummaryDTO> applications = fumigationApplicationService.getFumigationApplicationsByStatus(status, pageable);
         return ResponseEntity.ok(applications);
     }
-
 }

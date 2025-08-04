@@ -6,16 +6,13 @@ import com.anecacao.api.auth.domain.service.UserService;
 import com.anecacao.api.request.creation.data.dto.response.FumigationDetailDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationInfoDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationResponseDTO;
-import com.anecacao.api.request.creation.data.dto.response.FumigationSummaryDTO;
 import com.anecacao.api.request.creation.domain.service.FumigationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/fumigations")
@@ -61,11 +58,11 @@ public class FumigationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<FumigationDetailDTO>> getFumigationsByStatus(
-            @RequestParam(name = "status", required = true) String status
+    public ResponseEntity<Page<FumigationDetailDTO>> getFumigationsByStatus(
+            @RequestParam(name = "status") String status,
+            Pageable pageable
     ) {
-        List<FumigationDetailDTO> fumigations = fumigationService.getFumigationsByStatus(status);
+        Page<FumigationDetailDTO> fumigations = fumigationService.getFumigationsByStatus(status, pageable);
         return ResponseEntity.ok(fumigations);
     }
-
 }
