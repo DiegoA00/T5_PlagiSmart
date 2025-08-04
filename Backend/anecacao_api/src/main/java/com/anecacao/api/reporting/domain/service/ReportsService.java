@@ -5,7 +5,7 @@ import com.anecacao.api.reporting.data.dto.CleanupReportDTO;
 import com.anecacao.api.reporting.data.dto.response.CleanupReportResponseDTO;
 import com.anecacao.api.reporting.data.dto.FumigationReportDTO;
 import com.anecacao.api.reporting.data.dto.response.FumigationReportResponseDTO;
-import com.anecacao.api.reporting.data.dto.response.PageResponseDTO;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -15,7 +15,7 @@ public interface ReportsService {
 
     MessageDTO createCleanupReport(CleanupReportDTO reportDTO);
 
-    PageResponseDTO<FumigationReportResponseDTO> getAllFumigationReports(Pageable pageable);
+    Page<FumigationReportResponseDTO> getAllFumigationReports(Pageable pageable);
 
     List<FumigationReportResponseDTO> getAllFumigationReportsNoPagination();
 
@@ -23,7 +23,7 @@ public interface ReportsService {
 
     FumigationReportResponseDTO getFumigationReportByFumigationId(Long fumigationId);
 
-    PageResponseDTO<CleanupReportResponseDTO> getAllCleanupReports(Pageable pageable);
+    Page<CleanupReportResponseDTO> getAllCleanupReports(Pageable pageable);
 
     List<CleanupReportResponseDTO> getAllCleanupReportsNoPagination();
 

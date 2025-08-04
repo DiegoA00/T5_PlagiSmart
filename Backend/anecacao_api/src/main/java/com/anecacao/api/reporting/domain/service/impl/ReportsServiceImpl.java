@@ -6,7 +6,6 @@ import com.anecacao.api.common.data.dto.MessageDTO;
 import com.anecacao.api.reporting.data.dto.*;
 import com.anecacao.api.reporting.data.dto.response.CleanupReportResponseDTO;
 import com.anecacao.api.reporting.data.dto.response.FumigationReportResponseDTO;
-import com.anecacao.api.reporting.data.dto.response.PageResponseDTO;
 import com.anecacao.api.reporting.data.entity.CleanupReport;
 import com.anecacao.api.reporting.data.entity.FumigationReport;
 import com.anecacao.api.reporting.data.entity.IndustrialSafetyConditions;
@@ -157,23 +156,9 @@ public class ReportsServiceImpl implements ReportsService {
     }
 
     @Override
-    public PageResponseDTO<FumigationReportResponseDTO> getAllFumigationReports(Pageable pageable) {
+    public Page<FumigationReportResponseDTO> getAllFumigationReports(Pageable pageable) {
         Page<FumigationReport> reportPage = fumigationReportRepository.findAll(pageable);
-
-        List<FumigationReportResponseDTO> content = reportPage.getContent().stream()
-                .map(fumigationReportMapper::toResponseDTO)
-                .toList();
-
-        return PageResponseDTO.<FumigationReportResponseDTO>builder()
-                .content(content)
-                .pageNumber(reportPage.getNumber())
-                .pageSize(reportPage.getSize())
-                .totalElements(reportPage.getTotalElements())
-                .totalPages(reportPage.getTotalPages())
-                .first(reportPage.isFirst())
-                .last(reportPage.isLast())
-                .empty(reportPage.isEmpty())
-                .build();
+        return reportPage.map(fumigationReportMapper::toResponseDTO);
     }
 
     @Override
@@ -190,23 +175,9 @@ public class ReportsServiceImpl implements ReportsService {
     }
 
     @Override
-    public PageResponseDTO<CleanupReportResponseDTO> getAllCleanupReports(Pageable pageable) {
+    public Page<CleanupReportResponseDTO> getAllCleanupReports(Pageable pageable) {
         Page<CleanupReport> reportPage = cleanupReportRepository.findAll(pageable);
-
-        List<CleanupReportResponseDTO> content = reportPage.getContent().stream()
-                .map(cleanupReportMapper::toResponseDTO)
-                .toList();
-
-        return PageResponseDTO.<CleanupReportResponseDTO>builder()
-                .content(content)
-                .pageNumber(reportPage.getNumber())
-                .pageSize(reportPage.getSize())
-                .totalElements(reportPage.getTotalElements())
-                .totalPages(reportPage.getTotalPages())
-                .first(reportPage.isFirst())
-                .last(reportPage.isLast())
-                .empty(reportPage.isEmpty())
-                .build();
+        return reportPage.map(cleanupReportMapper::toResponseDTO);
     }
 
     @Override

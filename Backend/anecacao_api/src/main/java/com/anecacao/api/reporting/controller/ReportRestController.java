@@ -5,14 +5,12 @@ import com.anecacao.api.reporting.data.dto.CleanupReportDTO;
 import com.anecacao.api.reporting.data.dto.response.CleanupReportResponseDTO;
 import com.anecacao.api.reporting.data.dto.FumigationReportDTO;
 import com.anecacao.api.reporting.data.dto.response.FumigationReportResponseDTO;
-import com.anecacao.api.reporting.data.dto.response.PageResponseDTO;
 import com.anecacao.api.reporting.domain.exception.IndustrialSafetyViolationException;
 import com.anecacao.api.reporting.domain.service.ReportsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,15 +24,9 @@ public class ReportRestController {
     private final ReportsService reportsService;
 
     @GetMapping("/fumigations")
-    public ResponseEntity<PageResponseDTO<FumigationReportResponseDTO>> getAllFumigationReports(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDirection
-    ) {
-        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        return ResponseEntity.ok(reportsService.getAllFumigationReports(pageable));
+    public ResponseEntity<Page<FumigationReportResponseDTO>> getAllFumigationReports(Pageable pageable) {
+        Page<FumigationReportResponseDTO> reports = reportsService.getAllFumigationReports(pageable);
+        return ResponseEntity.ok(reports);
     }
 
     @GetMapping("/fumigations/all")
@@ -67,15 +59,9 @@ public class ReportRestController {
     }
 
     @GetMapping("/cleanup")
-    public ResponseEntity<PageResponseDTO<CleanupReportResponseDTO>> getAllCleanupReports(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDirection
-    ) {
-        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        return ResponseEntity.ok(reportsService.getAllCleanupReports(pageable));
+    public ResponseEntity<Page<CleanupReportResponseDTO>> getAllCleanupReports(Pageable pageable) {
+        Page<CleanupReportResponseDTO> reports = reportsService.getAllCleanupReports(pageable);
+        return ResponseEntity.ok(reports);
     }
 
     @GetMapping("/cleanup/all")
