@@ -54,7 +54,7 @@ public class ReportsServiceImpl implements ReportsService {
 
         IndustrialSafetyConditionsDTO conditionsDTO = reportDTO.getIndustrialSafetyConditions();
 
-        return processReportAndUpdateStatus(mapper.toConditionEntity(conditionsDTO), fumigation, report, true);
+        return processReportAndUpdateStatus(mapper.toConditionEntity(conditionsDTO), fumigation, report,Status.FUMIGATED, true);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class ReportsServiceImpl implements ReportsService {
 
         CleanupReport report = getOrCreateCleanupReport(reportDTO, fumigation);
 
-        return processReportAndUpdateStatus(reportDTO.getIndustrialSafetyConditions(), fumigation, report, false);
+        return processReportAndUpdateStatus(reportDTO.getIndustrialSafetyConditions(), fumigation, report, Status.FINISHED,false);
     }
 
     private void checkTechniciansRole(List<SimpleUserDTO> technicians) {
@@ -89,7 +89,7 @@ public class ReportsServiceImpl implements ReportsService {
         Fumigation fumigation = fumigationRepository.findById(id)
                 .orElseThrow(() -> new FumigationNotFoundException(id));
 
-        if (!fumigation.getStatus().equals(Status.APPROVED) && !fumigation.getStatus().equals(Status.FAILED)) {
+        if (!fumigation.getStatus().equals(Status.FUMIGATED) && !fumigation.getStatus().equals(Status.FAILED)) {
             throw new InvalidFumigationStatusException(id);
         }
 
@@ -129,11 +129,12 @@ public class ReportsServiceImpl implements ReportsService {
     private MessageDTO processReportAndUpdateStatus(IndustrialSafetyConditions conditions,
                                                     Fumigation fumigation,
                                                     Object report,
+                                                    Status status,
                                                     boolean isFumigationReport) {
         if (conditions.hasAnyDanger()) {
             fumigation.setStatus(Status.FAILED);
         } else {
-            fumigation.setStatus(Status.APPROVED);
+            fumigation.setStatus(status);
         }
 
         fumigationRepository.save(fumigation);
