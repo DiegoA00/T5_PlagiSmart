@@ -8,7 +8,7 @@ function PendingRequest() {
         <DashboardClient
           showHeader={false}
           showNewButton={false}
-          tablesToShow={['enCurso']}
+          tablesToShow={['pendientes']}
           title="Gestión de Reservas"
         />
       </main>

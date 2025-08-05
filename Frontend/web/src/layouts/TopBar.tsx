@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { loginService, authService } from "../services/auth/loginService";
+import { authService } from "../services/auth/loginService";
 import { useAuth } from "@/context/AuthContext";
 
 interface TopBarProps {
@@ -15,7 +15,7 @@ interface TopBarProps {
 
 export const TopBar: FC<TopBarProps> = ({ userImage = "/avatar.png" }) => {
   const navigate = useNavigate();
-  const { hasRole } = useAuth();
+  const { hasRole, logout } = useAuth();
   const [displayName, setDisplayName] = useState("");
 
   useEffect(() => {
@@ -29,9 +29,18 @@ export const TopBar: FC<TopBarProps> = ({ userImage = "/avatar.png" }) => {
     }
   }, []);
 
-  const handleLogout = () => {
-    loginService.logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      // Primero limpiar el estado de autenticación
+      logout();
+      
+      // Forzar navegación inmediata
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Error durante logout:', error);
+      // Aún así intentar navegar a login
+      window.location.href = '/login';
+    }
   };
 
   const handleProfileClick = () => {
