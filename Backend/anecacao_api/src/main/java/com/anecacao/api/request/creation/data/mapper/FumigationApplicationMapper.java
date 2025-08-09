@@ -61,10 +61,12 @@ public interface FumigationApplicationMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "environmentalConditions", source = "environmentalConditions")
+    @Mapping(target = "supervisor", source = "supervisor")
     FumigationReport toFumigationReport (FumigationReportDTO dto);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "environmentalConditions", source = "environmentalConditions")
+    @Mapping(target = "supervisor", source = "supervisor")
     void updateFumigationReportFromDTO(FumigationReportDTO dto, @MappingTarget FumigationReport report);
 
     @Mapping(target = "id", ignore = true)

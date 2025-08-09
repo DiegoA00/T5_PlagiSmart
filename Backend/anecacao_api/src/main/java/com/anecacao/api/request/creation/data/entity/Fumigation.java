@@ -16,8 +16,6 @@ public class Fumigation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String supervisor;
-
     @Column(nullable = false)
     private String lotNumber;
 

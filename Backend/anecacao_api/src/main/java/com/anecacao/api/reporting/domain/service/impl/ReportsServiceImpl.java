@@ -45,7 +45,7 @@ public class ReportsServiceImpl implements ReportsService {
     @Transactional
     @Override
     public MessageDTO createFumigationReport(FumigationReportDTO reportDTO) {
-        Fumigation fumigation = getValidFumigation(reportDTO.getId());
+        Fumigation fumigation = getValidFumigation(reportDTO.getId(), Status.APPROVED);
 
         checkTechniciansRole(reportDTO.getTechnicians());
 
@@ -59,7 +59,7 @@ public class ReportsServiceImpl implements ReportsService {
 
     @Override
     public MessageDTO createCleanupReport(CleanupReportDTO reportDTO) {
-        Fumigation fumigation = getValidFumigation(reportDTO.getId());
+        Fumigation fumigation = getValidFumigation(reportDTO.getId(), Status.FUMIGATED);
 
         checkTechniciansRole(reportDTO.getTechnicians());
 
@@ -85,12 +85,12 @@ public class ReportsServiceImpl implements ReportsService {
         return conditions;
     }
 
-    private Fumigation getValidFumigation(Long id) {
+    private Fumigation getValidFumigation(Long id, Status status) {
         Fumigation fumigation = fumigationRepository.findById(id)
                 .orElseThrow(() -> new FumigationNotFoundException(id));
 
-        if (!fumigation.getStatus().equals(Status.FUMIGATED) && !fumigation.getStatus().equals(Status.FAILED)) {
-            throw new InvalidFumigationStatusException(id);
+        if (!fumigation.getStatus().equals(status) && !fumigation.getStatus().equals(Status.FAILED)) {
+            throw new InvalidFumigationStatusException(id, status);
         }
 
         return fumigation;
