@@ -11,6 +11,7 @@ import java.util.List;
 @Data
 public class FumigationReportResponseDTO {
     private Long id;
+    private String supervisor;
     private String location;
     private LocalDate date;
     private LocalTime startTime;

@@ -44,6 +44,8 @@ public class FumigationReport {
     @Column(nullable = false)
     private Dimensions dimensions;
 
+    private String supervisor;
+
     private String observations;
 
     @ManyToMany
