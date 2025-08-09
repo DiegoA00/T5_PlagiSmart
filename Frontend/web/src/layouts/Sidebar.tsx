@@ -2,7 +2,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 
-const adminOptions = [
+interface SidebarOption {
+  label: string;
+  path: string;
+}
+
+const adminOptions: SidebarOption[] = [
   { label: "Dashboard", path: "/admin/dashboard" },
   { label: "Solicitudes", path: "/admin/solicitudes" },
   { label: "Lotes a fumigar", path: "/admin/lotes" },
@@ -10,8 +15,15 @@ const adminOptions = [
   { label: "Usuarios", path: "/admin/usuarios" },
 ];
 
-const technicianOptions = [
+const technicianOptions: SidebarOption[] = [
   { label: "Lotes a fumigar", path: "/tecnico/lotes" },
+];
+
+const clientOptions: SidebarOption[] = [
+  { label: "Inicio", path: "/client" },
+  { label: "Solicitudes Pendientes", path: "/client/solicitudes-pendientes" },
+  { label: "Solicitudes en Curso", path: "/client/solicitudes-en-curso" },
+  { label: "Solicitudes Finalizadas", path: "/client/solicitudes-finalizadas" },
 ];
 
 export function Sidebar() {
@@ -24,6 +36,8 @@ export function Sidebar() {
       return technicianOptions;
     } else if (hasRole(['ROLE_ADMIN'])) {
       return adminOptions;
+    } else if (hasRole(['ROLE_CLIENT'])) {
+      return clientOptions;
     }
     return [];
   };

@@ -1,0 +1,77 @@
+/* Estilos para impresión de documentos */
+@media print {
+  /* Ocultar elementos de navegación al imprimir */
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Configuración de página */
+  @page {
+    margin: 2cm;
+    size: A4;
+  }
+  
+  /* Estilos generales para impresión */
+  body {
+    font-size: 12pt;
+    line-height: 1.4;
+    color: black;
+    background: white;
+  }
+  
+  /* Evitar saltos de página dentro de documentos */
+  .document-section {
+    page-break-inside: avoid;
+    margin-bottom: 2cm;
+  }
+  
+  /* Títulos de documentos */
+  .document-title {
+    font-size: 16pt;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1cm;
+  }
+  
+  /* Contenido del documento */
+  .document-content {
+    border: 2px solid black;
+    padding: 1cm;
+    background: white;
+  }
+  
+  /* Firmas */
+  .signature-section {
+    margin-top: 3cm;
+  }
+  
+  .signature-line {
+    border-top: 1px solid black;
+    margin-top: 2cm;
+    padding-top: 0.5cm;
+    text-align: center;
+  }
+  
+  /* Ocultar botones y elementos interactivos */
+  button, .btn, .button {
+    display: none !important;
+  }
+  
+  /* Asegurar que el texto sea negro */
+  * {
+    color: black !important;
+    background: white !important;
+  }
+  
+  /* Espaciado para tablas */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+  }
+}

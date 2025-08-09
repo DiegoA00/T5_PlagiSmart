@@ -1,7 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { usersService, UpdateUserDTO } from "@/services/usersService";
+import { companyService, CreateCompanyDTO } from "@/services/companyService";
 
-const CompleteProfileForm = () => {
-  const [formData, setFormData] = useState({
+interface FormData {
+  name: string;
+  lastName: string;
+  id: string;
+  gender: string;
+  country: string;
+  city: string;
+  phone: string;
+  email: string;
+  address: string;
+  commercialName: string;
+  companyName: string;
+  companyRUC: string;
+  companyAddress: string;
+  companyPhone: string;
+  executiveDirector: string;
+}
+
+interface UserProfile {
+  id: string;
+  name: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  country?: string;
+  city?: string;
+  gender?: string;
+  commercialName?: string;
+  companyName?: string;
+  companyRUC?: string;
+  companyAddress?: string;
+  companyPhone?: string;
+  executiveDirector?: string;
+}
+
+interface CompleteProfileFormProps {
+  initialData?: UserProfile | null;
+}
+
+const CompleteProfileForm: React.FC<CompleteProfileFormProps> = ({ initialData }) => {
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     lastName: "",
     id: "",
@@ -18,23 +60,89 @@ const CompleteProfileForm = () => {
     companyPhone: "",
     executiveDirector: "",
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name || "",
+        lastName: initialData.lastName || "",
+        id: initialData.id || "",
+        gender: initialData.gender || "",
+        country: initialData.country || "",
+        city: initialData.city || "",
+        phone: initialData.phone || "",
+        email: initialData.email || "",
+        address: initialData.address || "",
+        commercialName: initialData.commercialName || "",
+        companyName: initialData.companyName || "",
+        companyRUC: initialData.companyRUC || "",
+        companyAddress: initialData.companyAddress || "",
+        companyPhone: initialData.companyPhone || "",
+        executiveDirector: initialData.executiveDirector || "",
+      });
+    }
+  }, [initialData]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Información adicional enviada:", formData);
-    // Enviar los datos al backend
+    setLoading(true);
+
+    try {
+      // Preparar datos del usuario
+      const userUpdateData: UpdateUserDTO = {
+        firstName: formData.name,
+        lastName: formData.lastName,
+        phone: formData.phone,
+        address: formData.address,
+        country: formData.country,
+        city: formData.city,
+        gender: formData.gender,
+      };
+
+      // Actualizar información del usuario
+      await usersService.updateUserProfile(userUpdateData);
+
+      // Si hay datos de la compañía, crearla
+      const hasCompanyData = formData.commercialName || formData.companyName || 
+                           formData.companyRUC || formData.companyAddress || 
+                           formData.companyPhone;
+
+      if (hasCompanyData) {
+        const companyData: CreateCompanyDTO = {
+          name: formData.commercialName || formData.companyName,
+          businessName: formData.companyName,
+          phoneNumber: formData.companyPhone,
+          ruc: formData.companyRUC,
+          address: formData.companyAddress,
+        };
+
+        // Crear la compañía (el backend automáticamente asociará con el usuario autenticado)
+        await companyService.createCompany(companyData);
+      }
+
+      console.log("Perfil actualizado exitosamente");
+      alert("Perfil actualizado exitosamente");
+      
+    } catch (error: any) {
+      console.error("Error al actualizar perfil:", error);
+      const errorMessage = error.message || "Error al actualizar el perfil";
+      alert(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <h2 className="text-2xl font-bold mb-6">Personal info</h2>
-      <div class='mx-auto w-full flex items-center justify-between gap-10'>
+      <div className='mx-auto w-full flex items-center justify-between gap-10'>
         <div className="w-1/2">
-          <label className="block text-sm font-medium text-gray-700">Name</label>
+          <span className="block text-sm font-medium text-gray-700">Name</span>
           <input
             type="text"
             name="name"
@@ -46,7 +154,7 @@ const CompleteProfileForm = () => {
         </div>
 
         <div className="w-1/2">
-          <label className="block text-sm font-medium text-gray-700">Last Name</label>
+          <span className="block text-sm font-medium text-gray-700">Last Name</span>
           <input
             type="text"
             name="lastName"
@@ -58,11 +166,11 @@ const CompleteProfileForm = () => {
         </div>
       </div>
 
-      <div class='mx-auto w-full flex items-center justify-between gap-10'>
+      <div className='mx-auto w-full flex items-center justify-between gap-10'>
         <div className="w-1/2">
-          <label className="block text-sm font-medium text-gray-700">ID</label>
+          <span className="block text-sm font-medium text-gray-700">ID</span>
           <input
-            type="number"
+            type="text"
             name="id"
             value={formData.id}
             onChange={handleChange}
@@ -72,7 +180,7 @@ const CompleteProfileForm = () => {
         </div>
   
         <div className="w-1/2">
-          <label className="block text-sm font-medium text-gray-700">Gender</label>
+          <span className="block text-sm font-medium text-gray-700">Gender</span>
           <select
             name="gender"
             value={formData.gender}
@@ -90,9 +198,9 @@ const CompleteProfileForm = () => {
 
       <h2 className="text-2xl font-bold mb-6">Contact info</h2>
 
-      <div class='mx-auto w-full flex items-center justify-between gap-10'>
+      <div className='mx-auto w-full flex items-center justify-between gap-10'>
         <div className="w-1/3">
-          <label className="block text-sm font-medium text-gray-700">Country</label>
+          <span className="block text-sm font-medium text-gray-700">Country</span>
           <input
             type="text"
             name="country"
@@ -104,7 +212,7 @@ const CompleteProfileForm = () => {
         </div>
   
         <div className="w-1/3">
-          <label className="block text-sm font-medium text-gray-700">City</label>
+          <span className="block text-sm font-medium text-gray-700">City</span>
           <input
             type="text"
             name="city"
@@ -116,7 +224,7 @@ const CompleteProfileForm = () => {
         </div>
 
         <div className="w-1/3">
-          <label className="block text-sm font-medium text-gray-700">Personal phone</label>
+          <span className="block text-sm font-medium text-gray-700">Personal phone</span>
           <input
             type="tel"
             name="phone"
@@ -128,9 +236,9 @@ const CompleteProfileForm = () => {
         </div>
       </div>
 
-      <div class='mx-auto w-full flex items-center justify-between gap-10'>
+      <div className='mx-auto w-full flex items-center justify-between gap-10'>
         <div className="w-1/3">
-          <label className="block text-sm font-medium text-gray-700">Email</label>
+          <span className="block text-sm font-medium text-gray-700">Email</span>
           <input
             type="email"
             name="email"
@@ -141,7 +249,7 @@ const CompleteProfileForm = () => {
           />
         </div>
         <div className="w-2/3">
-          <label className="block text-sm font-medium text-gray-700">Address</label>
+          <span className="block text-sm font-medium text-gray-700">Address</span>
           <input
             type="text"
             name="address"
@@ -154,9 +262,9 @@ const CompleteProfileForm = () => {
       </div>
 
       <h2 className="text-2xl font-bold mb-6">Company data</h2>
-      <div class='mx-auto w-full flex items-center justify-between gap-10'>
+      <div className='mx-auto w-full flex items-center justify-between gap-10'>
         <div className="w-1/2">
-          <label className="block text-sm font-medium text-gray-700">Commercial name</label>
+          <span className="block text-sm font-medium text-gray-700">Commercial name</span>
           <input
             type="text"
             name="commercialName"
@@ -166,7 +274,7 @@ const CompleteProfileForm = () => {
           />
         </div>
         <div className="w-1/2">
-          <label className="block text-sm font-medium text-gray-700">Company name</label>
+          <span className="block text-sm font-medium text-gray-700">Company name</span>
           <input
             type="text"
             name="companyName"
@@ -179,7 +287,7 @@ const CompleteProfileForm = () => {
 
       <div className="mx-auto w-full flex items-center justify-between gap-10">
         <div className="w-1/3">
-          <label className="block text-sm font-medium text-gray-700">R.U.C</label>
+          <span className="block text-sm font-medium text-gray-700">R.U.C</span>
           <input
             type="text"
             name="companyRUC"
@@ -189,7 +297,7 @@ const CompleteProfileForm = () => {
           />
         </div>
         <div className="w-2/3">
-          <label className="block text-sm font-medium text-gray-700">Company address</label>
+          <span className="block text-sm font-medium text-gray-700">Company address</span>
           <input
             type="tel"
             name="companyAddress"
@@ -202,7 +310,7 @@ const CompleteProfileForm = () => {
 
       <div className="mx-auto w-full flex items-center justify-between gap-10">
         <div className="w-1/3">
-          <label className="block text-sm font-medium text-gray-700">Company phone</label>
+          <span className="block text-sm font-medium text-gray-700">Company phone</span>
           <input
             type="tel"
             name="companyPhone"
@@ -212,7 +320,7 @@ const CompleteProfileForm = () => {
           />
         </div>
         <div className="w-2/3">
-          <label className="block text-sm font-medium text-gray-700">Executive director</label>
+          <span className="block text-sm font-medium text-gray-700">Executive director</span>
           <input
             type="text"
             name="executiveDirector"
@@ -226,9 +334,14 @@ const CompleteProfileForm = () => {
       <div className="text-center mt-6">
         <button
           type="submit"
-          className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition"
+          disabled={loading}
+          className={`py-2 px-4 rounded-md transition ${
+            loading 
+              ? 'bg-gray-400 cursor-not-allowed' 
+              : 'bg-blue-600 hover:bg-blue-700'
+          } text-white`}
         >
-          Save changes
+          {loading ? 'Guardando...' : 'Save changes'}
         </button>
       </div>
     </form>
