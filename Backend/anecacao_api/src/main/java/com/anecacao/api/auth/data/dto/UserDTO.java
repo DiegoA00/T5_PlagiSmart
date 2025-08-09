@@ -33,4 +33,6 @@ public class UserDTO {
     private String city;
 
     private String personalPhone;
+
+    private boolean hasCompletedProfile;
 }
