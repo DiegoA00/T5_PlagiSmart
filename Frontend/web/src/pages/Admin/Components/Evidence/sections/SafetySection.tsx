@@ -8,14 +8,26 @@ interface SafetySectionProps {
   setFumigationData: React.Dispatch<React.SetStateAction<FumigationData>>;
   isEditable: boolean;
   fumigationReportSubmitted: boolean;
+  mode?: "fumigation" | "cleanup";
 }
 
 export const SafetySection: FC<SafetySectionProps> = ({
   fumigationData,
   setFumigationData,
   isEditable,
-  fumigationReportSubmitted
+  fumigationReportSubmitted,
+  mode = "fumigation"
 }) => {
+  const handleHazardChange = (hazardType: keyof typeof fumigationData.hazards, checked: boolean) => {
+    setFumigationData(prev => ({
+      ...prev,
+      hazards: {
+        ...prev.hazards,
+        [hazardType]: checked
+      }
+    }));
+  };
+
   return (
     <CollapsibleSection title="Condiciones de Seguridad Industrial" defaultOpen>
       <div className="space-y-3">
@@ -23,44 +35,48 @@ export const SafetySection: FC<SafetySectionProps> = ({
           <Checkbox 
             id="electric"
             checked={fumigationData.hazards.electricDanger}
-            onCheckedChange={(checked) => setFumigationData(prev => ({ 
-              ...prev, 
-              hazards: { ...prev.hazards, electricDanger: !!checked }
-            }))}
+            onCheckedChange={(checked) => handleHazardChange('electricDanger', !!checked)}
             disabled={!isEditable || fumigationReportSubmitted}
           />
           <label htmlFor="electric" className="text-sm font-medium">
-            Peligro eléctrico
+            Peligro Eléctrico
           </label>
         </div>
         <div className="flex items-center space-x-2">
           <Checkbox 
             id="falls"
             checked={fumigationData.hazards.fallingDanger}
-            onCheckedChange={(checked) => setFumigationData(prev => ({ 
-              ...prev, 
-              hazards: { ...prev.hazards, fallingDanger: !!checked }
-            }))}
+            onCheckedChange={(checked) => handleHazardChange('fallingDanger', !!checked)}
             disabled={!isEditable || fumigationReportSubmitted}
           />
           <label htmlFor="falls" className="text-sm font-medium">
-            Peligro de caídas
+            Peligro de Caída
           </label>
         </div>
         <div className="flex items-center space-x-2">
           <Checkbox 
-            id="hit"
+            id="hits"
             checked={fumigationData.hazards.hitDanger}
-            onCheckedChange={(checked) => setFumigationData(prev => ({ 
-              ...prev, 
-              hazards: { ...prev.hazards, hitDanger: !!checked }
-            }))}
+            onCheckedChange={(checked) => handleHazardChange('hitDanger', !!checked)}
             disabled={!isEditable || fumigationReportSubmitted}
           />
-          <label htmlFor="hit" className="text-sm font-medium">
-            Peligro de golpes
+          <label htmlFor="hits" className="text-sm font-medium">
+            Peligro de Golpe
           </label>
         </div>
+        {mode === "cleanup" && (
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="other"
+              checked={fumigationData.hazards.otherDanger}
+              onCheckedChange={(checked) => handleHazardChange('otherDanger', !!checked)}
+              disabled={!isEditable || fumigationReportSubmitted}
+            />
+            <label htmlFor="other" className="text-sm font-medium">
+              Otro Peligro
+            </label>
+          </div>
+        )}
       </div>
     </CollapsibleSection>
   );
