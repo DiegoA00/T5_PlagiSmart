@@ -119,7 +119,7 @@ export interface FumigationDetailResponse {
 }
 
 export interface ApiUser {
-  id: number;
+  nationalId: string;
   firstName: string;
   lastName: string;
   email: string;

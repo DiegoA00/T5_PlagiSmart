@@ -1,15 +1,65 @@
 import apiClient from "./api/apiService";
 import { ApiUser, PaginatedResponse, PageableRequest } from "@/types/request";
 
-// DTO para actualizar información del usuario
+// DTO para actualizar información del usuario (legacy)
 export interface UpdateUserDTO {
+  nationalId: string;
   firstName: string;
   lastName: string;
   phone: string;
-  address: string;
   country: string;
   city: string;
-  gender: string;
+  birthday: string;
+}
+
+// DTO para setup completo de perfil (coincide con backend)
+export interface UserProfileSetUpRequestDTO {
+  nationalId: string;
+  birthday: string; // Formato: "yyyy-MM-dd"
+  company: CompanyCreationDTO;
+  country: string;
+  city: string;
+  personalPhone: string;
+}
+
+// DTO para crear compañía (coincide con backend)
+export interface CompanyCreationDTO {
+  companyName: string;
+  businessName: string;
+  phoneNumber: string; // Debe ser 10 dígitos
+  ruc: string; // Debe ser 13 dígitos
+  address: string;
+}
+
+// Estructura de respuesta de /users/me
+export interface UserMeResponse {
+  id: number;
+  nationalId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  has_completed_profile: boolean;
+  country?: string;
+  city?: string;
+  personalPhone?: string;
+  birthday?: string;
+  roles: Array<{
+    id: number;
+    name: string;
+  }>;
+  companies: Array<{
+    id: number;
+    name: string;
+    businessName: string;
+    phoneNumber: string;
+    ruc: string;
+    address: string;
+    legalRepresentative: {
+      id: number;
+      firstName: string;
+      lastName: string;
+    };
+  }>;
 }
 
 // Función helper para convertir array sort a string
@@ -121,12 +171,21 @@ export const usersService = {
     }
   },
 
-  getCurrentUser: async (): Promise<ApiUser> => {
+  getCurrentUser: async (): Promise<UserMeResponse> => {
     try {
       const response = await apiClient.get('/users/me');
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || "Error al obtener información del usuario");
+    }
+  },
+
+  setupUserProfile: async (profileData: UserProfileSetUpRequestDTO): Promise<void> => {
+    try {
+      const response = await apiClient.post('/auth/profile-setup', profileData);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || "Error al configurar el perfil del usuario");
     }
   }
 };
