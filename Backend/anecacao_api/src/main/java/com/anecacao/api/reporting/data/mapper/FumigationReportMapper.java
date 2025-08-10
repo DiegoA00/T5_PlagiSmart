@@ -7,6 +7,10 @@ import com.anecacao.api.reporting.data.entity.*;
 import com.anecacao.api.auth.data.entity.User;
 import com.anecacao.api.request.creation.data.entity.Dimensions;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
+import com.anecacao.api.signature.data.dto.SignatureResponse;
+import com.anecacao.api.signature.data.entity.Signature;
+import com.anecacao.api.signature.data.repository.SignatureRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -14,7 +18,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class FumigationReportMapper {
+
+    private final SignatureRepository signatureRepository;
 
     public FumigationReportResponseDTO toResponseDTO(FumigationReport report) {
         if (report == null) {
@@ -32,29 +39,66 @@ public class FumigationReportMapper {
         dto.setObservations(report.getObservations());
 
         // Map dimensions
-        dto.setDimensions(toDimensionsDTO(report.getDimensions()));
+        if (report.getDimensions() != null) {
+            dto.setDimensions(toDimensionsDTO(report.getDimensions()));
+        }
 
         // Map Supervisor
-        dto.setSupervisor(report.getSupervisor());
+        if (report.getSupervisor() != null) {
+            dto.setSupervisor(report.getSupervisor());
+        }
 
-        // Map environmental conditions
-        dto.setEnvironmentalConditions(toEnvironmentalConditionsDTO(report.getEnvironmentalConditions()));
+        // Map environmental conditions - verificar null
+        if (report.getEnvironmentalConditions() != null) {
+            dto.setEnvironmentalConditions(toEnvironmentalConditionsDTO(report.getEnvironmentalConditions()));
+        }
 
-        // Map industrial safety conditions
-        dto.setIndustrialSafetyConditions(toIndustrialSafetyConditionsDTO(report.getIndustrialSafetyConditions()));
+        // Map industrial safety conditions - verificar null
+        if (report.getIndustrialSafetyConditions() != null) {
+            dto.setIndustrialSafetyConditions(toIndustrialSafetyConditionsDTO(report.getIndustrialSafetyConditions()));
+        }
 
-        // Map technicians
-        dto.setTechnicians(toUserDTOList(report.getTechnicians()));
+        // Map technicians - manejar lazy loading
+        if (report.getTechnicians() != null && !report.getTechnicians().isEmpty()) {
+            dto.setTechnicians(toUserDTOList(report.getTechnicians()));
+        }
 
-        // Map supplies
-        dto.setSupplies(toSupplyDTOList(report.getSupplies()));
+        // Map supplies - manejar lazy loading
+        if (report.getSupplies() != null && !report.getSupplies().isEmpty()) {
+            dto.setSupplies(toSupplyDTOList(report.getSupplies()));
+        }
 
-        // Map fumigation info
+        // Map fumigation info - manejar lazy loading
         if (report.getFumigation() != null) {
             dto.setFumigationInfo(toFumigationInfoDTO(report.getFumigation()));
         }
 
+        // Map signatures
+        dto.setSignatures(getSignaturesForFumigationReport(report.getId()));
+
         return dto;
+    }
+
+    private List<SignatureResponse> getSignaturesForFumigationReport(Long reportId) {
+        List<Signature> signatures = signatureRepository.findByFumigationReportId(reportId);
+        return signatures.stream()
+                .map(this::toSignatureResponse)
+                .collect(Collectors.toList());
+    }
+
+    private SignatureResponse toSignatureResponse(Signature signature) {
+        Long reportId = signature.getFumigationReport() != null
+                ? signature.getFumigationReport().getId()
+                : signature.getCleanupReport() != null
+                ? signature.getCleanupReport().getId()
+                : null;
+
+        return new SignatureResponse(
+                signature.getId(),
+                signature.getSignatureType(),
+                signature.getFilePath(),
+                reportId
+        );
     }
 
     private DimensionsDTO toDimensionsDTO(Dimensions dimensions) {

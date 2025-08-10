@@ -2,6 +2,7 @@ package com.anecacao.api.reporting.data.dto.response;
 
 import com.anecacao.api.auth.data.dto.UserResponseDTO;
 import com.anecacao.api.reporting.data.dto.*;
+import com.anecacao.api.signature.data.dto.SignatureResponse;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -23,4 +24,5 @@ public class FumigationReportResponseDTO {
     private List<UserResponseDTO> technicians;
     private List<SupplyDTO> supplies;
     private FumigationInfoDTO fumigationInfo;
+    private List<SignatureResponse> signatures;
 }

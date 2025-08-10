@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -28,15 +29,19 @@ public class SignatureServiceImpl implements SignatureService {
     private String uploadDir;
 
     private final SignatureRepository signatureRepository;
-
     private final FumigationReportRepository fumigationReportRepository;
-
     private final CleanupReportRepository cleanupReportRepository;
+
+    private static final Set<String> VALID_SIGNATURE_TYPES = Set.of("technician", "client");
 
     @Override
     public SignatureResponse saveSignature(SignatureUploadRequest request) throws IOException {
         if (request.getFumigationId() == null && request.getCleanupId() == null) {
             throw new IllegalArgumentException("FumigationId or CleanupId is required");
+        }
+
+        if (!VALID_SIGNATURE_TYPES.contains(request.getSignatureType().toLowerCase())) {
+            throw new IllegalArgumentException("Invalid signatureType. Must be 'technician' or 'client'");
         }
 
         Optional<Signature> existingSignature;
