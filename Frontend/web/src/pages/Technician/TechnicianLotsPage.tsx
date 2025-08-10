@@ -11,6 +11,7 @@ import { useFumigationDetails } from "@/hooks/useFumigationData";
 import { fumigationService } from "@/services/fumigationService";
 import { formatDate } from "@/utils/dateUtils";
 import { Toaster } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 const FILTER_OPTIONS = [
   { value: "ALL", label: "Todos los lotes" },
@@ -18,12 +19,16 @@ const FILTER_OPTIONS = [
   { value: "FUMIGATED", label: "Descarpe" }
 ];
 
+interface ExtendedFumigationListItem extends FumigationListItem {
+  status: string;
+}
+
 export default function TechnicianLotsPage() {
   const [search, setSearch] = useState("");
   const [selectedLotId, setSelectedLotId] = useState<number | null>(null);
   const [showingEvidence, setShowingEvidence] = useState(false);
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [fumigations, setFumigations] = useState<FumigationListItem[]>([]);
+  const [fumigations, setFumigations] = useState<ExtendedFumigationListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +40,7 @@ export default function TechnicianLotsPage() {
         setLoading(true);
         setError(null);
         
-        let allFumigations: FumigationListItem[] = [];
+        let allFumigations: ExtendedFumigationListItem[] = [];
 
         if (statusFilter === "ALL") {
           const [approvedResponse, fumigatedResponse] = await Promise.all([
@@ -43,13 +48,26 @@ export default function TechnicianLotsPage() {
             fumigationService.getFumigationsByStatus("FUMIGATED")
           ]);
           
+          const approvedWithStatus = approvedResponse.content.map(item => ({
+            ...item,
+            status: "APPROVED"
+          }));
+          
+          const fumigatedWithStatus = fumigatedResponse.content.map(item => ({
+            ...item,
+            status: "FUMIGATED"
+          }));
+          
           allFumigations = [
-            ...approvedResponse.content,
-            ...fumigatedResponse.content
+            ...approvedWithStatus,
+            ...fumigatedWithStatus
           ];
         } else {
           const response = await fumigationService.getFumigationsByStatus(statusFilter);
-          allFumigations = response.content;
+          allFumigations = response.content.map(item => ({
+            ...item,
+            status: statusFilter
+          }));
         }
 
         setFumigations(allFumigations);
@@ -79,25 +97,42 @@ export default function TechnicianLotsPage() {
       render: (value: string) => formatDate(value)
     },
     {
-      header: "Estado",
-      key: "status",
+      header: "Servicio",
+      key: "status", 
       render: (value: string) => {
-        const statusLabels: { [key: string]: string } = {
-          "APPROVED": "Fumigación",
-          "FUMIGATED": "Descarpe"
-        };
-        return statusLabels[value] || value;
+        switch (value) {
+          case "APPROVED":
+            return (
+              <Badge 
+                variant="default" 
+                className="bg-blue-500 hover:bg-blue-600 text-white border-0"
+              >
+                Fumigación
+              </Badge>
+            );
+          case "FUMIGATED":
+            return (
+              <Badge 
+                variant="default" 
+                className="bg-green-500 hover:bg-green-600 text-white border-0"
+              >
+                Descarpe
+              </Badge>
+            );
+          default:
+            return <Badge variant="outline">{value}</Badge>;
+        }
       }
     },
   ];
 
-  const handleViewDetails = async (fumigation: FumigationListItem) => {
+  const handleViewDetails = async (fumigation: ExtendedFumigationListItem) => {
     setSelectedLotId(fumigation.id);
     setShowingEvidence(false);
     await loadFumigationDetails(fumigation.id);
   };
 
-  const handleUploadEvidence = async (fumigation: FumigationListItem) => {
+  const handleUploadEvidence = async (fumigation: ExtendedFumigationListItem) => {
     setSelectedLotId(fumigation.id);
     setShowingEvidence(true);
     await loadFumigationDetails(fumigation.id);
@@ -111,7 +146,7 @@ export default function TechnicianLotsPage() {
 
   const handleEvidenceSubmitted = async () => {
     try {
-      let allFumigations: FumigationListItem[] = [];
+      let allFumigations: ExtendedFumigationListItem[] = [];
 
       if (statusFilter === "ALL") {
         const [approvedResponse, fumigatedResponse] = await Promise.all([
@@ -119,13 +154,26 @@ export default function TechnicianLotsPage() {
           fumigationService.getFumigationsByStatus("FUMIGATED")
         ]);
         
+        const approvedWithStatus = approvedResponse.content.map(item => ({
+          ...item,
+          status: "APPROVED"
+        }));
+        
+        const fumigatedWithStatus = fumigatedResponse.content.map(item => ({
+          ...item,
+          status: "FUMIGATED"
+        }));
+        
         allFumigations = [
-          ...approvedResponse.content,
-          ...fumigatedResponse.content
+          ...approvedWithStatus,
+          ...fumigatedWithStatus
         ];
       } else {
         const response = await fumigationService.getFumigationsByStatus(statusFilter);
-        allFumigations = response.content;
+        allFumigations = response.content.map(item => ({
+          ...item,
+          status: statusFilter
+        }));
       }
 
       setFumigations(allFumigations);
