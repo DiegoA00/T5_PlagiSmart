@@ -18,12 +18,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class SignatureServiceImpl implements SignatureService {
-
     @Value("${app.upload.dir}")
     private String uploadDir;
 
@@ -35,29 +35,51 @@ public class SignatureServiceImpl implements SignatureService {
 
     @Override
     public SignatureResponse saveSignature(SignatureUploadRequest request) throws IOException {
-        byte[] imageBytes = decodeBase64Image(request.getSignatureData());
+        if (request.getFumigationId() == null && request.getCleanupId() == null) {
+            throw new IllegalArgumentException("FumigationId or CleanupId is required");
+        }
 
+        Optional<Signature> existingSignature;
+        if (request.getFumigationId() != null) {
+            existingSignature = signatureRepository
+                    .findByFumigationReportIdAndSignatureType(request.getFumigationId(), request.getSignatureType());
+        } else {
+            existingSignature = signatureRepository
+                    .findByCleanupReportIdAndSignatureType(request.getCleanupId(), request.getSignatureType());
+        }
+
+        byte[] imageBytes = decodeBase64Image(request.getSignatureData());
         String fileName = UUID.randomUUID() + ".jpg";
         Path filePath = Paths.get(uploadDir, fileName);
         Files.createDirectories(filePath.getParent());
         Files.write(filePath, imageBytes);
 
-        Signature signature = new Signature();
-        signature.setSignatureType(request.getSignatureType());
-        signature.setFilePath("/uploads/signatures/" + fileName);
+        Signature signature;
+        if (existingSignature.isPresent()) {
+            signature = existingSignature.get();
 
-        if (request.getFumigationId() != null) {
-            FumigationReport fumigationReport = fumigationReportRepository
-                    .findById(request.getFumigationId())
-                    .orElseThrow(() -> new IllegalArgumentException("FumigationReport not found"));
-            signature.setFumigationReport(fumigationReport);
-        }
+            if (signature.getFilePath() != null) {
+                Path oldFilePath = Paths.get(uploadDir, Paths.get(signature.getFilePath()).getFileName().toString());
+                Files.deleteIfExists(oldFilePath);
+            }
 
-        if (request.getCleanupId() != null) {
-            CleanupReport cleanupReport = cleanupReportRepository
-                    .findById(request.getCleanupId())
-                    .orElseThrow(() -> new IllegalArgumentException("CleanupReport not found"));
-            signature.setCleanupReport(cleanupReport);
+            signature.setFilePath("/uploads/signatures/" + fileName);
+        } else {
+            signature = new Signature();
+            signature.setSignatureType(request.getSignatureType());
+            signature.setFilePath("/uploads/signatures/" + fileName);
+
+            if (request.getFumigationId() != null) {
+                FumigationReport fumigationReport = fumigationReportRepository
+                        .findById(request.getFumigationId())
+                        .orElseThrow(() -> new IllegalArgumentException("FumigationReport not found"));
+                signature.setFumigationReport(fumigationReport);
+            } else {
+                CleanupReport cleanupReport = cleanupReportRepository
+                        .findById(request.getCleanupId())
+                        .orElseThrow(() -> new IllegalArgumentException("CleanupReport not found"));
+                signature.setCleanupReport(cleanupReport);
+            }
         }
 
         Signature saved = signatureRepository.save(signature);
