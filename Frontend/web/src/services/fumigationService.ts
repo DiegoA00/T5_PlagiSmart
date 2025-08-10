@@ -8,6 +8,23 @@ import {
   PageableRequest
 } from "@/types/request";
 
+// Interfaces para la creación de aplicaciones de fumigación
+export interface FumigationRequestData {
+  lotNumber: string;
+  ton: number;
+  portDestination: string;
+  sacks: number;
+  quality: string;
+  dateTime: string; // Backend format: "dd-MM-yyyy HH:mm"
+}
+
+export interface FumigationApplicationRequest {
+  company: {
+    id: number;
+  };
+  fumigations: FumigationRequestData[];
+}
+
 const formatSortParams = (sort?: string[]): string | undefined => {
   if (!sort || sort.length === 0) return undefined;
   return sort.join(',');
@@ -145,6 +162,15 @@ export const fumigationService = {
       }
       
       throw new Error(error.response?.data?.message || "Error al obtener detalles de la fumigación");
+    }
+  },
+
+  createFumigationApplication: async (applicationData: FumigationApplicationRequest): Promise<void> => {
+    try {
+      const response = await apiClient.post('/fumigation-applications', applicationData);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || "Error al crear la aplicación de fumigación");
     }
   }
 };

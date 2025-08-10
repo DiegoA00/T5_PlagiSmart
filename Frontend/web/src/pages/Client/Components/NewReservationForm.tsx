@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useProfile } from '@/hooks/useProfile';
+import { fumigationService, FumigationApplicationRequest, FumigationRequestData } from '@/services/fumigationService';
 
 interface FumigationEntry {
   fumigationDate: string;
@@ -13,12 +14,11 @@ interface FumigationEntry {
 
 interface FormData {
   companyName: string;
-  businessName: string;
+  commercialName: string;
   ruc: string;
   address: string;
   phone: string;
   legalRepresentative: string;
-  plantContact: string;
   fumigationEntries: FumigationEntry[];
 }
 
@@ -31,12 +31,11 @@ function NewReservationForm({ onClose }: NewReservationFormProps) {
   
   const [formData, setFormData] = useState<FormData>({
     companyName: '',
-    businessName: '',
+    commercialName: '',
     ruc: '',
     address: '',
     phone: '',
     legalRepresentative: '',
-    plantContact: '',
     fumigationEntries: [{
       fumigationDate: '',
       fumigationTime: '',
@@ -48,6 +47,10 @@ function NewReservationForm({ onClose }: NewReservationFormProps) {
     }],
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
   // Auto-rellenar los campos de la compañía cuando se carguen los datos del perfil
   useEffect(() => {
     if (profileData?.company) {
@@ -55,7 +58,7 @@ function NewReservationForm({ onClose }: NewReservationFormProps) {
       setFormData(prevState => ({
         ...prevState,
         companyName: company.name || '',
-        businessName: company.businessName || '',
+        commercialName: company.businessName || '',
         ruc: company.ruc || '',
         address: company.address || '',
         phone: company.phoneNumber || '',
@@ -71,7 +74,7 @@ function NewReservationForm({ onClose }: NewReservationFormProps) {
     setFormData(prevState => ({
       ...prevState,
       companyName: '',
-      businessName: '',
+      commercialName: '',
       ruc: '',
       address: '',
       phone: '',
@@ -88,8 +91,8 @@ function NewReservationForm({ onClose }: NewReservationFormProps) {
       const company = profileData.company;
       setFormData(prevState => ({
         ...prevState,
-        companyName: company.name || '',
-        businessName: company.businessName || '',
+        commercialName: company.name || '',
+        commpanyName: company.businessName || '',
         ruc: company.ruc || '',
         address: company.address || '',
         phone: company.phoneNumber || '',
@@ -141,11 +144,73 @@ function NewReservationForm({ onClose }: NewReservationFormProps) {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Form Data Submitted:', formData);
-    // Here you would typically send this data to a backend or handle it as needed
-    onClose(); // Close the form after submission
+    setSubmitError(null);
+    setSubmitSuccess(false);
+
+    // Validar que hay una compañía asociada al usuario
+    if (!profileData?.company?.id) {
+      setSubmitError('No se encontró información de la empresa. Por favor complete su perfil primero.');
+      return;
+    }
+
+    // Validar que hay al menos una entrada de fumigación
+    if (formData.fumigationEntries.length === 0) {
+      setSubmitError('Debe agregar al menos una entrada de fumigación.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      // Función helper para convertir fecha y hora al formato que espera el backend
+      const formatDateTimeForBackend = (date: string, time: string): string => {
+        // Convertir de "yyyy-MM-dd" y "HH:mm" a "dd-MM-yyyy HH:mm"
+        const [year, month, day] = date.split('-');
+        return `${day}-${month}-${year} ${time}`;
+      };
+
+      // Transformar los datos del formulario al formato que espera el backend
+      const fumigations: FumigationRequestData[] = formData.fumigationEntries.map(entry => {
+        // Convertir fecha y hora al formato esperado por el backend
+        const dateTime = formatDateTimeForBackend(entry.fumigationDate, entry.fumigationTime);
+        
+        return {
+          lotNumber: entry.lot,
+          ton: parseFloat(entry.tons) || 0.01, // Backend requiere al menos 0.01
+          portDestination: entry.destinationPort.toUpperCase(),
+          sacks: parseInt(entry.bags) || 1, // Backend requiere al menos 1
+          quality: entry.quality,
+          dateTime: dateTime
+        };
+      });
+
+      const applicationData: FumigationApplicationRequest = {
+        company: {
+          id: profileData.company.id
+        },
+        fumigations: fumigations
+      };
+
+      console.log('Sending fumigation application:', applicationData);
+
+      await fumigationService.createFumigationApplication(applicationData);
+      
+      setSubmitSuccess(true);
+      setSubmitError(null);
+      
+      // Mostrar mensaje de éxito por un momento antes de cerrar
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+
+    } catch (error: any) {
+      console.error('Error submitting fumigation application:', error);
+      setSubmitError(error.message || 'Error al enviar la solicitud de fumigación');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -187,21 +252,21 @@ function NewReservationForm({ onClose }: NewReservationFormProps) {
                 type="text" 
                 name="companyName" 
                 id="companyName" 
-                value={formData.companyName} 
+                value={formData.commercialName} 
                 onChange={handleChange} 
-                className={`mt-1 block w-full border rounded-md shadow-sm p-2 ${isAutoFilled('companyName') ? 'border-green-300 bg-green-50' : 'border-gray-300'}`}
+                className={`mt-1 block w-full border rounded-md shadow-sm p-2 ${isAutoFilled('commercialName') ? 'border-green-300 bg-green-50' : 'border-gray-300'}`}
                 required 
               />
             </div>
             <div>
-              <label htmlFor="businessName" className="block text-sm font-medium text-gray-700">Nombre Legal:</label>
+              <label htmlFor="businessName" className="block text-sm font-medium text-gray-700">Razón Social:</label>
               <input 
                 type="text" 
                 name="businessName" 
                 id="businessName" 
-                value={formData.businessName} 
+                value={formData.companyName} 
                 onChange={handleChange} 
-                className={`mt-1 block w-full border rounded-md shadow-sm p-2 ${isAutoFilled('businessName') ? 'border-green-300 bg-green-50' : 'border-gray-300'}`}
+                className={`mt-1 block w-full border rounded-md shadow-sm p-2 ${isAutoFilled('companyName') ? 'border-green-300 bg-green-50' : 'border-gray-300'}`}
                 required 
               />
             </div>
@@ -252,10 +317,6 @@ function NewReservationForm({ onClose }: NewReservationFormProps) {
                 className={`mt-1 block w-full border rounded-md shadow-sm p-2 ${isAutoFilled('legalRepresentative') ? 'border-green-300 bg-green-50' : 'border-gray-300'}`}
                 required 
               />
-            </div>
-            <div>
-              <label htmlFor="plantContact" className="block text-sm font-medium text-gray-700">Contacto Planta:</label>
-              <input type="text" name="plantContact" id="plantContact" value={formData.plantContact} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required />
             </div>
           </div>
 
@@ -314,9 +375,52 @@ function NewReservationForm({ onClose }: NewReservationFormProps) {
               Agregar Entrada de Fumigación
             </button>
           </div>
+
+          {/* Estado de envío y mensajes */}
+          {submitError && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 text-red-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <span className="text-red-800">{submitError}</span>
+              </div>
+            </div>
+          )}
+
+          {submitSuccess && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span className="text-green-800">¡Solicitud enviada exitosamente! El formulario se cerrará automáticamente...</span>
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-end space-x-4 mt-6">
-            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">Cancelar</button>
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Enviar Solicitud</button>
+            <button 
+              type="button" 
+              onClick={onClose} 
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              {isSubmitting && (
+                <svg className="w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
+              {isSubmitting ? 'Enviando...' : 'Enviar Solicitud'}
+            </button>
           </div>
         </form>
       </div>
