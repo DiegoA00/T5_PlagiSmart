@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { FumigationDetailResponse } from "@/types/request";
 
 export interface Supply {
   name: string;
@@ -36,7 +37,7 @@ export interface LotDetails {
 export interface ValidationErrors {
   startTime?: string;
   endTime?: string;
-  supervisor?: string; // 👈 Nuevo campo
+  supervisor?: string;
   technicians?: string;
   dimensions?: string;
   temperature?: string;
@@ -75,7 +76,7 @@ export interface FumigationData {
   observations: string;
 }
 
-export const useFumigationEvidence = (initialData?: any) => {
+export const useFumigationEvidence = (fumigationDetails: FumigationDetailResponse | null) => {
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
   const clearValidationErrors = () => {
@@ -91,20 +92,20 @@ export const useFumigationEvidence = (initialData?: any) => {
   };
 
   const [fumigationData, setFumigationData] = useState<FumigationData>({
-    fumigationId: initialData?.id?.toString() || "",
-    registrationNumber: initialData?.registrationNumber || "",
-    company: initialData?.company?.businessName || "",
-    location: initialData?.company?.address || "",
+    fumigationId: "",
+    registrationNumber: "",
+    company: "",
+    location: "",
     date: getCurrentDate(),
     startTime: "",
     endTime: "",
-    supervisor: initialData?.representative || "",
+    supervisor: "",
     lotDetails: {
-      lotNumber: initialData?.lot?.lotNumber || "",
-      tons: initialData?.lot?.tons?.toString() || "",
-      quality: initialData?.lot?.quality || "",
-      sacks: initialData?.lot?.sacks?.toString() || "",
-      destination: initialData?.lot?.portDestination || ""
+      lotNumber: "",
+      tons: "",
+      quality: "",
+      sacks: "",
+      destination: ""
     },
     dimensions: {
       height: "",
@@ -122,60 +123,29 @@ export const useFumigationEvidence = (initialData?: any) => {
       fallingDanger: false,
       hitDanger: false
     },
-    supplies: [{
-      name: "",
-      quantity: "",
-      dosage: "",
-      kindOfSupply: "",
-      numberOfStrips: ""
-    }],
+    supplies: [],
     observations: ""
   });
 
-  const resetForm = () => {
-    setFumigationData({
-      fumigationId: "",
-      registrationNumber: "",
-      company: "",
-      location: "",
-      date: getCurrentDate(),
-      startTime: "",
-      endTime: "",
-      supervisor: "",
-      lotDetails: {
-        lotNumber: "",
-        tons: "",
-        quality: "",
-        sacks: "",
-        destination: ""
-      },
-      dimensions: {
-        height: "",
-        width: "",
-        length: ""
-      },
-      environmentalConditions: {
-        temperature: "",
-        humidity: ""
-      },
-      selectedTechnician: "",
-      technicians: [],
-      hazards: {
-        electricDanger: false,
-        fallingDanger: false,
-        hitDanger: false
-      },
-      supplies: [{
-        name: "",
-        quantity: "",
-        dosage: "",
-        kindOfSupply: "",
-        numberOfStrips: ""
-      }],
-      observations: ""
-    });
-    setValidationErrors({});
-  };
+  useEffect(() => {
+    if (fumigationDetails) {
+      setFumigationData(prev => ({
+        ...prev,
+        fumigationId: fumigationDetails.lot.id.toString(),
+        registrationNumber: fumigationDetails.lot.lotNumber,
+        company: fumigationDetails.company.businessName,
+        location: fumigationDetails.company.address,
+        supervisor: "",
+        lotDetails: {
+          lotNumber: fumigationDetails.lot.lotNumber,
+          tons: fumigationDetails.lot.tons.toString(),
+          quality: fumigationDetails.lot.quality,
+          sacks: fumigationDetails.lot.sacks.toString(),
+          destination: fumigationDetails.lot.portDestination
+        }
+      }));
+    }
+  }, [fumigationDetails]);
 
   const validateFumigationForm = (): boolean => {
     const errors: ValidationErrors = {};
@@ -190,6 +160,10 @@ export const useFumigationEvidence = (initialData?: any) => {
 
     if (fumigationData.startTime && fumigationData.endTime && fumigationData.startTime >= fumigationData.endTime) {
       errors.timeRange = "La hora de finalización debe ser posterior a la hora de inicio";
+    }
+
+    if (!fumigationData.supervisor || fumigationData.supervisor.trim() === "") {
+      errors.supervisor = "El nombre del supervisor es requerido";
     }
     
     if (fumigationData.technicians.length === 0) {
@@ -224,45 +198,18 @@ export const useFumigationEvidence = (initialData?: any) => {
     if (!humidity || humidity.trim() === "") {
       errors.humidity = "La humedad es requerida";
     } else {
-      const humidityNum = parseFloat(humidity);
-      if (isNaN(humidityNum) || humidityNum < 0 || humidityNum > 100) {
-        errors.humidity = "La humedad debe ser un número entre 0% y 100%";
+      const humNum = parseFloat(humidity);
+      if (isNaN(humNum)) {
+        errors.humidity = "La humedad debe ser un número válido";
       }
     }
     
     if (fumigationData.supplies.length === 0) {
       errors.supplies = "Se requiere al menos un suministro";
-    } else {
-      for (let i = 0; i < fumigationData.supplies.length; i++) {
-        const supply = fumigationData.supplies[i];
-        
-        if (!supply.name || !supply.quantity || !supply.dosage || !supply.kindOfSupply ||
-            supply.name.trim() === "" || supply.quantity.trim() === "" || 
-            supply.dosage.trim() === "" || supply.kindOfSupply.trim() === "") {
-          errors.supplies = `Campos requeridos faltantes en el suministro ${i + 1}`;
-          break;
-        }
-        
-        const quantityNum = parseFloat(supply.quantity);
-        if (isNaN(quantityNum) || quantityNum <= 0) {
-          errors.supplies = `La cantidad debe ser un número positivo en el suministro ${i + 1}`;
-          break;
-        }
-        
-        if (supply.numberOfStrips && supply.numberOfStrips.trim() !== "") {
-          const stripsNum = parseFloat(supply.numberOfStrips);
-          if (isNaN(stripsNum) || stripsNum < 0) {
-            errors.supplies = `El número de cintas debe ser un número no negativo en el suministro ${i + 1}`;
-            break;
-          }
-        }
-      }
     }
     
     setValidationErrors(errors);
-    
-    const hasErrors = Object.keys(errors).length > 0;
-    return !hasErrors;
+    return Object.keys(errors).length === 0;
   };
 
   const updateField = (field: keyof FumigationData, value: any) => {
@@ -272,11 +219,10 @@ export const useFumigationEvidence = (initialData?: any) => {
     }));
     
     if (validationErrors[field as keyof ValidationErrors]) {
-      setValidationErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[field as keyof ValidationErrors];
-        return newErrors;
-      });
+      setValidationErrors(prev => ({
+        ...prev,
+        [field as keyof ValidationErrors]: undefined
+      }));
     }
   };
 
@@ -294,15 +240,71 @@ export const useFumigationEvidence = (initialData?: any) => {
     }));
   };
 
+  const resetForm = () => {
+    const initialData = {
+      fumigationId: "",
+      registrationNumber: "",
+      company: "",
+      location: "",
+      date: getCurrentDate(),
+      startTime: "",
+      endTime: "",
+      supervisor: "",
+      lotDetails: {
+        lotNumber: "",
+        tons: "",
+        quality: "",
+        sacks: "",
+        destination: ""
+      },
+      dimensions: {
+        height: "",
+        width: "",
+        length: ""
+      },
+      environmentalConditions: {
+        temperature: "",
+        humidity: ""
+      },
+      selectedTechnician: "",
+      technicians: [],
+      hazards: {
+        electricDanger: false,
+        fallingDanger: false,
+        hitDanger: false
+      },
+      supplies: [],
+      observations: ""
+    };
+
+    if (fumigationDetails) {
+      initialData.fumigationId = fumigationDetails.lot.id.toString();
+      initialData.registrationNumber = fumigationDetails.lot.lotNumber;
+      initialData.company = fumigationDetails.company.businessName;
+      initialData.location = fumigationDetails.company.address;
+      initialData.supervisor = fumigationDetails.representative;
+      initialData.lotDetails = {
+        lotNumber: fumigationDetails.lot.lotNumber,
+        tons: fumigationDetails.lot.tons.toString(),
+        quality: fumigationDetails.lot.quality,
+        sacks: fumigationDetails.lot.sacks.toString(),
+        destination: fumigationDetails.lot.portDestination
+      };
+    }
+
+    setFumigationData(initialData);
+    setValidationErrors({});
+  };
+
   return {
     fumigationData,
     setFumigationData,
-    resetForm,
     validateFumigationForm,
     validationErrors,
     clearValidationErrors,
     updateField,
     addToArray,
-    removeFromArray
+    removeFromArray,
+    resetForm
   };
 };

@@ -32,8 +32,16 @@ export interface CleanupValidationErrors {
 }
 
 export const useUncoveringEvidence = (fumigationDetails: FumigationDetailResponse | null) => {
+  const getCurrentDate = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const [cleanupData, setCleanupData] = useState<CleanupData>({
-    date: new Date().toISOString().split('T')[0],
+    date: getCurrentDate(),
     startTime: '',
     endTime: '',
     supervisor: '',
@@ -62,12 +70,12 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
     if (validationErrors[field as keyof CleanupValidationErrors]) {
       setValidationErrors(prev => ({
         ...prev,
-        [field]: undefined
+        [field as keyof CleanupValidationErrors]: undefined
       }));
     }
   };
 
-  const updateLotDescription = (field: keyof CleanupData['lotDescription'], value: any) => {
+  const updateLotDescription = (field: string, value: any) => {
     setCleanupData(prev => ({
       ...prev,
       lotDescription: {
@@ -75,9 +83,16 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
         [field]: value
       }
     }));
+    
+    if (validationErrors[field as keyof CleanupValidationErrors]) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [field as keyof CleanupValidationErrors]: undefined
+      }));
+    }
   };
 
-  const updateSafetyConditions = (field: keyof CleanupData['industrialSafetyConditions'], value: boolean) => {
+  const updateSafetyConditions = (field: string, value: boolean) => {
     setCleanupData(prev => ({
       ...prev,
       industrialSafetyConditions: {
@@ -92,6 +107,13 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
       ...prev,
       technicians: [...prev.technicians, technician]
     }));
+    
+    if (validationErrors.technicians) {
+      setValidationErrors(prev => ({
+        ...prev,
+        technicians: undefined
+      }));
+    }
   };
 
   const removeTechnician = (index: number) => {
@@ -145,8 +167,8 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
   };
 
   const resetForm = () => {
-    setCleanupData({
-      date: new Date().toISOString().split('T')[0],
+    const initialData = {
+      date: getCurrentDate(),
       startTime: '',
       endTime: '',
       supervisor: '',
@@ -162,7 +184,9 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
         hitDanger: false,
         otherDanger: false,
       },
-    });
+    };
+
+    setCleanupData(initialData);
     setValidationErrors({});
   };
 
@@ -177,6 +201,6 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
     removeTechnician,
     validateForm,
     clearValidationErrors,
-    resetForm,
+    resetForm
   };
 };

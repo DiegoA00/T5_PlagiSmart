@@ -85,13 +85,17 @@ export const GeneralInfoSection: FC<GeneralInfoSectionProps> = ({
           )}
         </div>
         <div className="col-span-2">
-          <label className="block text-sm font-medium mb-2">Supervisor</label>
+          <label className="block text-sm font-medium mb-2 required-field">Supervisor</label>
           <Input 
             value={fumigationData.supervisor}
             onChange={(e) => updateField('supervisor', e.target.value)}
             disabled={!isEditable || fumigationReportSubmitted}
             placeholder="Nombre del supervisor"
+            className={`${validationErrors.supervisor ? 'border-red-500 focus:border-red-500' : ''}`}
           />
+          {validationErrors.supervisor && (
+            <p className="text-red-500 text-xs mt-1">{validationErrors.supervisor}</p>
+          )}
         </div>
       </div>
     </CollapsibleSection>

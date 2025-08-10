@@ -48,20 +48,20 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
 
   const [fumigationData, setFumigationData] = useState(() => {
     return {
-      fumigationId: "",
+      fumigationId: fumigationDetails?.lot?.id?.toString() || "",
       registrationNumber: fumigationDetails?.lot?.lotNumber || "",
-      company: "Anecacao",
-      location: fumigationDetails?.lot?.address || "",
+      company: fumigationDetails?.company?.businessName || "",
+      location: fumigationDetails?.company?.address || "",
       date: cleanupData.date,
       startTime: cleanupData.startTime,
       endTime: cleanupData.endTime,
       supervisor: "",
       lotDetails: {
         lotNumber: fumigationDetails?.lot?.lotNumber || "",
-        tons: fumigationDetails?.lot?.tons || "",
+        tons: fumigationDetails?.lot?.tons?.toString() || "",
         quality: fumigationDetails?.lot?.quality || "",
-        sacks: fumigationDetails?.lot?.sacks || "",
-        portDestination: fumigationDetails?.lot?.portDestination || "",
+        sacks: fumigationDetails?.lot?.sacks?.toString() || "",
+        destination: fumigationDetails?.lot?.portDestination || "",
         stripsState: cleanupData.lotDescription.stripsState,
         fumigationTime: cleanupData.lotDescription.fumigationTime.toString(),
         ppmFosfina: cleanupData.lotDescription.ppmFosfina.toString()

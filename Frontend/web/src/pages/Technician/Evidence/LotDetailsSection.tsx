@@ -84,7 +84,7 @@ export const LotDetailsSection: FC<LotDetailsSectionProps> = ({
             <div>
               <label className="block text-sm font-medium mb-2">Destino</label>
               <Input 
-                value={fumigationData.lotDetails.portDestination}
+                value={fumigationData.lotDetails.destination}
                 disabled
                 className="bg-gray-100"
               />

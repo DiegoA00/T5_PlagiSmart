@@ -209,7 +209,6 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
   };
 
   const handleTabChange = (value: string) => {
-    console.log('Tab change requested:', value, 'current:', activeTab);
     setActiveTab(value);
   };
 
