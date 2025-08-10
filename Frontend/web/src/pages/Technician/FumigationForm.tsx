@@ -44,7 +44,7 @@ export const FumigationForm: FC<FumigationFormProps> = ({
 
   return (
     <div className="space-y-4">
-      <ValidationErrorList errors={Object.values(validationErrors).filter(Boolean)} />
+      <ValidationErrorList errors={validationErrors} />
       
       <GeneralInfoSection
         fumigationData={fumigationData}
@@ -96,6 +96,9 @@ export const FumigationForm: FC<FumigationFormProps> = ({
         isEditable={isEditable}
         fumigationReportSubmitted={fumigationReportSubmitted}
         validationErrors={validationErrors}
+        updateField={updateField}
+        addToArray={addToArray}
+        removeFromArray={removeFromArray}
       />
 
       <ObservationsSection
@@ -103,8 +106,6 @@ export const FumigationForm: FC<FumigationFormProps> = ({
         setFumigationData={setFumigationData}
         isEditable={isEditable}
         fumigationReportSubmitted={fumigationReportSubmitted}
-        validationErrors={validationErrors}
-        updateField={updateField}
       />
 
       <SignaturesSection 

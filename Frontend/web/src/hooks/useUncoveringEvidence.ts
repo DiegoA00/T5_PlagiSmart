@@ -79,7 +79,7 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
     if (fumigationDetails) {
       setCleanupData(prev => ({
         ...prev,
-        supervisor: fumigationDetails.representative || ""
+        supervisor: ""
       }));
     }
   }, [fumigationDetails]);
@@ -178,7 +178,7 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
       date: getCurrentDate(),
       startTime: "",
       endTime: "",
-      supervisor: fumigationDetails?.representative || "",
+      supervisor: "",
       technicians: [],
       lotDescription: {
         stripsState: "",

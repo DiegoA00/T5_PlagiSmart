@@ -45,7 +45,7 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
     date: cleanupData.date,
     startTime: cleanupData.startTime,
     endTime: cleanupData.endTime,
-    supervisor: cleanupData.supervisor,
+    supervisor: cleanupData.supervisor || "",
     lotDetails: {
       lotNumber: fumigationDetails?.lot?.lotNumber || "",
       tons: fumigationDetails?.lot?.tons?.toString() || "",
@@ -71,7 +71,9 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
       hitDanger: cleanupData.industrialSafetyConditions.hitDanger,
       otherDanger: cleanupData.industrialSafetyConditions.otherDanger
     },
-    observations: ""
+    observations: "",
+    technicianSignature: cleanupData.technicianSignature || "",
+    clientSignature: cleanupData.clientSignature || ""
   };
 
   const updateFumigationField = (field: any, value: any) => {
@@ -106,7 +108,7 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
         date: cleanupData.date,
         startTime: cleanupData.startTime,
         endTime: cleanupData.endTime,
-        supervisor: cleanupData.supervisor,
+        supervisor: cleanupData.supervisor || "",
         lotDetails: {
           lotNumber: fumigationDetails?.lot?.lotNumber || "",
           tons: fumigationDetails?.lot?.tons?.toString() || "",
@@ -192,7 +194,7 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
 
   return (
     <div className="space-y-4">
-      <ValidationErrorList errors={Object.values(validationErrors).filter(Boolean)} />
+      <ValidationErrorList errors={validationErrors} />
       
       <GeneralInfoSection
         fumigationData={fumigationData}
