@@ -32,6 +32,9 @@ export interface LotDetails {
   quality: string;
   sacks: string;
   destination: string;
+  stripsState?: string;
+  fumigationTime?: string;
+  ppmFosfina?: string;
 }
 
 export interface ValidationErrors {
@@ -44,6 +47,8 @@ export interface ValidationErrors {
   humidity?: string;
   supplies?: string;
   timeRange?: string;
+  fumigationTime?: string;
+  ppmFosfina?: string;
 }
 
 export interface FumigationData {

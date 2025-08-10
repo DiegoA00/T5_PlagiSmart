@@ -26,7 +26,6 @@ export interface CleanupValidationErrors {
   endTime?: string;
   supervisor?: string;
   technicians?: string;
-  stripsState?: string;
   fumigationTime?: string;
   ppmFosfina?: string;
 }
@@ -146,16 +145,12 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
       errors.technicians = 'Debe seleccionar al menos un técnico';
     }
 
-    if (!cleanupData.lotDescription.stripsState.trim()) {
-      errors.stripsState = 'El estado de cintas es requerido';
-    }
-
     if (cleanupData.lotDescription.fumigationTime <= 0) {
-      errors.fumigationTime = 'El tiempo de fumigación debe ser mayor a 0';
+      errors.fumigationTime = 'El tiempo de fumigación debe ser un entero positivo';
     }
 
     if (cleanupData.lotDescription.ppmFosfina <= 0) {
-      errors.ppmFosfina = 'El PPM fosfina debe ser mayor a 0';
+      errors.ppmFosfina = 'El PPM fosfina debe ser un entero positivo';
     }
 
     setValidationErrors(errors);

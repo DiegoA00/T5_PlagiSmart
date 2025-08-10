@@ -23,17 +23,10 @@ export const LotDetailsSection: FC<LotDetailsSectionProps> = ({
   mode = "fumigation"
 }) => {
   const handleLotDetailsChange = (field: keyof typeof fumigationData.lotDetails, value: string) => {
-    const newLotDetails = {
+    updateField('lotDetails', {
       ...fumigationData.lotDetails,
       [field]: value
-    };
-    
-    setFumigationData(prev => ({
-      ...prev,
-      lotDetails: newLotDetails
-    }));
-    
-    updateField('lotDetails', newLotDetails);
+    });
   };
 
   const handleDimensionsChange = (field: keyof typeof fumigationData.dimensions, value: string) => {
@@ -93,17 +86,13 @@ export const LotDetailsSection: FC<LotDetailsSectionProps> = ({
             {mode === "cleanup" && (
               <>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Estado de Cintas <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium mb-2">Estado de Cintas</label>
                   <Input 
                     value={fumigationData.lotDetails.stripsState || ""}
                     onChange={(e) => handleLotDetailsChange('stripsState', e.target.value)}
                     disabled={!isEditable || fumigationReportSubmitted}
                     placeholder="Ej: Bueno, Regular, Malo"
-                    className={`${validationErrors.stripsState ? 'border-red-500 focus:border-red-500' : ''}`}
                   />
-                  {validationErrors.stripsState && (
-                    <p className="text-red-500 text-xs mt-1">{validationErrors.stripsState}</p>
-                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Tiempo de Fumigación (horas) <span className="text-red-500">*</span></label>
@@ -113,11 +102,11 @@ export const LotDetailsSection: FC<LotDetailsSectionProps> = ({
                     disabled={!isEditable || fumigationReportSubmitted}
                     placeholder="Ej: 72"
                     type="number"
-                    min="0"
+                    min="1"
                     step="1"
-                    className={`${validationErrors.fumigationTime ? 'border-red-500 focus:border-red-500' : ''}`}
+                    className={`${validationErrors?.fumigationTime ? 'border-red-500 focus:border-red-500' : ''}`}
                   />
-                  {validationErrors.fumigationTime && (
+                  {validationErrors?.fumigationTime && (
                     <p className="text-red-500 text-xs mt-1">{validationErrors.fumigationTime}</p>
                   )}
                 </div>
@@ -129,11 +118,11 @@ export const LotDetailsSection: FC<LotDetailsSectionProps> = ({
                     disabled={!isEditable || fumigationReportSubmitted}
                     placeholder="Ej: 25"
                     type="number"
-                    min="0"
+                    min="1"
                     step="1"
-                    className={`${validationErrors.ppmFosfina ? 'border-red-500 focus:border-red-500' : ''}`}
+                    className={`${validationErrors?.ppmFosfina ? 'border-red-500 focus:border-red-500' : ''}`}
                   />
-                  {validationErrors.ppmFosfina && (
+                  {validationErrors?.ppmFosfina && (
                     <p className="text-red-500 text-xs mt-1">{validationErrors.ppmFosfina}</p>
                   )}
                 </div>
