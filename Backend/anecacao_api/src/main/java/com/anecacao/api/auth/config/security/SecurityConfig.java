@@ -111,6 +111,25 @@ public class SecurityConfig {
                         // ========== SIGNATURES ENDPOINTS ==========
                         .requestMatchers(HttpMethod.POST, "api/signatures").hasRole("TECHNICIAN")
                         .anyRequest().authenticated()
+
+                        // ========== EMAIL ENDPOINTS ==========
+                        // Endpoint de salud - público para monitoreo
+                        .requestMatchers(HttpMethod.GET, "/api/v1/email/health").permitAll()
+
+                        // Envío de correos - ADMIN puede enviar cualquier correo
+                        .requestMatchers(HttpMethod.POST, "/api/v1/email/send").hasRole("ADMIN")
+
+                        // Envío con plantillas - ADMIN y TECHNICIAN pueden usar plantillas predefinidas
+                        .requestMatchers(HttpMethod.POST, "/api/v1/email/send-template/**").hasAnyRole("ADMIN", "TECHNICIAN")
+
+                        // Reenvío de correos - solo ADMIN puede reenviar
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/email/resend/**").hasRole("ADMIN")
+
+                        // Envío masivo - solo ADMIN por el riesgo de spam
+                        .requestMatchers(HttpMethod.POST, "/api/v1/email/send-bulk").hasRole("ADMIN")
+
+                        // Validación de emails - todos los usuarios autenticados pueden validar emails
+                        .requestMatchers(HttpMethod.POST, "/api/v1/email/validate").authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());
 
