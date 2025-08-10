@@ -45,7 +45,7 @@ public class ReportsServiceImpl implements ReportsService {
     @Transactional
     @Override
     public MessageDTO createFumigationReport(FumigationReportDTO reportDTO) {
-        Fumigation fumigation = getValidFumigation(reportDTO.getId());
+        Fumigation fumigation = getValidFumigation(reportDTO.getId(), Status.APPROVED);
 
         checkTechniciansRole(reportDTO.getTechnicians());
 
@@ -54,18 +54,18 @@ public class ReportsServiceImpl implements ReportsService {
 
         IndustrialSafetyConditionsDTO conditionsDTO = reportDTO.getIndustrialSafetyConditions();
 
-        return processReportAndUpdateStatus(mapper.toConditionEntity(conditionsDTO), fumigation, report, true);
+        return processReportAndUpdateStatus(mapper.toConditionEntity(conditionsDTO), fumigation, report,Status.FUMIGATED, true);
     }
 
     @Override
     public MessageDTO createCleanupReport(CleanupReportDTO reportDTO) {
-        Fumigation fumigation = getValidFumigation(reportDTO.getId());
+        Fumigation fumigation = getValidFumigation(reportDTO.getId(), Status.FUMIGATED);
 
         checkTechniciansRole(reportDTO.getTechnicians());
 
         CleanupReport report = getOrCreateCleanupReport(reportDTO, fumigation);
 
-        return processReportAndUpdateStatus(reportDTO.getIndustrialSafetyConditions(), fumigation, report, false);
+        return processReportAndUpdateStatus(reportDTO.getIndustrialSafetyConditions(), fumigation, report, Status.FINISHED,false);
     }
 
     private void checkTechniciansRole(List<SimpleUserDTO> technicians) {
@@ -85,12 +85,12 @@ public class ReportsServiceImpl implements ReportsService {
         return conditions;
     }
 
-    private Fumigation getValidFumigation(Long id) {
+    private Fumigation getValidFumigation(Long id, Status status) {
         Fumigation fumigation = fumigationRepository.findById(id)
                 .orElseThrow(() -> new FumigationNotFoundException(id));
 
-        if (!fumigation.getStatus().equals(Status.APPROVED) && !fumigation.getStatus().equals(Status.FAILED)) {
-            throw new InvalidFumigationStatusException(id);
+        if (!fumigation.getStatus().equals(status) && !fumigation.getStatus().equals(Status.FAILED)) {
+            throw new InvalidFumigationStatusException(id, status);
         }
 
         return fumigation;
@@ -129,11 +129,12 @@ public class ReportsServiceImpl implements ReportsService {
     private MessageDTO processReportAndUpdateStatus(IndustrialSafetyConditions conditions,
                                                     Fumigation fumigation,
                                                     Object report,
+                                                    Status status,
                                                     boolean isFumigationReport) {
         if (conditions.hasAnyDanger()) {
             fumigation.setStatus(Status.FAILED);
         } else {
-            fumigation.setStatus(Status.APPROVED);
+            fumigation.setStatus(status);
         }
 
         fumigationRepository.save(fumigation);

@@ -34,6 +34,9 @@ public class FumigationReportMapper {
         // Map dimensions
         dto.setDimensions(toDimensionsDTO(report.getDimensions()));
 
+        // Map Supervisor
+        dto.setSupervisor(report.getSupervisor());
+
         // Map environmental conditions
         dto.setEnvironmentalConditions(toEnvironmentalConditionsDTO(report.getEnvironmentalConditions()));
 
