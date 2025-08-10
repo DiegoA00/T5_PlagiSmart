@@ -5,11 +5,9 @@ import { FumigationDetailResponse, ApiUser } from "@/types/request";
 import { usersService } from "@/services/usersService";
 import { reportsService } from "@/services/reportsService";
 import { FumigationForm } from "./FumigationForm";
-import { CleanupForm } from "./CleanupForm";
 import { UncoveringForm } from "./UncoveringForm";
 import { useFumigationEvidence } from "@/hooks/useFumigationEvidence";
 import { useUncoveringEvidence } from "@/hooks/useUncoveringEvidence";
-import { ad } from "vitest/dist/chunks/reporters.d.BFLkQcL6.js";
 
 interface TechnicianEvidenceOverlayProps {
   fumigationDetails: FumigationDetailResponse | null;

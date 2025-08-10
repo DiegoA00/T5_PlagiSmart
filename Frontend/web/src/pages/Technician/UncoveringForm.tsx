@@ -137,7 +137,6 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
 
       const newData = updateFn(currentData);
       
-      // Manejar actualización de técnicos
       if (JSON.stringify(newData.technicians) !== JSON.stringify(currentData.technicians)) {
         const newTechnicians = newData.technicians.map((t: any) => ({
           id: t.id,
@@ -151,7 +150,6 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
         }));
       }
 
-      // Manejar otras actualizaciones
       if (newData.date !== currentData.date) {
         updateField('date', newData.date);
       }
@@ -186,7 +184,7 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
 
   return (
     <div className="space-y-4">
-      <ValidationErrorList errors={Object.values(validationErrors).filter(Boolean)} />
+      <ValidationErrorList errors={validationErrors} />
       
       <GeneralInfoSection
         fumigationData={fumigationData}
