@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { FumigationDetailResponse } from "@/types/request";
 
 export interface LotDetails {
+  ppmFosfina: string;
+  fumigationTime: string;
+  stripsState: string;
   lotNumber: string;
   tons: string;
   quality: string;
@@ -68,6 +71,7 @@ export interface FumigationData {
 }
 
 export interface ValidationErrors {
+  fumigationTime?: string;
   date?: string;
   startTime?: string;
   endTime?: string;
@@ -81,6 +85,8 @@ export interface ValidationErrors {
   temperature?: string;
   humidity?: string;
   observations?: string;
+  ppmFosfina?: string;
+  dimensions?: string;
 }
 
 const getCurrentDate = (): string => {
@@ -107,7 +113,10 @@ export const useFumigationEvidence = (fumigationDetails: FumigationDetailRespons
       tons: "",
       quality: "",
       sacks: "",
-      destination: ""
+      destination: "",
+      ppmFosfina: "",
+      fumigationTime: "",
+      stripsState: ""
     },
     dimensions: {
       height: "",
@@ -145,7 +154,10 @@ export const useFumigationEvidence = (fumigationDetails: FumigationDetailRespons
           tons: fumigationDetails.lot.tons.toString(),
           quality: fumigationDetails.lot.quality,
           sacks: fumigationDetails.lot.sacks.toString(),
-          destination: fumigationDetails.lot.portDestination
+          destination: fumigationDetails.lot.portDestination,
+          ppmFosfina: "",
+          fumigationTime: "",
+          stripsState: ""
         }
       }));
     }
@@ -247,7 +259,10 @@ export const useFumigationEvidence = (fumigationDetails: FumigationDetailRespons
         tons: "",
         quality: "",
         sacks: "",
-        destination: ""
+        destination: "",
+        ppmFosfina: "",
+        fumigationTime: "",
+        stripsState: ""
       },
       dimensions: {
         height: "",
@@ -273,16 +288,15 @@ export const useFumigationEvidence = (fumigationDetails: FumigationDetailRespons
 
     if (fumigationDetails) {
       initialData.fumigationId = fumigationDetails.lot.id.toString();
-      initialData.registrationNumber = fumigationDetails.lot.lotNumber;
-      initialData.company = fumigationDetails.company.businessName;
-      initialData.location = fumigationDetails.company.address;
-      initialData.supervisor = fumigationDetails.representative;
       initialData.lotDetails = {
         lotNumber: fumigationDetails.lot.lotNumber,
         tons: fumigationDetails.lot.tons.toString(),
         quality: fumigationDetails.lot.quality,
         sacks: fumigationDetails.lot.sacks.toString(),
-        destination: fumigationDetails.lot.portDestination
+        destination: fumigationDetails.lot.portDestination,
+        ppmFosfina: "",
+        fumigationTime: "",
+        stripsState: ""
       };
     }
 
