@@ -107,6 +107,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/reports/cleanup/by-fumigation/*").hasAnyRole("ADMIN", "TECHNICIAN", "CLIENT")
                         .requestMatchers(HttpMethod.GET, "/reports/cleanup/*").hasAnyRole("ADMIN", "TECHNICIAN", "CLIENT")
 
+
+                        // ========== SIGNATURES ENDPOINTS ==========
+                        .requestMatchers(HttpMethod.POST, "api/signatures").hasRole("TECHNICIAN")
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());
