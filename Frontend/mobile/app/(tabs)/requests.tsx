@@ -76,18 +76,25 @@ export default function RequestsScreen() {
   const handleApprove = async (id: number) => {
     Alert.alert(
       'Aprobar Solicitud',
-      '¿Estás seguro que deseas aprobar esta solicitud?',
+      '¿Estás seguro que deseas aprobar esta solicitud? Esto creará lotes para fumigación.',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Aprobar',
           onPress: async () => {
-            const result = await fumigationService.approveApplication(id);
-            if (result.success) {
-              Alert.alert('Éxito', 'Solicitud aprobada correctamente');
-              fetchApplications();
-            } else {
-              Alert.alert('Error', result.message || 'Error al aprobar la solicitud');
+            try {
+              const result = await fumigationService.approveApplication(id);
+              if (result.success) {
+                Alert.alert(
+                  'Éxito', 
+                  'Solicitud aprobada correctamente. Se han creado los lotes para fumigación.',
+                  [{ text: 'OK', onPress: () => fetchApplications() }]
+                );
+              } else {
+                Alert.alert('Error', result.message || 'Error al aprobar la solicitud');
+              }
+            } catch (error: any) {
+              Alert.alert('Error', error.message || 'Error de conexión');
             }
           }
         }
@@ -95,22 +102,71 @@ export default function RequestsScreen() {
     );
   };
 
-  const handleReject = async (id: number) => {
-    Alert.alert(
+  const handleReject = async (id: number, reason?: string) => {
+    Alert.prompt(
       'Rechazar Solicitud',
-      '¿Estás seguro que deseas rechazar esta solicitud?',
+      'Ingresa el motivo del rechazo (opcional):',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Rechazar',
           style: 'destructive',
+          onPress: async (rejectionReason) => {
+            try {
+              const result = await fumigationService.rejectApplication(id, rejectionReason);
+              if (result.success) {
+                Alert.alert(
+                  'Éxito', 
+                  'Solicitud rechazada correctamente.',
+                  [{ text: 'OK', onPress: () => fetchApplications() }]
+                );
+              } else {
+                Alert.alert('Error', result.message || 'Error al rechazar la solicitud');
+              }
+            } catch (error: any) {
+              Alert.alert('Error', error.message || 'Error de conexión');
+            }
+          }
+        }
+      ],
+      'plain-text',
+      '',
+      'Motivo del rechazo'
+    );
+  };
+
+  const handleBulkAction = (action: 'approve' | 'reject') => {
+    const pendingApplications = filteredApplications.filter(app => selectedStatus === 'PENDING');
+    
+    if (pendingApplications.length === 0) {
+      Alert.alert('Sin solicitudes', 'No hay solicitudes pendientes para procesar.');
+      return;
+    }
+
+    const actionText = action === 'approve' ? 'aprobar' : 'rechazar';
+    const confirmText = action === 'approve' ? 'Aprobar Todas' : 'Rechazar Todas';
+    
+    Alert.alert(
+      `${confirmText} las Solicitudes`,
+      `¿Estás seguro que deseas ${actionText} todas las solicitudes pendientes (${pendingApplications.length})?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: confirmText,
+          style: action === 'reject' ? 'destructive' : 'default',
           onPress: async () => {
-            const result = await fumigationService.rejectApplication(id);
-            if (result.success) {
-              Alert.alert('Éxito', 'Solicitud rechazada correctamente');
+            try {
+              const promises = pendingApplications.map(app => 
+                action === 'approve' 
+                  ? fumigationService.approveApplication(app.id)
+                  : fumigationService.rejectApplication(app.id)
+              );
+              
+              await Promise.all(promises);
+              Alert.alert('Éxito', `Todas las solicitudes han sido ${action === 'approve' ? 'aprobadas' : 'rechazadas'} correctamente.`);
               fetchApplications();
-            } else {
-              Alert.alert('Error', result.message || 'Error al rechazar la solicitud');
+            } catch (error: any) {
+              Alert.alert('Error', `Error al ${actionText} las solicitudes: ${error.message}`);
             }
           }
         }
@@ -204,6 +260,53 @@ export default function RequestsScreen() {
         {/* Status Tabs */}
         {renderStatusTabs()}
 
+        {/* Statistics Section */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{filteredApplications.length}</Text>
+            <Text style={styles.statLabel}>
+              {selectedStatus === 'PENDING' ? 'Pendientes' : 'Rechazadas'}
+            </Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>
+              {filteredApplications.filter(app => 
+                new Date(app.submissionDate).getMonth() === new Date().getMonth()
+              ).length}
+            </Text>
+            <Text style={styles.statLabel}>Este Mes</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>
+              {filteredApplications.filter(app => 
+                new Date(app.submissionDate).toDateString() === new Date().toDateString()
+              ).length}
+            </Text>
+            <Text style={styles.statLabel}>Hoy</Text>
+          </View>
+        </View>
+
+        {/* Bulk Actions */}
+        {selectedStatus === 'PENDING' && filteredApplications.length > 0 && (
+          <View style={styles.bulkActionsContainer}>
+            <Text style={styles.bulkActionsTitle}>Acciones en Lote:</Text>
+            <View style={styles.bulkActionsButtons}>
+              <TouchableOpacity
+                style={[styles.bulkActionButton, styles.approveAllButton]}
+                onPress={() => handleBulkAction('approve')}
+              >
+                <Text style={styles.bulkActionButtonText}>✅ Aprobar Todas</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.bulkActionButton, styles.rejectAllButton]}
+                onPress={() => handleBulkAction('reject')}
+              >
+                <Text style={styles.bulkActionButtonText}>❌ Rechazar Todas</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
         {/* Requests List */}
         <ScrollView
           style={styles.scrollView}
@@ -230,40 +333,115 @@ export default function RequestsScreen() {
           onRequestClose={() => setModalVisible(false)}
         >
           <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              {selectedRequest && (
-                <>
-                  <Text style={styles.modalTitle}>Detalle de Solicitud</Text>
-                  <Text style={styles.modalLabel}>Empresa:</Text>
-                  <Text style={styles.modalValue}>{selectedRequest.companyName}</Text>
-                  
-                  <Text style={styles.modalLabel}>Representante:</Text>
-                  <Text style={styles.modalValue}>{selectedRequest.representative}</Text>
-                  
-                  <Text style={styles.modalLabel}>Ubicación:</Text>
-                  <Text style={styles.modalValue}>{selectedRequest.location}</Text>
-                  
-                  <Text style={styles.modalLabel}>Fecha de Solicitud:</Text>
-                  <Text style={styles.modalValue}>
-                    {new Date(selectedRequest.submissionDate).toLocaleDateString()}
-                  </Text>
-                  
-                  {selectedRequest.description && (
-                    <>
-                      <Text style={styles.modalLabel}>Descripción:</Text>
-                      <Text style={styles.modalValue}>{selectedRequest.description}</Text>
-                    </>
-                  )}
-                  
-                  <TouchableOpacity
-                    style={styles.closeButton}
-                    onPress={() => setModalVisible(false)}
-                  >
-                    <Text style={styles.closeButtonText}>Cerrar</Text>
-                  </TouchableOpacity>
-                </>
-              )}
-            </View>
+            <ScrollView style={styles.modalScrollView}>
+              <View style={styles.modalContent}>
+                {selectedRequest && (
+                  <>
+                    <View style={styles.modalHeader}>
+                      <Text style={styles.modalTitle}>Detalle de Solicitud</Text>
+                      <View style={[styles.statusBadge, { 
+                        backgroundColor: selectedRequest.status === 'PENDING' ? '#f59e0b' : '#ef4444' 
+                      }]}>
+                        <Text style={styles.statusText}>
+                          {selectedRequest.status === 'PENDING' ? 'Pendiente' : 'Rechazada'}
+                        </Text>
+                      </View>
+                    </View>
+                    
+                    <View style={styles.modalSection}>
+                      <Text style={styles.modalSectionTitle}>Información de la Empresa</Text>
+                      
+                      <Text style={styles.modalLabel}>Empresa:</Text>
+                      <Text style={styles.modalValue}>{selectedRequest.companyName}</Text>
+                      
+                      <Text style={styles.modalLabel}>Representante:</Text>
+                      <Text style={styles.modalValue}>{selectedRequest.representative}</Text>
+                      
+                      <Text style={styles.modalLabel}>Ubicación:</Text>
+                      <Text style={styles.modalValue}>📍 {selectedRequest.location}</Text>
+                      
+                      {selectedRequest.contactInfo && (
+                        <>
+                          <Text style={styles.modalLabel}>Información de Contacto:</Text>
+                          <Text style={styles.modalValue}>{selectedRequest.contactInfo}</Text>
+                        </>
+                      )}
+                    </View>
+
+                    <View style={styles.modalSection}>
+                      <Text style={styles.modalSectionTitle}>Detalles de la Solicitud</Text>
+                      
+                      <Text style={styles.modalLabel}>Fecha de Solicitud:</Text>
+                      <Text style={styles.modalValue}>
+                        📅 {new Date(selectedRequest.submissionDate).toLocaleDateString('es-ES', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </Text>
+                      
+                      <Text style={styles.modalLabel}>ID de Solicitud:</Text>
+                      <Text style={styles.modalValue}>#{selectedRequest.id}</Text>
+
+                      {selectedRequest.description && (
+                        <>
+                          <Text style={styles.modalLabel}>Descripción:</Text>
+                          <Text style={styles.modalValue}>{selectedRequest.description}</Text>
+                        </>
+                      )}
+
+                      {selectedRequest.estimatedVolume && (
+                        <>
+                          <Text style={styles.modalLabel}>Volumen Estimado:</Text>
+                          <Text style={styles.modalValue}>📦 {selectedRequest.estimatedVolume} TM</Text>
+                        </>
+                      )}
+
+                      {selectedRequest.preferredDate && (
+                        <>
+                          <Text style={styles.modalLabel}>Fecha Preferida:</Text>
+                          <Text style={styles.modalValue}>
+                            🗓️ {new Date(selectedRequest.preferredDate).toLocaleDateString('es-ES')}
+                          </Text>
+                        </>
+                      )}
+                    </View>
+
+                    {selectedStatus === 'PENDING' && (
+                      <View style={styles.modalActions}>
+                        <TouchableOpacity
+                          style={[styles.modalActionButton, styles.approveButton]}
+                          onPress={() => {
+                            setModalVisible(false);
+                            handleApprove(selectedRequest.id);
+                          }}
+                        >
+                          <Text style={styles.modalActionButtonText}>✅ Aprobar</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[styles.modalActionButton, styles.rejectButton]}
+                          onPress={() => {
+                            setModalVisible(false);
+                            handleReject(selectedRequest.id);
+                          }}
+                        >
+                          <Text style={styles.modalActionButtonText}>❌ Rechazar</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    
+                    <TouchableOpacity
+                      style={styles.closeButton}
+                      onPress={() => setModalVisible(false)}
+                    >
+                      <Text style={styles.closeButtonText}>Cerrar</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+              </View>
+            </ScrollView>
           </View>
         </Modal>
       </View>
@@ -378,6 +556,73 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '600',
   },
+  statsContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  statCard: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 8,
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2563eb',
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  bulkActionsContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  bulkActionsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 12,
+  },
+  bulkActionsButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  bulkActionButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  approveAllButton: {
+    backgroundColor: '#10b981',
+  },
+  rejectAllButton: {
+    backgroundColor: '#ef4444',
+  },
+  bulkActionButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -391,24 +636,58 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalScrollView: {
+    flex: 1,
+    paddingTop: 50,
   },
   modalContent: {
     backgroundColor: '#ffffff',
-    borderRadius: 8,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     padding: 20,
-    margin: 20,
-    maxWidth: '90%',
-    maxHeight: '80%',
+    minHeight: '90%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#374151',
-    marginBottom: 16,
-    textAlign: 'center',
+    flex: 1,
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  statusText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  modalSection: {
+    marginBottom: 24,
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    padding: 16,
+  },
+  modalSectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1f2937',
+    marginBottom: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#d1d5db',
   },
   modalLabel: {
     fontSize: 14,
@@ -421,13 +700,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6b7280',
     marginBottom: 8,
+    lineHeight: 22,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
+  },
+  modalActionButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalActionButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 16,
   },
   closeButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: '#6b7280',
     borderRadius: 8,
-    padding: 12,
-    marginTop: 20,
+    padding: 16,
     alignItems: 'center',
+    marginTop: 12,
   },
   closeButtonText: {
     color: '#ffffff',

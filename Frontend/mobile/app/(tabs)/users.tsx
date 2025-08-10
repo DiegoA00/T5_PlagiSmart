@@ -134,19 +134,31 @@ export default function UsersScreen() {
   const handleRoleChange = async (newRole: string) => {
     if (!selectedUser) return;
 
-    try {
-      const result = await usersService.updateUserRole(selectedUser.id, newRole);
-      if (result.success) {
-        Alert.alert('Éxito', 'Rol actualizado correctamente');
-        setRoleModalVisible(false);
-        onRefresh();
-      } else {
-        Alert.alert('Error', result.message || 'Error al actualizar el rol');
-      }
-    } catch (error) {
-      console.error('Error updating user role:', error);
-      Alert.alert('Error', 'Error al actualizar el rol');
-    }
+    Alert.alert(
+      'Confirmar Cambio de Rol',
+      `¿Estás seguro que deseas cambiar el rol de ${selectedUser.firstName} ${selectedUser.lastName} a ${roleLabels[newRole as keyof typeof roleLabels]}?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Confirmar',
+          onPress: async () => {
+            try {
+              const result = await usersService.updateUserRole(selectedUser.id, newRole);
+              if (result.success) {
+                Alert.alert('Éxito', 'Rol actualizado correctamente');
+                setRoleModalVisible(false);
+                onRefresh();
+              } else {
+                Alert.alert('Error', result.message || 'Error al actualizar el rol');
+              }
+            } catch (error) {
+              console.error('Error updating user role:', error);
+              Alert.alert('Error', 'Error al actualizar el rol');
+            }
+          }
+        }
+      ]
+    );
   };
 
   const handleDeleteUser = async (userId: number) => {
@@ -241,6 +253,45 @@ export default function UsersScreen() {
 
         {/* Role Tabs */}
         {renderRoleTabs()}
+
+        {/* Users Statistics */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={[styles.statNumber, { color: '#dc2626' }]}>
+              {users.filter(u => u.roles === 'admin').length}
+            </Text>
+            <Text style={styles.statLabel}>Administradores</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={[styles.statNumber, { color: '#2563eb' }]}>
+              {users.filter(u => u.roles === 'client').length}
+            </Text>
+            <Text style={styles.statLabel}>Clientes</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={[styles.statNumber, { color: '#059669' }]}>
+              {users.filter(u => u.roles === 'technician').length}
+            </Text>
+            <Text style={styles.statLabel}>Técnicos</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={[styles.statNumber, { color: '#6b7280' }]}>
+              {filteredUsers.length}
+            </Text>
+            <Text style={styles.statLabel}>Mostrados</Text>
+          </View>
+        </View>
+
+        {/* Filter Info */}
+        {(selectedRole !== 'all' || search.trim()) && (
+          <View style={styles.filterInfo}>
+            <Text style={styles.filterInfoText}>
+              Mostrando {filteredUsers.length} de {users.length} usuarios
+              {selectedRole !== 'all' && ` - Rol: ${roleLabels[selectedRole as keyof typeof roleLabels]}`}
+              {search.trim() && ` - Búsqueda: "${search}"`}
+            </Text>
+          </View>
+        )}
 
         {/* Users List */}
         <ScrollView
@@ -405,6 +456,46 @@ const styles = StyleSheet.create({
   },
   activeTabText: {
     color: '#ffffff',
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  statCard: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 8,
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  statLabel: {
+    fontSize: 11,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  filterInfo: {
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  filterInfoText: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    fontWeight: '500',
   },
   scrollView: {
     flex: 1,

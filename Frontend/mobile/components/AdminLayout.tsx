@@ -58,7 +58,10 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
           Bienvenido, {user?.firstName} {user?.lastName}
         </Text>
         <Text style={styles.userRole}>
-          {user?.roles?.map(role => role.name).join(', ') || 'Usuario'}
+          {Array.isArray(user?.roles) 
+            ? user.roles.map(role => role.name).join(', ')
+            : (typeof user?.roles === 'string' ? user.roles : 'Usuario')
+          }
         </Text>
       </View>
 
