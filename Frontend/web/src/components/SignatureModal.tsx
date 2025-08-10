@@ -1,4 +1,4 @@
-import { FC, useRef, useState, useEffect } from "react";
+import { FC, useRef, useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { SignaturePad, SignaturePadRef } from "@/components/ui/signature-pad";
 
@@ -21,19 +21,21 @@ export const SignatureModal: FC<SignatureModalProps> = ({
   const [hasSignature, setHasSignature] = useState(false);
 
   useEffect(() => {
-    if (isOpen && signaturePadRef.current) {
-      const checkSignature = () => {
-        if (signaturePadRef.current) {
-          setHasSignature(!signaturePadRef.current.isEmpty());
-        }
-      };
-      
-      checkSignature();
-      const timer = setTimeout(checkSignature, 100);
-      
-      return () => clearTimeout(timer);
+    if (isOpen) {
+      if (existingSignature) {
+        setHasSignature(true);
+        setTimeout(() => {
+          signaturePadRef.current?.fromDataURL(existingSignature);
+        }, 100);
+      } else {
+        setHasSignature(false);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, existingSignature]);
+
+  const handleSignatureChange = useCallback(() => {
+    setHasSignature(true);
+  }, []);
 
   if (!isOpen) return null;
 
@@ -50,10 +52,6 @@ export const SignatureModal: FC<SignatureModalProps> = ({
     }
   };
 
-  const handleSignatureChange = () => {
-    setHasSignature(!signaturePadRef.current?.isEmpty());
-  };
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[10000]">
       <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col">
@@ -68,7 +66,7 @@ export const SignatureModal: FC<SignatureModalProps> = ({
             </p>
           </div>
           
-          <div className="mb-6">
+          <div className="mb-6 border-2 border-gray-300 border-dashed rounded-lg p-2">
             <SignaturePad
               ref={signaturePadRef}
               width={600}
@@ -76,7 +74,6 @@ export const SignatureModal: FC<SignatureModalProps> = ({
               backgroundColor="rgba(255,255,255,1)"
               penColor="black"
               onEnd={handleSignatureChange}
-              onBegin={handleSignatureChange}
             />
           </div>
           
@@ -85,6 +82,7 @@ export const SignatureModal: FC<SignatureModalProps> = ({
               variant="outline"
               onClick={handleClear}
               className="px-6"
+              disabled={!hasSignature}
             >
               Limpiar
             </Button>
@@ -97,10 +95,18 @@ export const SignatureModal: FC<SignatureModalProps> = ({
             </Button>
             <Button
               onClick={handleSave}
-              className="bg-[#003595] hover:bg-[#002060] text-white px-6"
+              className={`px-6 text-white transition-colors ${
+                hasSignature 
+                  ? "bg-[#003595] hover:bg-[#002060]" 
+                  : "bg-gray-400 hover:bg-gray-500"
+              }`}
             >
-              Guardar Firma
+              {hasSignature ? "Guardar Firma" : "Guardar (Vacío)"}
             </Button>
+          </div>
+          
+          <div className="mt-2 text-sm text-gray-500">
+            {hasSignature ? "✓ Firma detectada" : "○ Canvas vacío"}
           </div>
         </div>
       </div>
