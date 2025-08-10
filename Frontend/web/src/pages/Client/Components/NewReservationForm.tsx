@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useProfile } from '@/hooks/useProfile';
 
 interface FumigationEntry {
   fumigationDate: string;
@@ -26,6 +27,8 @@ interface NewReservationFormProps {
 }
 
 function NewReservationForm({ onClose }: NewReservationFormProps) {
+  const { profileData } = useProfile();
+  
   const [formData, setFormData] = useState<FormData>({
     companyName: '',
     businessName: '',
@@ -44,6 +47,58 @@ function NewReservationForm({ onClose }: NewReservationFormProps) {
       lot: '',
     }],
   });
+
+  // Auto-rellenar los campos de la compañía cuando se carguen los datos del perfil
+  useEffect(() => {
+    if (profileData?.company) {
+      const company = profileData.company;
+      setFormData(prevState => ({
+        ...prevState,
+        companyName: company.name || '',
+        businessName: company.businessName || '',
+        ruc: company.ruc || '',
+        address: company.address || '',
+        phone: company.phoneNumber || '',
+        legalRepresentative: company.legalRepresentative 
+          ? `${company.legalRepresentative.firstName} ${company.legalRepresentative.lastName}` 
+          : '',
+      }));
+    }
+  }, [profileData]);
+
+  // Función para limpiar los campos de la compañía
+  const clearCompanyFields = () => {
+    setFormData(prevState => ({
+      ...prevState,
+      companyName: '',
+      businessName: '',
+      ruc: '',
+      address: '',
+      phone: '',
+      legalRepresentative: '',
+    }));
+  };
+
+  // Función para determinar si un campo fue auto-rellenado
+  const isAutoFilled = (fieldName: keyof FormData) => {
+    return profileData?.company && formData[fieldName] !== '';
+  };
+  const reloadCompanyData = () => {
+    if (profileData?.company) {
+      const company = profileData.company;
+      setFormData(prevState => ({
+        ...prevState,
+        companyName: company.name || '',
+        businessName: company.businessName || '',
+        ruc: company.ruc || '',
+        address: company.address || '',
+        phone: company.phoneNumber || '',
+        legalRepresentative: company.legalRepresentative 
+          ? `${company.legalRepresentative.firstName} ${company.legalRepresentative.lastName}` 
+          : '',
+      }));
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -98,31 +153,105 @@ function NewReservationForm({ onClose }: NewReservationFormProps) {
       <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 max-w-4xl max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-bold mb-4 text-center">Solicitud de Servicio de Fumigación</h2>
         <form onSubmit={handleSubmit}>
-          <h3 className="text-xl font-semibold mb-3">Datos Generales</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-semibold">Datos Generales</h3>
+            {profileData?.company && (
+              <div className="flex items-center space-x-2 text-sm text-green-600">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>Datos rellenados automáticamente</span>
+                <button
+                  type="button"
+                  onClick={clearCompanyFields}
+                  className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded text-gray-600"
+                  title="Limpiar campos de la empresa"
+                >
+                  Limpiar
+                </button>
+                <button
+                  type="button"
+                  onClick={reloadCompanyData}
+                  className="text-xs bg-green-100 hover:bg-green-200 px-2 py-1 rounded text-green-700"
+                  title="Recargar datos del perfil"
+                >
+                  Recargar
+                </button>
+              </div>
+            )}
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
               <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">Nombre de la Empresa:</label>
-              <input type="text" name="companyName" id="companyName" value={formData.companyName} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required />
+              <input 
+                type="text" 
+                name="companyName" 
+                id="companyName" 
+                value={formData.companyName} 
+                onChange={handleChange} 
+                className={`mt-1 block w-full border rounded-md shadow-sm p-2 ${isAutoFilled('companyName') ? 'border-green-300 bg-green-50' : 'border-gray-300'}`}
+                required 
+              />
             </div>
             <div>
-              <label htmlFor="businessName" className="block text-sm font-medium text-gray-700">Razón Social:</label>
-              <input type="text" name="businessName" id="businessName" value={formData.businessName} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required />
+              <label htmlFor="businessName" className="block text-sm font-medium text-gray-700">Nombre Legal:</label>
+              <input 
+                type="text" 
+                name="businessName" 
+                id="businessName" 
+                value={formData.businessName} 
+                onChange={handleChange} 
+                className={`mt-1 block w-full border rounded-md shadow-sm p-2 ${isAutoFilled('businessName') ? 'border-green-300 bg-green-50' : 'border-gray-300'}`}
+                required 
+              />
             </div>
             <div>
               <label htmlFor="ruc" className="block text-sm font-medium text-gray-700">RUC:</label>
-              <input type="text" name="ruc" id="ruc" value={formData.ruc} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required />
+              <input 
+                type="text" 
+                name="ruc" 
+                id="ruc" 
+                value={formData.ruc} 
+                onChange={handleChange} 
+                className={`mt-1 block w-full border rounded-md shadow-sm p-2 ${isAutoFilled('ruc') ? 'border-green-300 bg-green-50' : 'border-gray-300'}`}
+                required 
+              />
             </div>
             <div>
               <label htmlFor="address" className="block text-sm font-medium text-gray-700">Dirección:</label>
-              <input type="text" name="address" id="address" value={formData.address} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required />
+              <input 
+                type="text" 
+                name="address" 
+                id="address" 
+                value={formData.address} 
+                onChange={handleChange} 
+                className={`mt-1 block w-full border rounded-md shadow-sm p-2 ${isAutoFilled('address') ? 'border-green-300 bg-green-50' : 'border-gray-300'}`}
+                required 
+              />
             </div>
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Teléfono:</label>
-              <input type="text" name="phone" id="phone" value={formData.phone} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required />
+              <input 
+                type="text" 
+                name="phone" 
+                id="phone" 
+                value={formData.phone} 
+                onChange={handleChange} 
+                className={`mt-1 block w-full border rounded-md shadow-sm p-2 ${isAutoFilled('phone') ? 'border-green-300 bg-green-50' : 'border-gray-300'}`}
+                required 
+              />
             </div>
             <div>
               <label htmlFor="legalRepresentative" className="block text-sm font-medium text-gray-700">Nombre Representante Legal:</label>
-              <input type="text" name="legalRepresentative" id="legalRepresentative" value={formData.legalRepresentative} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required />
+              <input 
+                type="text" 
+                name="legalRepresentative" 
+                id="legalRepresentative" 
+                value={formData.legalRepresentative} 
+                onChange={handleChange} 
+                className={`mt-1 block w-full border rounded-md shadow-sm p-2 ${isAutoFilled('legalRepresentative') ? 'border-green-300 bg-green-50' : 'border-gray-300'}`}
+                required 
+              />
             </div>
             <div>
               <label htmlFor="plantContact" className="block text-sm font-medium text-gray-700">Contacto Planta:</label>
