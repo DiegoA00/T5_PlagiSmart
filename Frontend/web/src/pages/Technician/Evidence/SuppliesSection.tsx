@@ -2,8 +2,8 @@ import { FC } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Minus } from "lucide-react";
-import { CollapsibleSection } from "../shared/CollapsibleSection";
-import { FumigationData, Supply, ValidationErrors } from "../hooks/useFumigationData";
+import { CollapsibleSection } from "../../Admin/Components/Evidence/shared/CollapsibleSection";
+import { FumigationData, Supply, ValidationErrors } from "../../../hooks/useFumigationEvidence";
 
 interface SuppliesSectionProps {
   fumigationData: FumigationData;

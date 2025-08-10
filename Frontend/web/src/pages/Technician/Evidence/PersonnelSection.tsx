@@ -6,8 +6,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Check, ChevronsUpDown, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ApiUser } from "@/types/request";
-import { CollapsibleSection } from "../shared/CollapsibleSection";
-import { FumigationData } from "../hooks/useFumigationData";
+import { CollapsibleSection } from "../../Admin/Components/Evidence/shared/CollapsibleSection";
+import { FumigationData } from "../../../hooks/useFumigationEvidence";
 
 interface PersonnelSectionProps {
   fumigationData: FumigationData;

@@ -74,7 +74,7 @@ export interface FumigationData {
   observations: string;
 }
 
-export const useFumigationData = (initialData?: any) => {
+export const useFumigationEvidence = (initialData?: any) => {
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
   const clearValidationErrors = () => {

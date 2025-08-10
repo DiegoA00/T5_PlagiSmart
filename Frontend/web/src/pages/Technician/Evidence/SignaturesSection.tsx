@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { CollapsibleSection } from "../shared/CollapsibleSection";
+import { CollapsibleSection } from "../../Admin/Components/Evidence/shared/CollapsibleSection";
 
 interface SignaturesSectionProps {
   isEditable: boolean;

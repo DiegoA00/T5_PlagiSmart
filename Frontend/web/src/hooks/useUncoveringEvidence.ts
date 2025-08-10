@@ -29,7 +29,7 @@ export interface CleanupValidationErrors {
   ppmFosfina?: string;
 }
 
-export const useCleanupData = (fumigationDetails: FumigationDetailResponse | null) => {
+export const useUncoveringEvidence = (fumigationDetails: FumigationDetailResponse | null) => {
   const [cleanupData, setCleanupData] = useState<CleanupData>({
     date: new Date().toISOString().split('T')[0],
     startTime: '',

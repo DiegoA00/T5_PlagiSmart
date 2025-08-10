@@ -5,7 +5,7 @@ import { Overlay } from "@/layouts/Overlay";
 import { BaseTable } from "../Admin/Components/BaseTable";
 import { FumigationListItem } from "@/types/request";
 import { LotOverlayContent } from "../Admin/Components/LotOverlayContent";
-import { EvidenceOverlay } from "../Admin/Components/Evidence/EvidenceOverlay";
+import { TechnicianEvidenceOverlay } from "./TechnicianEvidenceOverlay";
 import { useFumigationData, useFumigationDetails } from "@/hooks/useFumigationData";
 import { formatDate } from "@/utils/dateUtils";
 import { Toaster } from "sonner";
@@ -115,7 +115,7 @@ export default function TechnicianLotsPage() {
           </Overlay>
 
           <Overlay open={!!selectedLotId && showingEvidence} onClose={handleCloseDetails}>
-            <EvidenceOverlay
+            <TechnicianEvidenceOverlay
               fumigationDetails={fumigationDetails}
               loading={detailsLoading}
               isEditable={true}

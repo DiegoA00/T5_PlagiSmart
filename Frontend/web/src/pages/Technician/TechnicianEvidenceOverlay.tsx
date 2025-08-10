@@ -1,18 +1,15 @@
 import { FC, useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { FumigationDetailResponse, ApiUser, FumigationReportResponse, CleanupReportResponse } from "@/types/request";
+import { FumigationDetailResponse, ApiUser } from "@/types/request";
 import { usersService } from "@/services/usersService";
 import { reportsService } from "@/services/reportsService";
-import { FumigationForm } from "../../../Technician/FumigationForm";
-import { UncoveringForm } from "../../../Technician/UncoveringForm";
-import { FumigationReportView } from "./components/FumigationReportView";
-import { CleanupReportView } from "./components/CleanupReportView";
-import { useFumigationEvidence } from "../../../../hooks/useFumigationEvidence";
-import { useUncoveringEvidence } from "../../../../hooks/useUncoveringEvidence";
+import { FumigationForm } from "./FumigationForm";
+import { UncoveringForm } from "./UncoveringForm";
+import { useFumigationEvidence } from "@/hooks/useFumigationEvidence";
+import { useUncoveringEvidence } from "@/hooks/useUncoveringEvidence";
 
-interface EvidenceOverlayProps {
+interface TechnicianEvidenceOverlayProps {
   fumigationDetails: FumigationDetailResponse | null;
   isEditable?: boolean;
   onClose?: () => void;
@@ -20,9 +17,9 @@ interface EvidenceOverlayProps {
   loading?: boolean;
 }
 
-export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
+export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
   fumigationDetails,
-  isEditable = false,
+  isEditable = true, // Por defecto true para técnicos
   onClose,
   onSave,
   loading = false
@@ -34,13 +31,6 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
   const [fumigationReportSubmitted, setFumigationReportSubmitted] = useState(false);
   const [cleanupReportSubmitted, setCleanupReportSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const [fumigationReport, setFumigationReport] = useState<FumigationReportResponse | null>(null);
-  const [cleanupReport, setCleanupReport] = useState<CleanupReportResponse | null>(null);
-  const [fumigationViewLoading, setFumigationViewLoading] = useState(false);
-  const [cleanupViewLoading, setCleanupViewLoading] = useState(false);
-  const [fumigationViewError, setFumigationViewError] = useState<string | null>(null);
-  const [cleanupViewError, setCleanupViewError] = useState<string | null>(null);
   
   const {
     fumigationData,
@@ -82,85 +72,6 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
       loadTechnicians();
     }
   }, [isEditable]);
-
-  useEffect(() => {
-    if (fumigationDetails?.lot?.id) {
-      console.log('Tab changed to:', activeTab, 'isEditable:', isEditable, 'lotId:', fumigationDetails.lot.id);
-      
-      if (activeTab === "fumigation") {
-        if (!isEditable) {
-          loadFumigationReport();
-        }
-      } else if (activeTab === "cleanup") {
-        if (!isEditable) {
-          loadCleanupReport();
-        }
-      }
-    }
-  }, [activeTab, isEditable, fumigationDetails?.lot?.id]);
-
-  const getErrorMessage = (error: any): string => {
-    const errorType = error.message;
-    const originalMessage = (error as any).originalMessage || "";
-    
-    switch (errorType) {
-      case "REPORT_NOT_FOUND":
-        return "No se ha registrado un reporte para este lote aún.";
-      case "NO_AUTH":
-        return "Problema de autenticación. Si el problema persiste, intenta iniciar sesión nuevamente.";
-      case "NO_PERMISSION":
-        return "No tienes permisos para ver este reporte.";
-      case "SERVER_ERROR":
-        return "Error interno del servidor. Intenta nuevamente más tarde.";
-      case "UNKNOWN_ERROR":
-        return `Error: ${originalMessage}`;
-      default:
-        return error.message || "Error al cargar el reporte.";
-    }
-  };
-
-  const loadFumigationReport = async () => {
-    if (fumigationReport || !fumigationDetails?.lot?.id) return;
-    
-    console.log('Loading fumigation report for lot ID:', fumigationDetails.lot.id);
-    setFumigationViewLoading(true);
-    setFumigationViewError(null);
-    try {
-      const report = await reportsService.getFumigationReport(fumigationDetails.lot.id);
-      console.log('Fumigation report loaded successfully:', report);
-      setFumigationReport(report);
-    } catch (error: any) {
-      console.error("Error loading fumigation report:", error);
-      
-      const errorMessage = getErrorMessage(error);
-      setFumigationViewError(errorMessage);
-    } finally {
-      setFumigationViewLoading(false);
-    }
-  };
-
-  const loadCleanupReport = async () => {
-    if (cleanupReport || !fumigationDetails?.lot?.id) {
-      console.log('Skipping cleanup report load - already loaded or no lot ID');
-      return;
-    }
-    
-    console.log('Loading cleanup report for lot ID:', fumigationDetails.lot.id);
-    setCleanupViewLoading(true);
-    setCleanupViewError(null);
-    try {
-      const report = await reportsService.getCleanupReport(fumigationDetails.lot.id);
-      console.log('Cleanup report loaded successfully:', report);
-      setCleanupReport(report);
-    } catch (error: any) {
-      console.error("Error loading cleanup report:", error);
-      
-      const errorMessage = getErrorMessage(error);
-      setCleanupViewError(errorMessage);
-    } finally {
-      setCleanupViewLoading(false);
-    }
-  };
 
   const handleSubmitClick = (type: "fumigation" | "cleanup") => {
     if (type === "fumigation") {
@@ -331,7 +242,7 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
     <>
       <div className="flex flex-col h-full">
         <div className="bg-[#003595] text-white rounded-t-lg px-8 py-5 text-lg font-semibold">
-          {isEditable ? "Evidencias de Fumigación - Lote " : "Visualizar Evidencias - Lote "}{fumigationDetails.lot.lotNumber}
+          Evidencias de Fumigación - Lote {fumigationDetails.lot.lotNumber}
         </div>
 
         <div className="overflow-y-auto px-8 py-6" style={{ maxHeight: "70vh" }}>
@@ -344,49 +255,31 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
             </TabsList>
 
             <TabsContent value="fumigation" className="mt-0">
-              {isEditable ? (
-                <FumigationForm
-                  fumigationData={fumigationData}
-                  setFumigationData={setFumigationData}
-                  availableTechnicians={availableTechnicians}
-                  isEditable={isEditable}
-                  fumigationReportSubmitted={fumigationReportSubmitted}
-                  validationErrors={fumigationValidationErrors}
-                  updateField={updateFumigationField}
-                  addToArray={addToFumigationArray}
-                  removeFromArray={removeFromFumigationArray}
-                />
-              ) : (
-                <FumigationReportView
-                  report={fumigationReport}
-                  loading={fumigationViewLoading}
-                  error={fumigationViewError}
-                />
-              )}
+              <FumigationForm
+                fumigationData={fumigationData}
+                setFumigationData={setFumigationData}
+                availableTechnicians={availableTechnicians}
+                isEditable={isEditable}
+                fumigationReportSubmitted={fumigationReportSubmitted}
+                validationErrors={fumigationValidationErrors}
+                updateField={updateFumigationField}
+                addToArray={addToFumigationArray}
+                removeFromArray={removeFromFumigationArray}
+              />
             </TabsContent>
 
             <TabsContent value="cleanup" className="mt-0">
-              {isEditable ? (
-                <UncoveringForm
-                  fumigationDetails={fumigationDetails}
-                  isEditable={isEditable}
-                  availableTechnicians={availableTechnicians}
-                  cleanupData={cleanupData}
-                  setCleanupData={setCleanupData}
-                  validationErrors={cleanupValidationErrors}
-                  updateField={updateCleanupField}
-                  // updateLotDescription={updateLotDescription}
-                  // updateSafetyConditions={updateSafetyConditions}
-                  addTechnician={addCleanupTechnician}
-                  removeTechnician={removeCleanupTechnician}
-                />
-              ) : (
-                <CleanupReportView
-                  report={cleanupReport}
-                  loading={cleanupViewLoading}
-                  error={cleanupViewError}
-                />
-              )}
+              <UncoveringForm
+                fumigationDetails={fumigationDetails}
+                isEditable={isEditable}
+                availableTechnicians={availableTechnicians}
+                cleanupData={cleanupData}
+                setCleanupData={setCleanupData}
+                validationErrors={cleanupValidationErrors}
+                updateField={updateCleanupField}
+                addTechnician={addCleanupTechnician}
+                removeTechnician={removeCleanupTechnician}
+              />
             </TabsContent>
           </Tabs>
         </div>

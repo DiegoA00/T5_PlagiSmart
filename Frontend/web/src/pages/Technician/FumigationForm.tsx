@@ -1,15 +1,15 @@
 import { FC } from "react";
 import { ApiUser } from "@/types/request";
-import { GeneralInfoSection } from "./sections/GeneralInfoSection";
-import { PersonnelSection } from "./sections/PersonnelSection";
-import { LotDetailsSection } from "./sections/LotDetailsSection";
-import { EnvironmentalSection } from "./sections/EnvironmentalSection";
-import { SafetySection } from "./sections/SafetySection";
-import { SuppliesSection } from "./sections/SuppliesSection";
-import { ObservationsSection } from "./sections/ObservationsSection";
-import { SignaturesSection } from "./sections/SignaturesSection";
-import { ValidationErrorList } from "./components/ValidationErrorList";
-import { FumigationData, ValidationErrors } from "./hooks/useFumigationData";
+import { GeneralInfoSection } from "./Evidence/GeneralInfoSection";
+import { PersonnelSection } from "./Evidence/PersonnelSection";
+import { LotDetailsSection } from "./Evidence/LotDetailsSection";
+import { EnvironmentalSection } from "./Evidence/EnvironmentalSection";
+import { SafetySection } from "./Evidence/SafetySection";
+import { SuppliesSection } from "./Evidence/SuppliesSection";
+import { ObservationsSection } from "./Evidence/ObservationsSection";
+import { SignaturesSection } from "./Evidence/SignaturesSection";
+import { ValidationErrorList } from "../Admin/Components/Evidence/components/ValidationErrorList";
+import { FumigationData, ValidationErrors } from "../../hooks/useFumigationEvidence";
 
 interface FumigationFormProps {
   fumigationData: FumigationData;

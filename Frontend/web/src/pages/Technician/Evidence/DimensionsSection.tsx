@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Input } from "@/components/ui/input";
-import { CollapsibleSection } from "../shared/CollapsibleSection";
-import { FumigationData } from "../hooks/useFumigationData";
+import { CollapsibleSection } from "../../Admin/Components/Evidence/shared/CollapsibleSection";
+import { FumigationData } from "../../../hooks/useFumigationEvidence";
 
 interface DimensionsSectionProps {
   fumigationData: FumigationData;

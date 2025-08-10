@@ -1,7 +1,6 @@
 import apiClient from "./api/apiService";
 import { ApiUser, PaginatedResponse, PageableRequest } from "@/types/request";
 
-// DTO para actualizar información del usuario
 export interface UpdateUserDTO {
   firstName: string;
   lastName: string;
@@ -12,13 +11,11 @@ export interface UpdateUserDTO {
   gender: string;
 }
 
-// Función helper para convertir array sort a string
 const formatSortParams = (sort?: string[]): string | undefined => {
   if (!sort || sort.length === 0) return undefined;
   return sort.join(',');
 };
 
-// Función helper para crear respuesta paginada vacía
 const createEmptyPaginatedResponse = <T>(): PaginatedResponse<T> => ({
   totalPages: 0,
   totalElements: 0,

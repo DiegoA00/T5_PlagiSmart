@@ -1,12 +1,12 @@
 import { FC, useState, useEffect } from "react";
 import { FumigationDetailResponse, ApiUser } from "@/types/request";
-import { useCleanupData, CleanupData } from "./hooks/useCleanupData";
-import { ValidationErrorList } from "./components/ValidationErrorList";
-import { GeneralInfoSection } from "./sections/GeneralInfoSection";
-import { PersonnelSection } from "./sections/PersonnelSection";
-import { LotDetailsSection } from "./sections/LotDetailsSection";
-import { SafetySection } from "./sections/SafetySection";
-import { SignaturesSection } from "./sections/SignaturesSection";
+import { useUncoveringEvidence, CleanupData } from "../../hooks/useUncoveringEvidence";
+import { ValidationErrorList } from "../Admin/Components/Evidence/components/ValidationErrorList";
+import { GeneralInfoSection } from "./Evidence/GeneralInfoSection";
+import { PersonnelSection } from "./Evidence/PersonnelSection";
+import { LotDetailsSection } from "./Evidence/LotDetailsSection";
+import { SafetySection } from "./Evidence/SafetySection";
+import { SignaturesSection } from "./Evidence/SignaturesSection";
 
 interface UncoveringFormProps {
   fumigationDetails: FumigationDetailResponse | null;
@@ -35,7 +35,7 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
   addTechnician: externalAddTechnician,
   removeTechnician: externalRemoveTechnician,
 }) => {
-  const internalHook = useCleanupData(fumigationDetails);
+  const internalHook = useUncoveringEvidence(fumigationDetails);
   
   const cleanupData = externalCleanupData || internalHook.cleanupData;
   const setCleanupData = externalSetCleanupData || internalHook.setCleanupData;

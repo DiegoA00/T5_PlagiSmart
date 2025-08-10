@@ -1,6 +1,6 @@
 import { FC } from "react";
-import { CollapsibleSection } from "../shared/CollapsibleSection";
-import { FumigationData } from "../hooks/useFumigationData";
+import { CollapsibleSection } from "../../Admin/Components/Evidence/shared/CollapsibleSection";
+import { FumigationData } from "../../../hooks/useFumigationEvidence";
 
 interface ObservationsSectionProps {
   fumigationData: FumigationData;
