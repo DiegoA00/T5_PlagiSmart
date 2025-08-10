@@ -1,22 +1,67 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Layout } from "@/layouts/Layout";
 import { Overlay } from "@/layouts/Overlay";
 import { BaseTable } from "../Admin/Components/BaseTable";
 import { FumigationListItem } from "@/types/request";
 import { LotOverlayContent } from "../Admin/Components/LotOverlayContent";
 import { TechnicianEvidenceOverlay } from "./TechnicianEvidenceOverlay";
-import { useFumigationData, useFumigationDetails } from "@/hooks/useFumigationData";
+import { useFumigationDetails } from "@/hooks/useFumigationData";
+import { fumigationService } from "@/services/fumigationService";
 import { formatDate } from "@/utils/dateUtils";
 import { Toaster } from "sonner";
+
+const FILTER_OPTIONS = [
+  { value: "ALL", label: "Todos los lotes" },
+  { value: "APPROVED", label: "Fumigación" },
+  { value: "FUMIGATED", label: "Descarpe" }
+];
 
 export default function TechnicianLotsPage() {
   const [search, setSearch] = useState("");
   const [selectedLotId, setSelectedLotId] = useState<number | null>(null);
   const [showingEvidence, setShowingEvidence] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [fumigations, setFumigations] = useState<FumigationListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const { fumigations, loading, error } = useFumigationData("APPROVED");
   const { fumigationDetails, loading: detailsLoading, loadFumigationDetails, clearDetails } = useFumigationDetails();
+
+  useEffect(() => {
+    const loadFumigations = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        let allFumigations: FumigationListItem[] = [];
+
+        if (statusFilter === "ALL") {
+          const [approvedResponse, fumigatedResponse] = await Promise.all([
+            fumigationService.getFumigationsByStatus("APPROVED"),
+            fumigationService.getFumigationsByStatus("FUMIGATED")
+          ]);
+          
+          allFumigations = [
+            ...approvedResponse.content,
+            ...fumigatedResponse.content
+          ];
+        } else {
+          const response = await fumigationService.getFumigationsByStatus(statusFilter);
+          allFumigations = response.content;
+        }
+
+        setFumigations(allFumigations);
+      } catch (err: any) {
+        setError(err.message || "Error al cargar los lotes");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadFumigations();
+  }, [statusFilter]);
 
   const filteredFumigations = fumigations.filter((fumigation) =>
     fumigation.companyName && fumigation.companyName.toLowerCase().includes(search.toLowerCase())
@@ -32,6 +77,17 @@ export default function TechnicianLotsPage() {
       header: "Fecha Planificada", 
       key: "plannedDate",
       render: (value: string) => formatDate(value)
+    },
+    {
+      header: "Estado",
+      key: "status",
+      render: (value: string) => {
+        const statusLabels: { [key: string]: string } = {
+          "APPROVED": "Fumigación",
+          "FUMIGATED": "Descarpe"
+        };
+        return statusLabels[value] || value;
+      }
     },
   ];
 
@@ -51,6 +107,31 @@ export default function TechnicianLotsPage() {
     setSelectedLotId(null);
     setShowingEvidence(false);
     clearDetails();
+  };
+
+  const handleEvidenceSubmitted = async () => {
+    try {
+      let allFumigations: FumigationListItem[] = [];
+
+      if (statusFilter === "ALL") {
+        const [approvedResponse, fumigatedResponse] = await Promise.all([
+          fumigationService.getFumigationsByStatus("APPROVED"),
+          fumigationService.getFumigationsByStatus("FUMIGATED")
+        ]);
+        
+        allFumigations = [
+          ...approvedResponse.content,
+          ...fumigatedResponse.content
+        ];
+      } else {
+        const response = await fumigationService.getFumigationsByStatus(statusFilter);
+        allFumigations = response.content;
+      }
+
+      setFumigations(allFumigations);
+    } catch (err) {
+      console.error("Error al refrescar la lista:", err);
+    }
   };
 
   if (error) {
@@ -79,7 +160,7 @@ export default function TechnicianLotsPage() {
         <div className="p-10">
           <header className="mb-8">
             <h2 className="text-3xl font-bold mb-1">Lotes Asignados</h2>
-            <p className="text-gray-500">Gestiona los lotes asignados para fumigación</p>
+            <p className="text-gray-500">Gestiona los lotes asignados para fumigación y descarpe</p>
           </header>
 
           <div className="flex gap-4 items-center mb-6">
@@ -89,6 +170,23 @@ export default function TechnicianLotsPage() {
               onChange={(e) => setSearch(e.target.value)}
               className="max-w-md"
             />
+            
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-48 bg-white border border-gray-300 hover:border-gray-400">
+                <SelectValue placeholder="Filtrar por estado" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                {FILTER_OPTIONS.map((option) => (
+                  <SelectItem 
+                    key={option.value} 
+                    value={option.value}
+                    className="bg-white hover:bg-gray-100 cursor-pointer"
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <BaseTable
@@ -120,6 +218,7 @@ export default function TechnicianLotsPage() {
               loading={detailsLoading}
               isEditable={true}
               onClose={handleCloseDetails}
+              onSave={handleEvidenceSubmitted}
             />
           </Overlay>
         </div>

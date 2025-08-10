@@ -30,6 +30,7 @@ interface FumigationReportRequest {
     hitDanger: boolean;
   };
   observations: string;
+  supervisor: string;
 }
 
 interface CleanupReportRequest {
@@ -49,6 +50,7 @@ interface CleanupReportRequest {
     hitDanger: boolean;
     otherDanger: boolean;
   };
+  supervisor: string;
 }
 
 interface ApiResponse {

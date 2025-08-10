@@ -36,6 +36,7 @@ export interface LotDetails {
 export interface ValidationErrors {
   startTime?: string;
   endTime?: string;
+  supervisor?: string; // 👈 Nuevo campo
   technicians?: string;
   dimensions?: string;
   temperature?: string;

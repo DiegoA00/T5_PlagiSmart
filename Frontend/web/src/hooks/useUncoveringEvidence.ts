@@ -5,6 +5,7 @@ export interface CleanupData {
   date: string;
   startTime: string;
   endTime: string;
+  supervisor: string;
   technicians: Array<{ id: number; firstName: string; lastName: string }>;
   lotDescription: {
     stripsState: string;
@@ -23,6 +24,7 @@ export interface CleanupValidationErrors {
   date?: string;
   startTime?: string;
   endTime?: string;
+  supervisor?: string;
   technicians?: string;
   stripsState?: string;
   fumigationTime?: string;
@@ -34,6 +36,7 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
     date: new Date().toISOString().split('T')[0],
     startTime: '',
     endTime: '',
+    supervisor: '',
     technicians: [],
     lotDescription: {
       stripsState: '',
@@ -113,6 +116,10 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
       errors.endTime = 'La hora de fin es requerida';
     }
 
+    if (cleanupData.supervisor.trim() === '') {
+      errors.supervisor = 'El supervisor es requerido';
+    }
+
     if (cleanupData.technicians.length === 0) {
       errors.technicians = 'Debe seleccionar al menos un técnico';
     }
@@ -142,6 +149,7 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
       date: new Date().toISOString().split('T')[0],
       startTime: '',
       endTime: '',
+      supervisor: '',
       technicians: [],
       lotDescription: {
         stripsState: '',

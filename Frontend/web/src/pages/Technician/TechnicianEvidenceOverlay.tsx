@@ -19,7 +19,7 @@ interface TechnicianEvidenceOverlayProps {
 
 export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
   fumigationDetails,
-  isEditable = true, // Por defecto true para técnicos
+  isEditable = true,
   onClose,
   onSave,
   loading = false
@@ -105,6 +105,7 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
         date: formatDateForBackend(fumigationData.date),
         startTime: fumigationData.startTime,
         endTime: fumigationData.endTime,
+        supervisor: fumigationData.supervisor.trim(),
         technicians: fumigationData.technicians.map(t => ({ id: t.id })),
         supplies: fumigationData.supplies.map(supply => ({
           name: supply.name.trim(),
@@ -135,6 +136,8 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
       setFumigationReportSubmitted(true);
       setShowConfirmDialog(false);
       
+      onSave?.(reportData);
+      
       if (onClose) {
         setTimeout(() => {
           onClose();
@@ -163,6 +166,7 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
         date: formatDateForBackend(cleanupData.date),
         startTime: cleanupData.startTime,
         endTime: cleanupData.endTime,
+        supervisor: cleanupData.supervisor.trim(),
         technicians: cleanupData.technicians.map(t => ({ id: t.id })),
         lotDescription: {
           stripsState: cleanupData.lotDescription.stripsState.trim(),
@@ -181,6 +185,8 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
       
       setCleanupReportSubmitted(true);
       setShowConfirmDialog(false);
+      
+      onSave?.(reportData);
       
       if (onClose) {
         setTimeout(() => {

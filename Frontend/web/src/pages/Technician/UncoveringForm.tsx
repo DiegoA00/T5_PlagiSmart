@@ -91,6 +91,7 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
       date: cleanupData.date,
       startTime: cleanupData.startTime,
       endTime: cleanupData.endTime,
+      supervisor: cleanupData.supervisor,
       technicians: cleanupData.technicians.map(t => ({
         id: t.id,
         name: `${t.firstName} ${t.lastName}`,
@@ -120,6 +121,8 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
       updateField('startTime', value);
     } else if (field === 'endTime') {
       updateField('endTime', value);
+    } else if (field === 'supervisor') {
+      updateField('supervisor', value);
     } else if (field === 'lotDetails') {
       if (value.stripsState !== undefined) {
         updateLotDescription('stripsState', value.stripsState);
@@ -146,6 +149,9 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
         }
         if (newData.endTime !== prev.endTime) {
           updateField('endTime', newData.endTime);
+        }
+        if (newData.supervisor !== prev.supervisor) {
+          updateField('supervisor', newData.supervisor);
         }
         if (JSON.stringify(newData.technicians) !== JSON.stringify(prev.technicians)) {
           setCleanupData(prevCleanup => ({
@@ -178,6 +184,8 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
         
         return newData;
       });
+    } else {
+      setFumigationData(updateFn);
     }
   };
 
