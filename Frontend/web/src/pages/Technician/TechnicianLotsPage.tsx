@@ -31,6 +31,7 @@ export default function TechnicianLotsPage() {
   const [fumigations, setFumigations] = useState<ExtendedFumigationListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedFumigationStatus, setSelectedFumigationStatus] = useState<string | null>(null);
 
   const { fumigationDetails, loading: detailsLoading, loadFumigationDetails, clearDetails } = useFumigationDetails();
 
@@ -134,6 +135,7 @@ export default function TechnicianLotsPage() {
 
   const handleUploadEvidence = async (fumigation: ExtendedFumigationListItem) => {
     setSelectedLotId(fumigation.id);
+    setSelectedFumigationStatus(fumigation.status);
     setShowingEvidence(true);
     await loadFumigationDetails(fumigation.id);
   };
@@ -141,6 +143,7 @@ export default function TechnicianLotsPage() {
   const handleCloseDetails = () => {
     setSelectedLotId(null);
     setShowingEvidence(false);
+    setSelectedFumigationStatus(null);
     clearDetails();
   };
 
@@ -265,6 +268,7 @@ export default function TechnicianLotsPage() {
               fumigationDetails={fumigationDetails}
               loading={detailsLoading}
               isEditable={true}
+              fumigationStatus={selectedFumigationStatus}
               onClose={handleCloseDetails}
               onSave={handleEvidenceSubmitted}
             />

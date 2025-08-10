@@ -1,5 +1,4 @@
 import { FC, useState, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { FumigationDetailResponse, ApiUser } from "@/types/request";
 import { usersService } from "@/services/usersService";
@@ -12,6 +11,7 @@ import { useUncoveringEvidence } from "@/hooks/useUncoveringEvidence";
 interface TechnicianEvidenceOverlayProps {
   fumigationDetails: FumigationDetailResponse | null;
   isEditable?: boolean;
+  fumigationStatus?: string | null;
   onClose?: () => void;
   onSave?: (data: any) => void;
   loading?: boolean;
@@ -20,14 +20,13 @@ interface TechnicianEvidenceOverlayProps {
 export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
   fumigationDetails,
   isEditable = true,
+  fumigationStatus,
   onClose,
   onSave,
   loading = false
 }) => {
-  const [activeTab, setActiveTab] = useState("fumigation");
   const [availableTechnicians, setAvailableTechnicians] = useState<ApiUser[]>([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [confirmType, setConfirmType] = useState<"fumigation" | "cleanup">("fumigation");
   const [fumigationReportSubmitted, setFumigationReportSubmitted] = useState(false);
   const [cleanupReportSubmitted, setCleanupReportSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,18 +72,17 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
     }
   }, [isEditable]);
 
-  const handleSubmitClick = (type: "fumigation" | "cleanup") => {
-    if (type === "fumigation") {
+  const handleSubmitClick = () => {
+    if (fumigationStatus === "APPROVED") {
       if (!validateFumigationForm()) {
         return;
       }
-    } else if (type === "cleanup") {
+    } else if (fumigationStatus === "FUMIGATED") {
       if (!validateCleanupForm()) {
         return;
       }
     }
     
-    setConfirmType(type);
     setShowConfirmDialog(true);
   };
 
@@ -201,15 +199,38 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
   };
 
   const handleConfirmSubmit = () => {
-    if (confirmType === "fumigation") {
+    if (fumigationStatus === "APPROVED") {
       handleSubmitFumigationReport();
     } else {
       handleSubmitCleanupReport();
     }
   };
 
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
+  const getTitle = () => {
+    if (fumigationStatus === "APPROVED") {
+      return `Registro de Fumigación - Lote ${fumigationDetails?.lot?.lotNumber || ''}`;
+    } else if (fumigationStatus === "FUMIGATED") {
+      return `Registro de Descarpe - Lote ${fumigationDetails?.lot?.lotNumber || ''}`;
+    }
+    return `Evidencias - Lote ${fumigationDetails?.lot?.lotNumber || ''}`;
+  };
+
+  const getButtonText = () => {
+    if (fumigationStatus === "APPROVED") {
+      return "Subir Registro de Fumigación";
+    } else if (fumigationStatus === "FUMIGATED") {
+      return "Subir Registro de Descarpe";
+    }
+    return "Subir Registro";
+  };
+
+  const isFormSubmitted = () => {
+    if (fumigationStatus === "APPROVED") {
+      return fumigationReportSubmitted;
+    } else if (fumigationStatus === "FUMIGATED") {
+      return cleanupReportSubmitted;
+    }
+    return false;
   };
 
   if (loading) {
@@ -247,49 +268,40 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
     <>
       <div className="flex flex-col h-full">
         <div className="bg-[#003595] text-white rounded-t-lg px-8 py-5 text-lg font-semibold">
-          Evidencias de Fumigación - Lote {fumigationDetails.lot.lotNumber}
+          {getTitle()}
         </div>
 
         <div className="overflow-y-auto px-8 py-6" style={{ maxHeight: "70vh" }}>
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="fumigation">Registro de Fumigación</TabsTrigger>
-              <TabsTrigger value="cleanup">
-                Registro de Descarpe
-              </TabsTrigger>
-            </TabsList>
+          {fumigationStatus === "APPROVED" && (
+            <FumigationForm
+              fumigationData={fumigationData}
+              setFumigationData={setFumigationData}
+              availableTechnicians={availableTechnicians}
+              isEditable={isEditable}
+              fumigationReportSubmitted={fumigationReportSubmitted}
+              validationErrors={fumigationValidationErrors}
+              updateField={updateFumigationField}
+              addToArray={addToFumigationArray}
+              removeFromArray={removeFromFumigationArray}
+            />
+          )}
 
-            <TabsContent value="fumigation" className="mt-0">
-              <FumigationForm
-                fumigationData={fumigationData}
-                setFumigationData={setFumigationData}
-                availableTechnicians={availableTechnicians}
-                isEditable={isEditable}
-                fumigationReportSubmitted={fumigationReportSubmitted}
-                validationErrors={fumigationValidationErrors}
-                updateField={updateFumigationField}
-                addToArray={addToFumigationArray}
-                removeFromArray={removeFromFumigationArray}
-              />
-            </TabsContent>
-
-            <TabsContent value="cleanup" className="mt-0">
-              <UncoveringForm
-                fumigationDetails={fumigationDetails}
-                cleanupData={cleanupData}
-                setCleanupData={setCleanupData}
-                availableTechnicians={availableTechnicians}
-                isEditable={isEditable}
-                cleanupReportSubmitted={cleanupReportSubmitted}
-                validationErrors={cleanupValidationErrors}
-                updateField={updateCleanupField}
-                updateLotDescription={updateLotDescription}
-                updateSafetyConditions={updateSafetyConditions}
-                addTechnician={addCleanupTechnician}
-                removeTechnician={removeCleanupTechnician}
-              />
-            </TabsContent>
-          </Tabs>
+          {fumigationStatus === "FUMIGATED" && (
+            <UncoveringForm
+              fumigationDetails={fumigationDetails}
+              cleanupData={cleanupData}
+              setCleanupData={setCleanupData}
+              availableTechnicians={availableTechnicians}
+              isEditable={isEditable}
+              cleanupReportSubmitted={cleanupReportSubmitted}
+              validationErrors={cleanupValidationErrors}
+              updateField={updateCleanupField}
+              updateLotDescription={updateLotDescription}
+              updateSafetyConditions={updateSafetyConditions}
+              addTechnician={addCleanupTechnician}
+              removeTechnician={removeCleanupTechnician}
+            />
+          )}
         </div>
 
         <div className="flex justify-end gap-4 px-8 py-6 border-t border-gray-300 bg-white rounded-b-lg">
@@ -299,23 +311,13 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
                 Cancelar
               </Button>
               
-              {activeTab === "fumigation" && !fumigationReportSubmitted && (
+              {!isFormSubmitted() && (
                 <Button 
-                  onClick={() => handleSubmitClick("fumigation")}
-                  className="bg-[#003595] hover:bg-[#002060] text-white"
+                  onClick={handleSubmitClick}
+                  className={fumigationStatus === "APPROVED" ? "bg-[#003595] hover:bg-[#002060] text-white" : "bg-green-600 hover:bg-green-700 text-white"}
                   disabled={isSubmitting}
                 >
-                  Subir Registro de Fumigación
-                </Button>
-              )}
-              
-              {activeTab === "cleanup" && !cleanupReportSubmitted && (
-                <Button 
-                  onClick={() => handleSubmitClick("cleanup")}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  disabled={isSubmitting}
-                >
-                  Subir Registro de Descarpe
+                  {getButtonText()}
                 </Button>
               )}
             </>
@@ -335,16 +337,12 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
 
       {showConfirmDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 p-6">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Confirmar envío de {confirmType === "fumigation" ? "registro de fumigación" : "registro de descarpe"}
-              </h3>
-              <p className="text-sm text-gray-600 mt-2">
-                ¿Está seguro de que desea subir el {confirmType === "fumigation" ? "registro de fumigación" : "registro de descarpe"}? Una vez enviado, no podrá modificar la información.
-              </p>
-            </div>
-            <div className="flex justify-end gap-3">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Confirmar envío</h3>
+            <p className="text-gray-600 mb-6">
+              ¿Estás seguro de que deseas enviar este registro? Esta acción no se puede deshacer.
+            </p>
+            <div className="flex justify-end gap-4">
               <Button 
                 variant="outline" 
                 onClick={() => setShowConfirmDialog(false)}
@@ -353,8 +351,8 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
                 Cancelar
               </Button>
               <Button 
-                onClick={handleConfirmSubmit} 
-                className={confirmType === "fumigation" ? "bg-[#003595] hover:bg-[#002060] text-white" : "bg-green-600 hover:bg-green-700 text-white"}
+                onClick={handleConfirmSubmit}
+                className={fumigationStatus === "APPROVED" ? "bg-[#003595] hover:bg-[#002060] text-white" : "bg-green-600 hover:bg-green-700 text-white"}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Enviando..." : "Confirmar"}
