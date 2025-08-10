@@ -1,77 +1,142 @@
-import { useState, useEffect } from 'react';
-import { FumigationDetailResponse } from '@/types/request';
+import { useState, useEffect } from "react";
+import { FumigationDetailResponse } from "@/types/request";
+
+export interface CleanupLotDescription {
+  stripsState: string;
+  fumigationTime: number;
+  ppmFosfina: number;
+}
+
+export interface CleanupIndustrialSafetyConditions {
+  electricDanger: boolean;
+  fallingDanger: boolean;
+  hitDanger: boolean;
+  otherDanger: boolean;
+}
+
+export interface CleanupTechnician {
+  id: number;
+  firstName: string;
+  lastName: string;
+}
 
 export interface CleanupData {
   date: string;
   startTime: string;
   endTime: string;
   supervisor: string;
-  technicians: Array<{ id: number; firstName: string; lastName: string }>;
-  lotDescription: {
-    stripsState: string;
-    fumigationTime: number;
-    ppmFosfina: number;
-  };
-  industrialSafetyConditions: {
-    electricDanger: boolean;
-    fallingDanger: boolean;
-    hitDanger: boolean;
-    otherDanger: boolean;
-  };
+  technicians: CleanupTechnician[];
+  lotDescription: CleanupLotDescription;
+  industrialSafetyConditions: CleanupIndustrialSafetyConditions;
+  technicianSignature: string;
+  clientSignature: string;
 }
 
 export interface CleanupValidationErrors {
   date?: string;
   startTime?: string;
   endTime?: string;
+  timeRange?: string;
   supervisor?: string;
   technicians?: string;
+  stripsState?: string;
   fumigationTime?: string;
   ppmFosfina?: string;
 }
 
-export const useUncoveringEvidence = (fumigationDetails: FumigationDetailResponse | null) => {
-  const getCurrentDate = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
+const getCurrentDate = (): string => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
+export const useUncoveringEvidence = (fumigationDetails: FumigationDetailResponse | null) => {
+  const [validationErrors, setValidationErrors] = useState<CleanupValidationErrors>({});
   const [cleanupData, setCleanupData] = useState<CleanupData>({
     date: getCurrentDate(),
-    startTime: '',
-    endTime: '',
-    supervisor: '',
+    startTime: "",
+    endTime: "",
+    supervisor: "",
     technicians: [],
     lotDescription: {
-      stripsState: '',
+      stripsState: "",
       fumigationTime: 0,
-      ppmFosfina: 0,
+      ppmFosfina: 0
     },
     industrialSafetyConditions: {
       electricDanger: false,
       fallingDanger: false,
       hitDanger: false,
-      otherDanger: false,
+      otherDanger: false
     },
+    technicianSignature: "",
+    clientSignature: ""
   });
 
-  const [validationErrors, setValidationErrors] = useState<CleanupValidationErrors>({});
+  useEffect(() => {
+    if (fumigationDetails) {
+      setCleanupData(prev => ({
+        ...prev,
+        supervisor: fumigationDetails.representative || ""
+      }));
+    }
+  }, [fumigationDetails]);
+
+  const validateForm = (): boolean => {
+    const errors: CleanupValidationErrors = {};
+    
+    if (!cleanupData.startTime || cleanupData.startTime.trim() === "") {
+      errors.startTime = "La hora de inicio es requerida";
+    }
+    
+    if (!cleanupData.endTime || cleanupData.endTime.trim() === "") {
+      errors.endTime = "La hora de finalización es requerida";
+    }
+    
+    if (cleanupData.startTime && cleanupData.endTime) {
+      const startTime = new Date(`2000-01-01T${cleanupData.startTime}`);
+      const endTime = new Date(`2000-01-01T${cleanupData.endTime}`);
+      
+      if (endTime <= startTime) {
+        errors.timeRange = "La hora de finalización debe ser posterior a la hora de inicio";
+      }
+    }
+    
+    if (!cleanupData.supervisor || cleanupData.supervisor.trim() === "") {
+      errors.supervisor = "El supervisor es requerido";
+    }
+    
+    if (cleanupData.technicians.length === 0) {
+      errors.technicians = "Se requiere al menos un técnico";
+    }
+    
+    if (!cleanupData.lotDescription.stripsState || cleanupData.lotDescription.stripsState.trim() === "") {
+      errors.stripsState = "El estado de las cintas es requerido";
+    }
+    
+    if (!cleanupData.lotDescription.fumigationTime || cleanupData.lotDescription.fumigationTime <= 0) {
+      errors.fumigationTime = "El tiempo de fumigación es requerido y debe ser mayor a 0";
+    }
+    
+    if (!cleanupData.lotDescription.ppmFosfina || cleanupData.lotDescription.ppmFosfina <= 0) {
+      errors.ppmFosfina = "PPM Fosfina es requerido y debe ser mayor a 0";
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const clearValidationErrors = () => {
+    setValidationErrors({});
+  };
 
   const updateField = (field: keyof CleanupData, value: any) => {
     setCleanupData(prev => ({
       ...prev,
       [field]: value
     }));
-    
-    if (validationErrors[field as keyof CleanupValidationErrors]) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [field as keyof CleanupValidationErrors]: undefined
-      }));
-    }
   };
 
   const updateLotDescription = (field: string, value: any) => {
@@ -82,13 +147,6 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
         [field]: value
       }
     }));
-    
-    if (validationErrors[field as keyof CleanupValidationErrors]) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [field as keyof CleanupValidationErrors]: undefined
-      }));
-    }
   };
 
   const updateSafetyConditions = (field: string, value: boolean) => {
@@ -101,18 +159,11 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
     }));
   };
 
-  const addTechnician = (technician: { id: number; firstName: string; lastName: string }) => {
+  const addTechnician = (technician: CleanupTechnician) => {
     setCleanupData(prev => ({
       ...prev,
       technicians: [...prev.technicians, technician]
     }));
-    
-    if (validationErrors.technicians) {
-      setValidationErrors(prev => ({
-        ...prev,
-        technicians: undefined
-      }));
-    }
   };
 
   const removeTechnician = (index: number) => {
@@ -122,63 +173,26 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
     }));
   };
 
-  const validateForm = (): boolean => {
-    const errors: CleanupValidationErrors = {};
-
-    if (!cleanupData.date) {
-      errors.date = 'La fecha es requerida';
-    }
-
-    if (!cleanupData.startTime) {
-      errors.startTime = 'La hora de inicio es requerida';
-    }
-
-    if (!cleanupData.endTime) {
-      errors.endTime = 'La hora de fin es requerida';
-    }
-
-    if (cleanupData.supervisor.trim() === '') {
-      errors.supervisor = 'El supervisor es requerido';
-    }
-
-    if (cleanupData.technicians.length === 0) {
-      errors.technicians = 'Debe seleccionar al menos un técnico';
-    }
-
-    if (cleanupData.lotDescription.fumigationTime <= 0) {
-      errors.fumigationTime = 'El tiempo de fumigación debe ser un entero positivo';
-    }
-
-    if (cleanupData.lotDescription.ppmFosfina <= 0) {
-      errors.ppmFosfina = 'El PPM fosfina debe ser un entero positivo';
-    }
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const clearValidationErrors = () => {
-    setValidationErrors({});
-  };
-
   const resetForm = () => {
     const initialData = {
       date: getCurrentDate(),
-      startTime: '',
-      endTime: '',
-      supervisor: '',
+      startTime: "",
+      endTime: "",
+      supervisor: fumigationDetails?.representative || "",
       technicians: [],
       lotDescription: {
-        stripsState: '',
+        stripsState: "",
         fumigationTime: 0,
-        ppmFosfina: 0,
+        ppmFosfina: 0
       },
       industrialSafetyConditions: {
         electricDanger: false,
         fallingDanger: false,
         hitDanger: false,
-        otherDanger: false,
+        otherDanger: false
       },
+      technicianSignature: "",
+      clientSignature: ""
     };
 
     setCleanupData(initialData);
@@ -188,14 +202,14 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
   return {
     cleanupData,
     setCleanupData,
+    validateForm,
     validationErrors,
+    clearValidationErrors,
     updateField,
     updateLotDescription,
     updateSafetyConditions,
     addTechnician,
     removeTechnician,
-    validateForm,
-    clearValidationErrors,
     resetForm
   };
 };

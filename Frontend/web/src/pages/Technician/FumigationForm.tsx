@@ -34,9 +34,17 @@ export const FumigationForm: FC<FumigationFormProps> = ({
   addToArray,
   removeFromArray
 }) => {
+  const handleTechnicianSignatureChange = (signature: string) => {
+    updateField('technicianSignature', signature);
+  };
+
+  const handleClientSignatureChange = (signature: string) => {
+    updateField('clientSignature', signature);
+  };
+
   return (
     <div className="space-y-4">
-      <ValidationErrorList errors={validationErrors} />
+      <ValidationErrorList errors={Object.values(validationErrors).filter(Boolean)} />
       
       <GeneralInfoSection
         fumigationData={fumigationData}
@@ -62,6 +70,7 @@ export const FumigationForm: FC<FumigationFormProps> = ({
         fumigationReportSubmitted={fumigationReportSubmitted}
         validationErrors={validationErrors}
         updateField={updateField}
+        mode="fumigation"
       />
 
       <EnvironmentalSection
@@ -78,6 +87,7 @@ export const FumigationForm: FC<FumigationFormProps> = ({
         setFumigationData={setFumigationData}
         isEditable={isEditable}
         fumigationReportSubmitted={fumigationReportSubmitted}
+        mode="fumigation"
       />
 
       <SuppliesSection
@@ -86,9 +96,6 @@ export const FumigationForm: FC<FumigationFormProps> = ({
         isEditable={isEditable}
         fumigationReportSubmitted={fumigationReportSubmitted}
         validationErrors={validationErrors}
-        updateField={updateField}
-        addToArray={addToArray}
-        removeFromArray={removeFromArray}
       />
 
       <ObservationsSection
@@ -96,11 +103,17 @@ export const FumigationForm: FC<FumigationFormProps> = ({
         setFumigationData={setFumigationData}
         isEditable={isEditable}
         fumigationReportSubmitted={fumigationReportSubmitted}
+        validationErrors={validationErrors}
+        updateField={updateField}
       />
 
       <SignaturesSection 
         isEditable={isEditable}
         fumigationReportSubmitted={fumigationReportSubmitted}
+        technicianSignature={fumigationData.technicianSignature}
+        clientSignature={fumigationData.clientSignature}
+        onTechnicianSignatureChange={handleTechnicianSignatureChange}
+        onClientSignatureChange={handleClientSignatureChange}
       />
     </div>
   );

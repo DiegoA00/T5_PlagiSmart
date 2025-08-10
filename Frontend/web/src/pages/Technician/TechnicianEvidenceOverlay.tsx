@@ -126,7 +126,11 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
           fallingDanger: fumigationData.hazards.fallingDanger,
           hitDanger: fumigationData.hazards.hitDanger
         },
-        observations: fumigationData.observations.trim() || ""
+        observations: fumigationData.observations.trim() || "",
+        signatures: {
+          technician: fumigationData.technicianSignature,
+          client: fumigationData.clientSignature
+        }
       };
 
       await reportsService.createFumigationReport(reportData);
@@ -176,6 +180,10 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
           fallingDanger: cleanupData.industrialSafetyConditions.fallingDanger,
           hitDanger: cleanupData.industrialSafetyConditions.hitDanger,
           otherDanger: cleanupData.industrialSafetyConditions.otherDanger
+        },
+        signatures: {
+          technician: cleanupData.technicianSignature,
+          client: cleanupData.clientSignature
         }
       };
 

@@ -182,9 +182,17 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
     }
   };
 
+  const handleTechnicianSignatureChange = (signature: string) => {
+    updateField('technicianSignature', signature);
+  };
+
+  const handleClientSignatureChange = (signature: string) => {
+    updateField('clientSignature', signature);
+  };
+
   return (
     <div className="space-y-4">
-      <ValidationErrorList errors={validationErrors} />
+      <ValidationErrorList errors={Object.values(validationErrors).filter(Boolean)} />
       
       <GeneralInfoSection
         fumigationData={fumigationData}
@@ -224,6 +232,10 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
       <SignaturesSection 
         isEditable={isEditable}
         fumigationReportSubmitted={cleanupReportSubmitted}
+        technicianSignature={cleanupData.technicianSignature}
+        clientSignature={cleanupData.clientSignature}
+        onTechnicianSignatureChange={handleTechnicianSignatureChange}
+        onClientSignatureChange={handleClientSignatureChange}
       />
     </div>
   );

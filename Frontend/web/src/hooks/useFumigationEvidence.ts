@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { FumigationDetailResponse } from "@/types/request";
 
-export interface Supply {
-  name: string;
-  quantity: string;
-  dosage: string;
-  kindOfSupply: string;
-  numberOfStrips: string;
+export interface LotDetails {
+  lotNumber: string;
+  tons: string;
+  quality: string;
+  sacks: string;
+  destination: string;
 }
 
 export interface Dimensions {
@@ -26,29 +26,12 @@ export interface Hazards {
   hitDanger: boolean;
 }
 
-export interface LotDetails {
-  lotNumber: string;
-  tons: string;
-  quality: string;
-  sacks: string;
-  destination: string;
-  stripsState?: string;
-  fumigationTime?: string;
-  ppmFosfina?: string;
-}
-
-export interface ValidationErrors {
-  startTime?: string;
-  endTime?: string;
-  supervisor?: string;
-  technicians?: string;
-  dimensions?: string;
-  temperature?: string;
-  humidity?: string;
-  supplies?: string;
-  timeRange?: string;
-  fumigationTime?: string;
-  ppmFosfina?: string;
+export interface Supply {
+  name: string;
+  quantity: string;
+  dosage: string;
+  kindOfSupply: string;
+  numberOfStrips: string;
 }
 
 export interface FumigationData {
@@ -79,23 +62,37 @@ export interface FumigationData {
   supplies: Supply[];
   
   observations: string;
+  
+  technicianSignature: string;
+  clientSignature: string;
 }
+
+export interface ValidationErrors {
+  date?: string;
+  startTime?: string;
+  endTime?: string;
+  timeRange?: string;
+  supervisor?: string;
+  technicians?: string;
+  supplies?: string;
+  height?: string;
+  width?: string;
+  length?: string;
+  temperature?: string;
+  humidity?: string;
+  observations?: string;
+}
+
+const getCurrentDate = (): string => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 export const useFumigationEvidence = (fumigationDetails: FumigationDetailResponse | null) => {
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
-
-  const clearValidationErrors = () => {
-    setValidationErrors({});
-  };
-
-  const getCurrentDate = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
   const [fumigationData, setFumigationData] = useState<FumigationData>({
     fumigationId: "",
     registrationNumber: "",
@@ -129,7 +126,9 @@ export const useFumigationEvidence = (fumigationDetails: FumigationDetailRespons
       hitDanger: false
     },
     supplies: [],
-    observations: ""
+    observations: "",
+    technicianSignature: "",
+    clientSignature: ""
   });
 
   useEffect(() => {
@@ -162,59 +161,54 @@ export const useFumigationEvidence = (fumigationDetails: FumigationDetailRespons
     if (!fumigationData.endTime || fumigationData.endTime.trim() === "") {
       errors.endTime = "La hora de finalización es requerida";
     }
-
-    if (fumigationData.startTime && fumigationData.endTime && fumigationData.startTime >= fumigationData.endTime) {
-      errors.timeRange = "La hora de finalización debe ser posterior a la hora de inicio";
+    
+    if (fumigationData.startTime && fumigationData.endTime) {
+      const startTime = new Date(`2000-01-01T${fumigationData.startTime}`);
+      const endTime = new Date(`2000-01-01T${fumigationData.endTime}`);
+      
+      if (endTime <= startTime) {
+        errors.timeRange = "La hora de finalización debe ser posterior a la hora de inicio";
+      }
     }
-
+    
     if (!fumigationData.supervisor || fumigationData.supervisor.trim() === "") {
-      errors.supervisor = "El nombre del supervisor es requerido";
+      errors.supervisor = "El supervisor es requerido";
     }
     
     if (fumigationData.technicians.length === 0) {
-      errors.technicians = "Se requiere al menos un técnico asignado";
-    }
-    
-    const { height, width, length } = fumigationData.dimensions;
-    if (!height || !width || !length || height.trim() === "" || width.trim() === "" || length.trim() === "") {
-      errors.dimensions = "Todas las dimensiones son requeridas (altura, ancho y largo)";
-    } else {
-      const heightNum = parseFloat(height);
-      const widthNum = parseFloat(width);
-      const lengthNum = parseFloat(length);
-      
-      if (isNaN(heightNum) || isNaN(widthNum) || isNaN(lengthNum)) {
-        errors.dimensions = "Las dimensiones deben ser números válidos";
-      } else if (heightNum <= 0 || widthNum <= 0 || lengthNum <= 0) {
-        errors.dimensions = "Las dimensiones deben ser mayores a 0";
-      }
-    }
-    
-    const { temperature, humidity } = fumigationData.environmentalConditions;
-    if (!temperature || temperature.trim() === "") {
-      errors.temperature = "La temperatura es requerida";
-    } else {
-      const tempNum = parseFloat(temperature);
-      if (isNaN(tempNum)) {
-        errors.temperature = "La temperatura debe ser un número válido";
-      }
-    }
-    
-    if (!humidity || humidity.trim() === "") {
-      errors.humidity = "La humedad es requerida";
-    } else {
-      const humNum = parseFloat(humidity);
-      if (isNaN(humNum)) {
-        errors.humidity = "La humedad debe ser un número válido";
-      }
+      errors.technicians = "Se requiere al menos un técnico";
     }
     
     if (fumigationData.supplies.length === 0) {
-      errors.supplies = "Se requiere al menos un suministro";
+      errors.supplies = "Se requiere al menos un insumo";
     }
     
+    if (!fumigationData.dimensions.height || fumigationData.dimensions.height.trim() === "") {
+      errors.height = "La altura es requerida";
+    }
+    
+    if (!fumigationData.dimensions.width || fumigationData.dimensions.width.trim() === "") {
+      errors.width = "El ancho es requerido";
+    }
+    
+    if (!fumigationData.dimensions.length || fumigationData.dimensions.length.trim() === "") {
+      errors.length = "La longitud es requerida";
+    }
+    
+    if (!fumigationData.environmentalConditions.temperature || fumigationData.environmentalConditions.temperature.trim() === "") {
+      errors.temperature = "La temperatura es requerida";
+    }
+    
+    if (!fumigationData.environmentalConditions.humidity || fumigationData.environmentalConditions.humidity.trim() === "") {
+      errors.humidity = "La humedad es requerida";
+    }
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
+  };
+
+  const clearValidationErrors = () => {
+    setValidationErrors({});
   };
 
   const updateField = (field: keyof FumigationData, value: any) => {
@@ -222,13 +216,6 @@ export const useFumigationEvidence = (fumigationDetails: FumigationDetailRespons
       ...prev,
       [field]: value
     }));
-    
-    if (validationErrors[field as keyof ValidationErrors]) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [field as keyof ValidationErrors]: undefined
-      }));
-    }
   };
 
   const addToArray = (field: keyof FumigationData, item: any) => {
@@ -279,7 +266,9 @@ export const useFumigationEvidence = (fumigationDetails: FumigationDetailRespons
         hitDanger: false
       },
       supplies: [],
-      observations: ""
+      observations: "",
+      technicianSignature: "",
+      clientSignature: ""
     };
 
     if (fumigationDetails) {
