@@ -13,7 +13,7 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN', 'ADMIN', 'Admin', 'admin']}>
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,

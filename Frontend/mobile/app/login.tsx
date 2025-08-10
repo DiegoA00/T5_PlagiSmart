@@ -29,16 +29,41 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
+      console.log('Attempting login with:', { email, password: '***' });
       const result = await authService.login(email, password);
+      console.log('Login result:', { success: result.success, message: result.message });
       
       if (result.success && result.data) {
-        await login({ user: result.data.user });
-        // Redirigir al admin dashboard
-        router.replace('/(tabs)');
+        console.log('Login successful, analyzing response data:', result.data);
+        
+        // Verificar si los datos del usuario están en el lugar correcto
+        const userData = result.data.user || result.data;
+        const tokenData = result.data.token;
+        
+        console.log('Extracted user data:', userData);
+        console.log('Extracted token:', tokenData);
+        
+        if (userData) {
+          await login({ 
+            user: userData, 
+            token: tokenData 
+          });
+          console.log('Context login completed, redirecting in 100ms');
+          
+          // Pequeña pausa para asegurar que el estado se actualice
+          setTimeout(() => {
+            router.replace('/(tabs)');
+          }, 100);
+        } else {
+          console.error('No user data found in response');
+          Alert.alert('Error', 'No se encontraron datos del usuario');
+        }
       } else {
+        console.log('Login failed:', result.message);
         Alert.alert('Error', result.message || 'Error al iniciar sesión');
       }
     } catch (error: any) {
+      console.error('Login error:', error);
       Alert.alert('Error', error.message || 'Error de conexión');
     } finally {
       setLoading(false);

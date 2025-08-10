@@ -1,6 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080/api';
+// Para iOS, forzamos la IP local - no usar localhost
+const API_BASE_URL = 'http://192.168.1.45:8082/api';
+
+console.log('API_BASE_URL FORCED TO:', API_BASE_URL);
+console.log('Environment EXPO_PUBLIC_API_URL:', process.env.EXPO_PUBLIC_API_URL);
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -10,7 +14,7 @@ interface ApiResponse<T = any> {
 }
 
 class ApiService {
-  private baseURL: string;
+  public baseURL: string;
 
   constructor() {
     this.baseURL = API_BASE_URL;
@@ -44,13 +48,18 @@ class ApiService {
         },
       };
 
+      console.log('API Request:', { url, method: options.method || 'GET' });
       const response = await fetch(url, config);
+      console.log('API Response status:', response.status);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('API Error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('API Response data:', data);
       
       return {
         success: true,
@@ -75,6 +84,51 @@ class ApiService {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
     });
+  }
+
+  async postWithoutAuth<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
+    try {
+      const url = `${this.baseURL}${endpoint}`;
+
+      const config: RequestInit = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: data ? JSON.stringify(data) : undefined,
+      };
+
+      console.log('API Request (no auth):', { 
+        url, 
+        method: 'POST', 
+        baseURL: this.baseURL,
+        endpoint,
+        fullURL: url
+      });
+      const response = await fetch(url, config);
+      console.log('API Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+      }
+
+      const responseData = await response.json();
+      console.log('API Response data:', responseData);
+      
+      return {
+        success: true,
+        data: responseData
+      };
+    } catch (error: any) {
+      console.error('API request error:', error);
+      return {
+        success: false,
+        message: error.message || 'Error de conexión',
+        error: error.message
+      };
+    }
   }
 
   async put<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {

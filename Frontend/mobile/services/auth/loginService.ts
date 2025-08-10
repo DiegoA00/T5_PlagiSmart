@@ -73,23 +73,52 @@ export const authService = {
     message?: string;
   }> {
     try {
-      const response = await apiService.post<{ token: string; user: any }>('/auth/login', {
+      // Primera llamada: obtener token
+      const authResponse = await apiService.postWithoutAuth<{ token: string; tokenType?: string }>('/auth/login', {
         email,
         password
       });
 
-      if (response.success && response.data) {
-        const { token, user } = response.data;
-        await this.setAuthData(token, 'Bearer', user);
+      if (!authResponse.success || !authResponse.data || !authResponse.data.token) {
         return {
-          success: true,
-          data: response.data
+          success: false,
+          message: authResponse.message || 'Token no recibido del servidor'
         };
       }
 
+      const { token, tokenType } = authResponse.data;
+      console.log('Auth token received:', { token: token.substring(0, 10) + '...', tokenType });
+
+      // Segunda llamada: obtener datos del usuario usando el token
+      const userResponse = await fetch(`${apiService.baseURL}/users/me`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `${tokenType || 'Bearer'} ${token}`
+        }
+      });
+
+      if (!userResponse.ok) {
+        const errorText = await userResponse.text();
+        console.error('User data fetch error:', errorText);
+        return {
+          success: false,
+          message: `Error al obtener datos del usuario: ${userResponse.status}`
+        };
+      }
+
+      const userData = await userResponse.json();
+      console.log('User data received:', userData);
+
+      // Guardar token y datos del usuario
+      await this.setAuthData(token, tokenType || 'Bearer', userData);
+
       return {
-        success: false,
-        message: response.message || 'Error en el login'
+        success: true,
+        data: {
+          token,
+          user: userData
+        }
       };
     } catch (error: any) {
       console.error('Login error:', error);
