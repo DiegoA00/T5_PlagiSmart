@@ -1,5 +1,5 @@
 import { apiService } from './api/apiService';
-import { ApiFumigationApplication, PaginatedResponse, ApiLot, ApiService } from '@/types/request';
+import { ApiFumigationApplication, PaginatedResponse, ApiLot, ApiService, FumigationListItem } from '@/types/request';
 
 export const fumigationService = {
   // Solicitudes
@@ -71,21 +71,21 @@ export const fumigationService = {
     }
   },
 
-  // Lotes
-  async getActiveLots(): Promise<{ data: ApiLot[] | null; success: boolean; message?: string }> {
+  // Lotes APPROVED (como en web)
+  async getApprovedFumigations(): Promise<{ data: PaginatedResponse<FumigationListItem> | null; success: boolean; message?: string }> {
     try {
-      const response = await apiService.get<ApiLot[]>('/fumigations?status=ACTIVE');
+      const response = await apiService.get<PaginatedResponse<FumigationListItem>>('/fumigations?status=APPROVED&page=0&size=50&sort=id');
       return {
         data: response.data || null,
         success: response.success,
         message: response.message
       };
     } catch (error: any) {
-      console.error('Error getting active lots:', error);
+      console.error('Error getting approved fumigations:', error);
       return {
         data: null,
         success: false,
-        message: error.message || 'Error al obtener lotes activos'
+        message: error.message || 'Error al obtener fumigaciones aprobadas'
       };
     }
   },
@@ -105,6 +105,40 @@ export const fumigationService = {
         data: null,
         success: false,
         message: error.message || 'Error al obtener servicios completados'
+      };
+    }
+  },
+
+  // Asignar técnico a lote
+  async assignTechnician(lotId: number, technicianId: number): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await apiService.post(`/fumigations/${lotId}/assign-technician`, { technicianId });
+      return {
+        success: response.success,
+        message: response.message || 'Técnico asignado correctamente'
+      };
+    } catch (error: any) {
+      console.error('Error assigning technician:', error);
+      return {
+        success: false,
+        message: error.message || 'Error al asignar técnico'
+      };
+    }
+  },
+
+  // Actualizar estado del lote
+  async updateLotStatus(lotId: number, status: 'IN_SERVICE' | 'COMPLETED'): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await apiService.patch(`/fumigations/${lotId}/status`, { status });
+      return {
+        success: response.success,
+        message: response.message || 'Estado actualizado correctamente'
+      };
+    } catch (error: any) {
+      console.error('Error updating lot status:', error);
+      return {
+        success: false,
+        message: error.message || 'Error al actualizar estado'
       };
     }
   },

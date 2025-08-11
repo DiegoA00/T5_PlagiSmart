@@ -110,8 +110,20 @@ export const authService = {
       const userData = await userResponse.json();
       console.log('User data received:', userData);
 
-      // Guardar token y datos del usuario
-      await this.setAuthData(token, tokenType || 'Bearer', userData);
+      // Guardar token crudo (sin Bearer) y tipo por separado como en web
+      await AsyncStorage.setItem('auth_token', token);
+      await AsyncStorage.setItem('token_type', tokenType || 'Bearer');
+      await AsyncStorage.setItem('user_data', JSON.stringify(userData));
+      
+      // Verificar que se guardó correctamente
+      const savedToken = await AsyncStorage.getItem('auth_token');
+      const savedUserData = await AsyncStorage.getItem('user_data');
+      
+      console.log('=== LOGIN VERIFICATION ===');
+      console.log('Token saved successfully:', !!savedToken);
+      console.log('User data saved successfully:', !!savedUserData);
+      console.log('Saved token preview:', savedToken ? savedToken.substring(0, 30) + '...' : 'NULL');
+      console.log('=========================');
 
       return {
         success: true,

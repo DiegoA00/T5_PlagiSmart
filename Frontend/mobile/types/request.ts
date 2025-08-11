@@ -10,6 +10,31 @@ export interface ApiFumigationApplication {
   contactPhone?: string;
 }
 
+export interface FumigationListItem {
+  id: number;
+  lotNumber: string;
+  companyName: string;
+  representative: string;
+  phoneNumber: string;
+  location: string;
+  plannedDate: string;
+}
+
+export interface PageableSort {
+  empty: boolean;
+  unsorted: boolean;
+  sorted: boolean;
+}
+
+export interface PageableInfo {
+  offset: number;
+  sort: PageableSort;
+  unpaged: boolean;
+  paged: boolean;
+  pageNumber: number;
+  pageSize: number;
+}
+
 export interface ApiUser {
   id: number;
   firstName: string;
@@ -21,13 +46,17 @@ export interface ApiUser {
 }
 
 export interface PaginatedResponse<T> {
-  content: T[];
-  totalElements: number;
   totalPages: number;
+  totalElements: number;
   size: number;
+  content: T[];
   number: number;
+  sort: PageableSort;
   first: boolean;
   last: boolean;
+  numberOfElements: number;
+  pageable: PageableInfo;
+  empty: boolean;
 }
 
 export interface ApiLot {

@@ -13,7 +13,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
-  login: (loginData: { user: any; token?: string }) => Promise<void>;
+  login: (loginData: { user: any; token?: string; password?: string }) => Promise<void>;
   logout: () => void;
   hasRole: (roles: string[]) => boolean;
 }
@@ -32,6 +32,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [tokenRefreshInterval, setTokenRefreshInterval] = useState<NodeJS.Timeout | null>(null);
 
   // Sincronizar isAuthenticated con el estado del usuario
   useEffect(() => {
@@ -43,31 +44,102 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     checkAuthData();
   }, []);
 
+  // Limpiar interval al desmontar
+  useEffect(() => {
+    return () => {
+      if (tokenRefreshInterval) {
+        clearInterval(tokenRefreshInterval);
+      }
+    };
+  }, [tokenRefreshInterval]);
+
   const checkAuthData = async () => {
     try {
       const token = await AsyncStorage.getItem('auth_token');
       const userDataStr = await AsyncStorage.getItem('user_data');
       
+      console.log('AuthContext - Checking auth data:', { 
+        hasToken: !!token, 
+        hasUserData: !!userDataStr,
+        tokenPreview: token ? token.substring(0, 20) + '...' : 'No token'
+      });
+      
       if (token && userDataStr) {
         const userData = JSON.parse(userDataStr);
-        setUser(userData);
-        // isAuthenticated se establecerá automáticamente via useEffect
+        console.log('AuthContext - User data loaded:', userData.email);
+        
+        // Verificar que el token sea válido antes de establecer el usuario
+        const { apiService } = await import('@/services/api/apiService');
+        const isTokenValid = await apiService.verifyToken();
+        
+        if (isTokenValid) {
+          console.log('AuthContext - Token is valid, setting user');
+          setUser(userData);
+          
+          // Iniciar renovación automática si los datos están presentes
+          if (userData.email) {
+            startTokenRefresh(userData.email);
+          }
+        } else {
+          console.log('AuthContext - Token is invalid, clearing auth data');
+          await AsyncStorage.multiRemove(['auth_token', 'user_data', 'temp_password']);
+          setUser(null);
+        }
       } else {
+        console.log('AuthContext - No valid auth data found');
         setUser(null);
-        // isAuthenticated se establecerá automáticamente via useEffect
       }
     } catch (error) {
       console.error('Error checking auth data:', error);
       setUser(null);
-      // isAuthenticated se establecerá automáticamente via useEffect
     } finally {
       setLoading(false);
     }
   };
 
-  const login = async (loginData: { user: any; token?: string }) => {
+  const startTokenRefresh = (userEmail: string) => {
+    // Limpiar cualquier interval anterior
+    if (tokenRefreshInterval) {
+      clearInterval(tokenRefreshInterval);
+    }
+
+    // Configurar renovación automática cada 4 minutos (240 segundos)
+    const interval = setInterval(async () => {
+      console.log('AuthContext - Attempting automatic token refresh...');
+      try {
+        // Usar el mismo servicio de login con las credenciales guardadas
+        const { authService } = await import('@/services/auth/loginService');
+        
+        // Nota: En un entorno de producción, deberías usar un refresh token
+        // Por ahora, usaremos las credenciales del usuario
+        const storedPassword = await AsyncStorage.getItem('temp_password');
+        if (storedPassword && userEmail) {
+          const result = await authService.login(userEmail, storedPassword);
+          if (result.success && result.data) {
+            console.log('AuthContext - Token refreshed successfully');
+            // No necesitamos actualizar el usuario, solo el token se actualizó
+          } else {
+            console.error('AuthContext - Failed to refresh token:', result.message);
+          }
+        }
+      } catch (error) {
+        console.error('AuthContext - Error during token refresh:', error);
+      }
+    }, 4 * 60 * 1000); // 4 minutos
+
+    setTokenRefreshInterval(interval);
+    console.log('AuthContext - Token refresh scheduled every 4 minutes');
+  };
+
+  const login = async (loginData: { user: any; token?: string; password?: string }) => {
     try {
-      console.log('AuthContext - Logging in user:', loginData.user);
+      console.log('=== AUTHCONTEXT LOGIN DEBUG ===');
+      console.log('Login data received:', {
+        hasUser: !!loginData.user,
+        hasToken: !!loginData.token,
+        hasPassword: !!loginData.password,
+        userPreview: loginData.user ? loginData.user.email || loginData.user.correo : 'No user'
+      });
       
       // Validar y normalizar los datos del usuario
       const normalizedUser: User = {
@@ -78,24 +150,42 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         roles: loginData.user.roles || loginData.user.authorities || [{ name: 'USER' }]
       };
       
-      console.log('AuthContext - Normalized user data:', normalizedUser);
+      console.log('Normalized user data:', normalizedUser);
       
       // Guardar datos del usuario en AsyncStorage PRIMERO
       await AsyncStorage.setItem('user_data', JSON.stringify(normalizedUser));
       
-      // Si se proporciona un token, guardarlo también
+      // Si se proporciona un token, guardarlo sin prefijo (consistente con web)
       if (loginData.token) {
+        console.log('Saving token to storage:', loginData.token.substring(0, 30) + '...');
         await AsyncStorage.setItem('auth_token', loginData.token);
-        await AsyncStorage.setItem('token_type', 'Bearer');
+      } else {
+        console.log('WARNING: No token provided in login data');
       }
+
+      // Guardar password temporalmente para renovación automática (solo para desarrollo)
+      if (loginData.password) {
+        await AsyncStorage.setItem('temp_password', loginData.password);
+      }
+      
+      // Verificar que todo se guardó correctamente
+      const savedToken = await AsyncStorage.getItem('auth_token');
+      const savedUserData = await AsyncStorage.getItem('user_data');
+      
+      console.log('Storage verification:', {
+        tokenSaved: !!savedToken,
+        userDataSaved: !!savedUserData,
+        tokenPreview: savedToken ? savedToken.substring(0, 30) + '...' : 'NULL'
+      });
       
       // Solo establecer el usuario - isAuthenticated se sincronizará automáticamente
       setUser(normalizedUser);
       
-      console.log('AuthContext - Login successful, user data saved:', {
-        user: normalizedUser,
-        roles: normalizedUser.roles
-      });
+      // Iniciar renovación automática del token
+      startTokenRefresh(normalizedUser.email);
+      
+      console.log('AuthContext login completed successfully');
+      console.log('==============================');
     } catch (error) {
       console.error('Error saving login data:', error);
       // En caso de error, asegurar que el estado sea consistente
@@ -105,9 +195,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
-      await AsyncStorage.multiRemove(['auth_token', 'token_type', 'user_data']);
+      // Limpiar interval de renovación
+      if (tokenRefreshInterval) {
+        clearInterval(tokenRefreshInterval);
+        setTokenRefreshInterval(null);
+      }
+      
+      await AsyncStorage.multiRemove(['auth_token', 'user_data', 'temp_password']);
       setUser(null);
       // isAuthenticated se sincronizará automáticamente cuando user sea null
+      console.log('AuthContext - Logged out and token refresh stopped');
     } catch (error) {
       console.error('Error during logout:', error);
     }

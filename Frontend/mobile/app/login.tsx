@@ -46,7 +46,8 @@ export default function LoginScreen() {
         if (userData) {
           await login({ 
             user: userData, 
-            token: tokenData 
+            token: tokenData,
+            password: password 
           });
           console.log('Context login completed, redirecting in 100ms');
           
