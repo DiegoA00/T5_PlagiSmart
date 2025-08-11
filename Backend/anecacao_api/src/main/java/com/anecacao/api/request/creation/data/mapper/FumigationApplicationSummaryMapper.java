@@ -8,6 +8,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Context;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
@@ -21,6 +23,8 @@ public interface FumigationApplicationSummaryMapper {
     @Mapping(target = "location", expression = "java(getLocation(application))")
     @Mapping(target = "localDate", expression = "java(getLocalDate(application))")
     @Mapping(target = "status", expression = "java(status)")
+    @Mapping(target = "totalTons", expression = "java(getTotalTons(application))")
+    @Mapping(target = "earlyDate", expression = "java(getEarlyDate(application))")
     FumigationApplicationSummaryDTO toSummaryDto(FumigationApplication application, @Context String status);
 
     List<FumigationApplicationSummaryDTO> toSummaryDtoList(List<FumigationApplication> applications, @Context String status);
@@ -43,6 +47,34 @@ public interface FumigationApplicationSummaryMapper {
         return app.getCompany() != null && app.getCompany().getAddress() != null
                 ? app.getCompany().getAddress()
                 : "No location";
+    }
+
+    default BigDecimal getTotalTons(FumigationApplication app) {
+        if (app.getFumigations() == null || app.getFumigations().isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        return app.getFumigations().stream()
+                .map(fumigation -> fumigation.getTon() != null ? fumigation.getTon() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    default String getEarlyDate(FumigationApplication app) {
+        if (app.getFumigations() == null || app.getFumigations().isEmpty()) {
+            return "No date";
+        }
+
+        LocalDateTime earliestDate = app.getFumigations().stream()
+                .map(Fumigation::getDateTime)
+                .filter(dateTime -> dateTime != null)
+                .min(Comparator.naturalOrder())
+                .orElse(null);
+
+        if (earliestDate != null) {
+            return earliestDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
+        }
+
+        return "No date";
     }
 
     default String getLocalDate(FumigationApplication app) {
