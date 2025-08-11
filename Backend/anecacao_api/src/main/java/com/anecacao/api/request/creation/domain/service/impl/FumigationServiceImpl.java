@@ -158,9 +158,24 @@ public class FumigationServiceImpl implements FumigationService {
     }
 
     @Override
-    public Page<FumigationDetailDTO> getFumigationsByStatus(String status, Pageable pageable) {
+    public Page<FumigationDetailDTO> getFumigationsByStatus(String status, String token, Pageable pageable) {
         Status statusEnum = parseAndValidateStatus(status);
-        Page<Fumigation> fumigations = repository.findByStatus(statusEnum, pageable);
+
+        // Obtener el usuario del token
+        User user = userService.getUserReferenceById(token);
+        String userId = user.getId().toString();
+
+        Page<Fumigation> fumigations;
+
+        // Si es ADMIN o TECHNICIAN, devolver todas las fumigaciones con ese status
+        if (userService.hasRole(userId, RoleName.ROLE_ADMIN) ||
+                userService.hasRole(userId, RoleName.ROLE_TECHNICIAN)) {
+            fumigations = repository.findByStatus(statusEnum, pageable);
+        } else {
+            // Si es CLIENT, devolver solo las fumigaciones de su compañía
+            fumigations = repository.findByStatusAndUserId(statusEnum, user.getId(), pageable);
+        }
+
         return fumigations.map(detailMapper::toDetailDto);
     }
 
