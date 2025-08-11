@@ -49,11 +49,35 @@ export default function LoginScreen() {
             token: tokenData,
             password: password 
           });
-          console.log('Context login completed, redirecting in 100ms');
+          console.log('Context login completed, checking user roles for redirect');
+          
+          // Verificar roles y redirigir según corresponda
+          const userRoles = userData.roles || userData.authorities || [];
+          const hasAdminRole = userRoles.some((role: any) => 
+            ['ROLE_ADMIN', 'ADMIN', 'Admin', 'admin'].includes(role.name || role)
+          );
+          const hasTechnicianRole = userRoles.some((role: any) => 
+            ['ROLE_TECHNICIAN', 'TECHNICIAN', 'Technician', 'technician'].includes(role.name || role)
+          );
+          
+          console.log('User roles detected:', {
+            roles: userRoles,
+            hasAdminRole,
+            hasTechnicianRole
+          });
           
           // Pequeña pausa para asegurar que el estado se actualice
           setTimeout(() => {
-            router.replace('/(tabs)');
+            if (hasAdminRole) {
+              console.log('Redirecting to admin tabs');
+              router.replace('/(tabs)');
+            } else if (hasTechnicianRole) {
+              console.log('Redirecting to technician tabs');
+              router.replace('/(technician)');
+            } else {
+              console.log('No specific role found, redirecting to admin by default');
+              router.replace('/(tabs)');
+            }
           }, 100);
         } else {
           console.error('No user data found in response');

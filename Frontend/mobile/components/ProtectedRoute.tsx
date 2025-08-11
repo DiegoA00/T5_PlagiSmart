@@ -51,8 +51,8 @@ export default function ProtectedRoute({ allowedRoles, children }: ProtectedRout
     allowedRoles 
   });
 
-  // Temporalmente permitir acceso si el usuario está autenticado, sin importar roles
-  const hasAccess = userHasRole || true; // Permitir acceso temporal
+  // Verificar si el usuario tiene uno de los roles permitidos
+  const hasAccess = userHasRole;
   
   if (!hasAccess) {
     return (
