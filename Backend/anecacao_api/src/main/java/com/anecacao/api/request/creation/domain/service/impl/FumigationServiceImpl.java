@@ -2,6 +2,7 @@ package com.anecacao.api.request.creation.domain.service.impl;
 
 import com.anecacao.api.auth.data.entity.RoleName;
 import com.anecacao.api.auth.data.entity.User;
+import com.anecacao.api.email.helper.FumigationEmailHelper;
 import com.anecacao.api.request.creation.data.dto.request.FumigationCreationRequestDTO;
 import com.anecacao.api.request.creation.data.dto.request.UpdateStatusRequestDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationDetailDTO;
@@ -26,6 +27,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
@@ -37,12 +40,14 @@ public class FumigationServiceImpl implements FumigationService {
     private final UserService userService;
     private final FumigationApplicationMapper mapper;
     private final FumigationDetailMapper detailMapper;
+    private final FumigationEmailHelper emailHelper;
 
     @Override
     public void updateFumigationStatus(Long id, UpdateStatusRequestDTO updateStatusRequestDTO) {
         Fumigation fumigation = getFumigationOrThrow(id);
         validateStatusUpdate(updateStatusRequestDTO);
 
+        Status oldStatus = fumigation.getStatus();
         Status status = updateStatusRequestDTO.getStatus();
         fumigation.setStatus(status);
 
@@ -51,6 +56,8 @@ public class FumigationServiceImpl implements FumigationService {
         } else {
             fumigation.setMessage(null);
         }
+
+        emailHelper.sendStatusChangeEmail(fumigation, oldStatus, status);
 
         repository.save(fumigation);
     }
@@ -61,9 +68,37 @@ public class FumigationServiceImpl implements FumigationService {
                 .orElseThrow(() -> new FumigationNotFoundException(fumigationId));
 
         validateUserPermission(fumigation, token);
+        // NUEVO: Capturar cambios para el email
+        Map<String, String> changes = captureChanges(fumigation, fumigationDTO);
+
         updateFumigationData(fumigation, fumigationDTO);
+        Fumigation updated = repository.save(fumigation);
+
+        // NUEVO: Enviar email si hubo cambios
+        if (!changes.isEmpty()) {
+            emailHelper.sendFumigationUpdateEmail(updated, changes);
+        }
 
         return mapper.toFumigationResponseDTO(repository.save(fumigation));
+    }
+
+    private Map<String, String> captureChanges(Fumigation fumigation, FumigationCreationRequestDTO dto) {
+        Map<String, String> changes = new HashMap<>();
+
+        if (!fumigation.getTon().equals(dto.getTon())) {
+            changes.put("Toneladas", dto.getTon() + " (anterior: " + fumigation.getTon() + ")");
+        }
+        if (!fumigation.getPortDestination().equals(dto.getPortDestination())) {
+            changes.put("Puerto de Destino", dto.getPortDestination() + " (anterior: " + fumigation.getPortDestination() + ")");
+        }
+        if (!fumigation.getSacks().equals(dto.getSacks())) {
+            changes.put("Sacos", dto.getSacks() + " (anterior: " + fumigation.getSacks() + ")");
+        }
+        if (dto.getDateTime() != null && !fumigation.getDateTime().equals(dto.getDateTime())) {
+            changes.put("Fecha/Hora", dto.getDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        }
+
+        return changes;
     }
 
     @Override

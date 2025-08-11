@@ -27,6 +27,38 @@ spring:
       max-file-size: 3MB
       max-request-size: 3MB
 
+  # ========================================
+  # NUEVA CONFIGURACIÓN DE EMAIL
+  # ========================================
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    default-encoding: UTF-8
+    test-connection: true
+
+  # ========================================
+  # CONFIGURACIÓN PARA TAREAS ASÍNCRONAS
+  # ========================================
+  task:
+    execution:
+      pool:
+        core-size: 2
+        max-size: 5
+        queue-capacity: 100
+      thread-name-prefix: EmailAsync-
+
 server:
   port: ${SERVER_PORT}
   servlet:
@@ -38,6 +70,26 @@ security:
 frontend:
   url: ${FRONTEND_URL}
 
+# ========================================
+# CONFIGURACIÓN DE LA APLICACIÓN
+# ========================================
 app:
   upload:
     dir: uploads/signatures
+
+  # NUEVA CONFIGURACIÓN DE EMAILS DE LA EMPRESA
+  admin:
+    email: ${ADMIN_EMAIL:admin@anecacao.com}
+  support:
+    email: ${SUPPORT_EMAIL:soporte@anecacao.com}
+  noreply:
+    email: ${NOREPLY_EMAIL:noreply@anecacao.com}
+
+  # URL del frontend (ya existe arriba pero lo movemos aquí para consistencia)
+  frontend:
+    url: ${FRONTEND_URL}
+
+  # Configuración adicional de emails
+  email:
+    max-admin-notifications: ${MAX_ADMIN_NOTIFICATIONS:50}
+    use-bcc-for-admins: ${USE_BCC_FOR_ADMINS:false}

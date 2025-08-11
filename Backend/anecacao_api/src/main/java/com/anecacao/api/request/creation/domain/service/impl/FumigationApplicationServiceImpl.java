@@ -4,6 +4,7 @@ import com.anecacao.api.auth.data.entity.RoleName;
 import com.anecacao.api.auth.data.entity.User;
 import com.anecacao.api.auth.domain.exception.UserInvalidException;
 import com.anecacao.api.auth.domain.service.UserService;
+import com.anecacao.api.email.helper.FumigationEmailHelper;
 import com.anecacao.api.request.creation.data.dto.request.FumigationApplicationDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationSummaryDTO;
@@ -33,6 +34,7 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
     private final CompanyService companyService;
     private final FumigationApplicationMapper mapper;
     private final FumigationApplicationSummaryMapper summaryMapper;
+    private final FumigationEmailHelper emailHelper;
 
     @Override
     public FumigationApplicationResponseDTO createFumigationApplication(FumigationApplicationDTO dto, String jwt) {
@@ -40,6 +42,9 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
 
         Company company = findCompany(jwt, dto.getCompany().getId());
         FumigationApplication newFumigation = saveNewFumigationApplication(dto, company, Status.PENDING);
+
+        User legalRepresentative = company.getLegalRepresentative();
+        emailHelper.sendNewApplicationEmail(newFumigation, legalRepresentative.getEmail());
 
         return mapper.toFumigationApplicationResponseDTO(newFumigation);
     }
