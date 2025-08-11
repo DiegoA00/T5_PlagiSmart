@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,4 +16,6 @@ public class FumigationApplicationSummaryDTO {
     private String location;
     private String localDate;
     private String status;
+    private BigDecimal totalTons;
+    private String earlyDate;
 }
