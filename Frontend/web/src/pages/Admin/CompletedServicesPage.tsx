@@ -5,6 +5,7 @@ import { Overlay } from "@/layouts/Overlay";
 import { BaseTable } from "./Components/BaseTable";
 import { FumigationListItem } from "@/types/request";
 import { LotOverlayContent } from "./Components/LotOverlayContent";
+import { EvidenceOverlay } from "./Components/Evidence/EvidenceOverlay";
 import { useFumigationData, useFumigationDetails } from "@/hooks/useFumigationData";
 import { formatDate } from "@/utils/dateUtils";
 
@@ -35,6 +36,7 @@ export default function CompletedServicesPage() {
 
   const handleViewDetails = async (fumigation: FumigationListItem) => {
     setSelectedLotId(fumigation.id);
+    setShowingEvidence(false);
     await loadFumigationDetails(fumigation.id);
   };
 
@@ -75,9 +77,9 @@ export default function CompletedServicesPage() {
     <Layout>
       <div className="p-10">
         <header className="mb-8">
-          <h2 className="text-3xl font-bold mb-1">Servicios finalizados</h2>
+          <h2 className="text-3xl font-bold mb-1">Servicios Completados</h2>
           <p className="text-gray-500">
-            Visualiza y gestiona los servicios completados
+            Gestiona los lotes con servicio completado
             {fumigationsResponse && fumigationsResponse.totalElements > 0 && 
               ` (${fumigationsResponse.totalElements} total${fumigationsResponse.totalElements !== 1 ? 'es' : ''})`
             }
@@ -95,16 +97,16 @@ export default function CompletedServicesPage() {
 
         {loading ? (
           <div className="text-center py-12">
-            <div className="text-lg">Cargando servicios finalizados...</div>
+            <div className="text-lg">Cargando lotes completados...</div>
             <div className="text-gray-500 text-sm mt-2">
               Obteniendo fumigaciones con estado FINISHED
             </div>
           </div>
         ) : fumigations.length === 0 ? (
           <div className="text-center py-12">
-            <div className="text-gray-500 text-lg">No hay servicios finalizados</div>
+            <div className="text-gray-500 text-lg">No hay servicios completados</div>
             <div className="text-gray-400 text-sm mt-2">
-              No se encontraron fumigaciones con estado FINISHED.
+              No se encontraron fumigaciones con estado FINISHED. 
               {fumigationsResponse?.totalElements === 0 
                 ? " La base de datos parece estar vacía después del reinicio."
                 : " Puede que no haya servicios completados aún."
@@ -115,7 +117,7 @@ export default function CompletedServicesPage() {
           <>
             {filteredFumigations.length !== fumigations.length && (
               <div className="mb-4 text-sm text-gray-600">
-                Mostrando {filteredFumigations.length} de {fumigations.length} servicios (filtrados por "{search}")
+                Mostrando {filteredFumigations.length} de {fumigations.length} lotes (filtrados por "{search}")
               </div>
             )}
             
@@ -155,10 +157,10 @@ export default function CompletedServicesPage() {
           open={!!selectedLotId && showingEvidence}
           onClose={handleCloseDetails}
         >
-          <LotOverlayContent
+          <EvidenceOverlay
             fumigationDetails={fumigationDetails}
             loading={detailsLoading}
-            isEvidence={true}
+            isEditable={false}
             onClose={handleCloseDetails}
           />
         </Overlay>

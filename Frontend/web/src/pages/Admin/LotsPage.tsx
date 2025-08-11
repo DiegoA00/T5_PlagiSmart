@@ -5,6 +5,7 @@ import { Overlay } from "@/layouts/Overlay";
 import { BaseTable } from "./Components/BaseTable";
 import { FumigationListItem } from "@/types/request";
 import { LotOverlayContent } from "./Components/LotOverlayContent";
+import { EvidenceOverlay } from "./Components/Evidence/EvidenceOverlay";
 import { useFumigationData, useFumigationDetails } from "@/hooks/useFumigationData";
 import { formatDate } from "@/utils/dateUtils";
 
@@ -35,6 +36,7 @@ export default function LotsPage() {
 
   const handleViewDetails = async (fumigation: FumigationListItem) => {
     setSelectedLotId(fumigation.id);
+    setShowingEvidence(false);
     await loadFumigationDetails(fumigation.id);
   };
 
@@ -141,10 +143,10 @@ export default function LotsPage() {
         </Overlay>
 
         <Overlay open={!!selectedLotId && showingEvidence} onClose={handleCloseDetails}>
-          <LotOverlayContent
+          <EvidenceOverlay
             fumigationDetails={fumigationDetails}
             loading={detailsLoading}
-            isEvidence={true}
+            isEditable={false}
             onClose={handleCloseDetails}
           />
         </Overlay>

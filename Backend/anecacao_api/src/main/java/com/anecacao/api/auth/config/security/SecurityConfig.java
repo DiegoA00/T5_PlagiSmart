@@ -81,6 +81,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/fumigations/{id}/status").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/fumigation-applications/{id}").hasAnyRole("CLIENT", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/fumigations/{id}").hasAnyRole("CLIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/fumigations").hasAnyRole("ADMIN", "TECHNICIAN", "CLIENT")
+                        .requestMatchers(HttpMethod.GET, "/fumigations/info/{id}").hasAnyRole("CLIENT", "TECHNICIAN", "ADMIN")
+
+                        // ========== REPORTS ENDPOINTS - CREACIÓN ==========
                         .requestMatchers(HttpMethod.POST, "/reports/fumigations").hasRole("TECHNICIAN")
                         .requestMatchers(HttpMethod.POST, "/reports/cleanup").hasRole("TECHNICIAN")
                         .requestMatchers(HttpMethod.GET, "/fumigations").hasAnyRole("ADMIN", "TECHNICIAN", "CLIENT")

@@ -1,7 +1,32 @@
-import { useState } from 'react'
+import { useState } from 'react';
 
-function NewReservationForm({ onClose }) {
-  const [formData, setFormData] = useState({
+interface FumigationEntry {
+  fumigationDate: string;
+  fumigationTime: string;
+  destinationPort: string;
+  tons: string;
+  quality: string;
+  bags: string;
+  lot: string;
+}
+
+interface FormData {
+  companyName: string;
+  businessName: string;
+  ruc: string;
+  address: string;
+  phone: string;
+  legalRepresentative: string;
+  plantContact: string;
+  fumigationEntries: FumigationEntry[];
+}
+
+interface NewReservationFormProps {
+  readonly onClose: () => void;
+}
+
+function NewReservationForm({ onClose }: NewReservationFormProps) {
+  const [formData, setFormData] = useState<FormData>({
     companyName: '',
     businessName: '',
     ruc: '',
@@ -20,7 +45,7 @@ function NewReservationForm({ onClose }) {
     }],
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
       ...prevState,
@@ -28,7 +53,7 @@ function NewReservationForm({ onClose }) {
     }));
   };
 
-  const handleFumigationEntryChange = (index, e) => {
+  const handleFumigationEntryChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const updatedEntries = formData.fumigationEntries.map((entry, i) =>
       i === index ? { ...entry, [name]: value } : entry
@@ -54,14 +79,14 @@ function NewReservationForm({ onClose }) {
     }));
   };
 
-  const handleRemoveFumigationEntry = (index) => {
+  const handleRemoveFumigationEntry = (index: number) => {
     setFormData(prevState => ({
       ...prevState,
       fumigationEntries: prevState.fumigationEntries.filter((_, i) => i !== index)
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log('Form Data Submitted:', formData);
     // Here you would typically send this data to a backend or handle it as needed
@@ -107,7 +132,7 @@ function NewReservationForm({ onClose }) {
 
           <h3 className="text-xl font-semibold mb-3">Datos de Fumigación</h3>
           {formData.fumigationEntries.map((entry, index) => (
-            <div key={index} className="relative border p-4 mb-4 rounded-md">
+            <div key={`fumigation-entry-${index}-${entry.fumigationDate || 'new'}`} className="relative border p-4 mb-4 rounded-md">
               <h4 className="text-lg font-medium mb-2">Entrada de Fumigación #{index + 1}</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                 <div>
