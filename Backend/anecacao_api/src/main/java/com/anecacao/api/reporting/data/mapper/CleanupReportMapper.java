@@ -7,7 +7,11 @@ import com.anecacao.api.reporting.data.dto.response.IndustrialSafetyConditionsRe
 import com.anecacao.api.reporting.data.dto.response.LotDescriptionResponseDTO;
 import com.anecacao.api.reporting.data.entity.*;
 import com.anecacao.api.auth.data.entity.User;
+import com.anecacao.api.signature.data.dto.SignatureResponse;
+import com.anecacao.api.signature.data.entity.Signature;
+import com.anecacao.api.signature.data.repository.SignatureRepository;
 import com.anecacao.api.request.creation.data.entity.Fumigation;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,7 +19,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class CleanupReportMapper {
+
+    private final SignatureRepository signatureRepository;
 
     public CleanupReportResponseDTO toResponseDTO(CleanupReport report) {
         if (report == null) {
@@ -44,7 +51,32 @@ public class CleanupReportMapper {
             dto.setFumigationInfo(toFumigationInfoDTO(report.getFumigation()));
         }
 
+        // Map signatures
+        dto.setSignatures(getSignaturesForCleanupReport(report.getId()));
+
         return dto;
+    }
+
+    private List<SignatureResponse> getSignaturesForCleanupReport(Long reportId) {
+        List<Signature> signatures = signatureRepository.findByCleanupReportId(reportId);
+        return signatures.stream()
+                .map(this::toSignatureResponse)
+                .collect(Collectors.toList());
+    }
+
+    private SignatureResponse toSignatureResponse(Signature signature) {
+        Long reportId = signature.getFumigationReport() != null
+                ? signature.getFumigationReport().getId()
+                : signature.getCleanupReport() != null
+                ? signature.getCleanupReport().getId()
+                : null;
+
+        return new SignatureResponse(
+                signature.getId(),
+                signature.getSignatureType(),
+                signature.getFilePath(),
+                reportId
+        );
     }
 
     private LotDescriptionResponseDTO toLotDescriptionResponseDTO(CleanupReport report) {

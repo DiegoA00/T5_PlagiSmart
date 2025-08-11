@@ -7,6 +7,7 @@ import com.anecacao.api.auth.data.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -16,6 +17,7 @@ public interface FumigationDetailMapper {
     @Mapping(target = "id", source = "id")
     @Mapping(target = "lotNumber", source = "lotNumber")
     @Mapping(target = "companyName", expression = "java(getCompanyName(fumigation))")
+    @Mapping(target = "ton", expression = "java(getTon(fumigation))")
     @Mapping(target = "representative", expression = "java(getRepresentativeName(fumigation))")
     @Mapping(target = "phoneNumber", expression = "java(getPhoneNumber(fumigation))")
     @Mapping(target = "location", expression = "java(getLocation(fumigation))")
@@ -23,6 +25,13 @@ public interface FumigationDetailMapper {
     FumigationDetailDTO toDetailDto(Fumigation fumigation);
 
     List<FumigationDetailDTO> toDetailDtoList(List<Fumigation> fumigations);
+
+    default BigDecimal getTon(Fumigation fumigation) {
+        if (fumigation != null && fumigation.getTon() != null) {
+            return fumigation.getTon();
+        }
+        return BigDecimal.ZERO; // O null si prefieres
+    }
 
     default String formatPlannedDate(Fumigation fumigation) {
         if (fumigation.getDateTime() != null) {
