@@ -24,6 +24,11 @@ class ApiService {
     try {
       const token = await AsyncStorage.getItem('auth_token');
       const tokenType = await AsyncStorage.getItem('token_type') || 'Bearer';
+      console.log('Getting auth header:', { 
+        hasToken: !!token, 
+        tokenType,
+        tokenPreview: token ? token.substring(0, 20) + '...' : 'No token'
+      });
       return token ? `${tokenType} ${token}` : null;
     } catch (error) {
       console.error('Error getting auth header:', error);
@@ -33,7 +38,8 @@ class ApiService {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    retryCount = 0
   ): Promise<ApiResponse<T>> {
     try {
       const url = `${this.baseURL}${endpoint}`;
@@ -48,9 +54,25 @@ class ApiService {
         },
       };
 
-      console.log('API Request:', { url, method: options.method || 'GET' });
+      console.log('API Request:', { 
+        url, 
+        method: options.method || 'GET',
+        hasAuth: !!authHeader,
+        authHeader: authHeader ? 'Bearer [token]' : 'No auth',
+        retryCount
+      });
       const response = await fetch(url, config);
       console.log('API Response status:', response.status);
+      
+      // Si recibimos 401 y tenemos token, intentar renovarlo
+      if (response.status === 401 && authHeader && retryCount === 0) {
+        console.log('401 detected, attempting token refresh...');
+        const refreshed = await this.refreshToken();
+        if (refreshed) {
+          console.log('Token refreshed, retrying request...');
+          return this.request(endpoint, options, retryCount + 1);
+        }
+      }
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -72,6 +94,28 @@ class ApiService {
         message: error.message || 'Error de conexión',
         error: error.message
       };
+    }
+  }
+
+  private async refreshToken(): Promise<boolean> {
+    try {
+      // Obtener el email del usuario actual para hacer login nuevamente
+      const userDataStr = await AsyncStorage.getItem('user_data');
+      if (!userDataStr) {
+        console.error('No user data found for token refresh');
+        return false;
+      }
+
+      const userData = JSON.parse(userDataStr);
+      console.log('Attempting automatic token refresh for user:', userData.email);
+      
+      // Nota: En un entorno real, deberías usar un refresh token
+      // Por ahora, vamos a mantener la sesión activa sin re-login
+      console.log('Token refresh not implemented, keeping current token');
+      return false;
+    } catch (error) {
+      console.error('Error during token refresh:', error);
+      return false;
     }
   }
 

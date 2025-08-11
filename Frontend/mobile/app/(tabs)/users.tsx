@@ -52,12 +52,13 @@ export default function UsersScreen() {
   }, [selectedRole]);
 
   useEffect(() => {
+    console.log('Users filtering - users state:', { users, isArray: Array.isArray(users) });
     if (Array.isArray(users) && users.length > 0) {
       const filtered = users.filter(user => 
-        user.firstName.toLowerCase().includes(search.toLowerCase()) ||
-        user.lastName.toLowerCase().includes(search.toLowerCase()) ||
-        user.email.toLowerCase().includes(search.toLowerCase()) ||
-        user.roles.toLowerCase().includes(search.toLowerCase())
+        (user.firstName || '').toLowerCase().includes(search.toLowerCase()) ||
+        (user.lastName || '').toLowerCase().includes(search.toLowerCase()) ||
+        (user.email || '').toLowerCase().includes(search.toLowerCase()) ||
+        (user.roles || '').toLowerCase().includes(search.toLowerCase())
       );
       setFilteredUsers(filtered);
     } else {

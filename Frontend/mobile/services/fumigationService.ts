@@ -5,7 +5,7 @@ export const fumigationService = {
   // Solicitudes
   async getPendingApplications(): Promise<{ data: PaginatedResponse<ApiFumigationApplication> | null; success: boolean; message?: string }> {
     try {
-      const response = await apiService.get<PaginatedResponse<ApiFumigationApplication>>('/fumigation/applications/pending');
+      const response = await apiService.get<PaginatedResponse<ApiFumigationApplication>>('/fumigation-applications?status=PENDING');
       return {
         data: response.data || null,
         success: response.success,
@@ -23,7 +23,7 @@ export const fumigationService = {
 
   async getRejectedApplications(): Promise<{ data: PaginatedResponse<ApiFumigationApplication> | null; success: boolean; message?: string }> {
     try {
-      const response = await apiService.get<PaginatedResponse<ApiFumigationApplication>>('/fumigation/applications/rejected');
+      const response = await apiService.get<PaginatedResponse<ApiFumigationApplication>>('/fumigation-applications?status=REJECTED');
       return {
         data: response.data || null,
         success: response.success,
@@ -74,7 +74,7 @@ export const fumigationService = {
   // Lotes
   async getActiveLots(): Promise<{ data: ApiLot[] | null; success: boolean; message?: string }> {
     try {
-      const response = await apiService.get<ApiLot[]>('/fumigation/lots/active');
+      const response = await apiService.get<ApiLot[]>('/fumigations?status=ACTIVE');
       return {
         data: response.data || null,
         success: response.success,
@@ -93,7 +93,7 @@ export const fumigationService = {
   // Servicios completados
   async getCompletedServices(): Promise<{ data: ApiService[] | null; success: boolean; message?: string }> {
     try {
-      const response = await apiService.get<ApiService[]>('/fumigation/services/completed');
+      const response = await apiService.get<ApiService[]>('/fumigations?status=COMPLETED');
       return {
         data: response.data || null,
         success: response.success,

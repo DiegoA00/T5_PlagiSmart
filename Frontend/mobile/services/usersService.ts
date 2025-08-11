@@ -4,16 +4,40 @@ import { ApiUser } from '@/types/request';
 export const usersService = {
   async getAllUsers(): Promise<{ data: ApiUser[] | null; success: boolean; message?: string }> {
     try {
-      const response = await apiService.get<ApiUser[]>('/users');
+      const response = await apiService.get<{ content: ApiUser[], totalElements: number } | ApiUser[]>('/users/all');
+      
+      let usersData: ApiUser[] | null = null;
+      
+      if (response.data) {
+        // Si la respuesta es paginada, extraer el array content
+        if (typeof response.data === 'object' && 'content' in response.data && Array.isArray(response.data.content)) {
+          console.log('Received paginated users response with', response.data.content.length, 'users');
+          usersData = response.data.content;
+        } 
+        // Si es un array directo
+        else if (Array.isArray(response.data)) {
+          console.log('Received array users response with', response.data.length, 'users');
+          usersData = response.data;
+        }
+        // Si es otro tipo de objeto, intentar convertir
+        else {
+          console.log('Received unknown users response format:', response.data);
+          usersData = [];
+        }
+      } else {
+        console.log('No data received from users endpoint');
+        usersData = [];
+      }
+      
       return {
-        data: response.data || null,
+        data: usersData,
         success: response.success,
         message: response.message
       };
     } catch (error: any) {
       console.error('Error getting all users:', error);
       return {
-        data: null,
+        data: [],
         success: false,
         message: error.message || 'Error al obtener usuarios'
       };

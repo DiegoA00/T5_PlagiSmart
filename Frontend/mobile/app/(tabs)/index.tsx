@@ -61,8 +61,15 @@ export default function DashboardScreen() {
         fumigationService.getCompletedServices()
       ]);
 
-      // Procesar usuarios por rol
-      const users = usersResult.data || [];
+      // Procesar usuarios por rol - validar que sea un array
+      const users = Array.isArray(usersResult.data) ? usersResult.data : [];
+      console.log('Users data received:', { 
+        success: usersResult.success, 
+        data: usersResult.data, 
+        isArray: Array.isArray(usersResult.data),
+        length: users.length 
+      });
+      
       const usersByRole = {
         admin: users.filter((u: ApiUser) => u.role === 'admin').length,
         client: users.filter((u: ApiUser) => u.role === 'client').length,
