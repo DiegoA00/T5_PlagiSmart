@@ -13,5 +13,5 @@ public interface FumigationService {
     FumigationResponseDTO getFumigationById(Long id, String token);
     void updateFumigationStatus(Long id, UpdateStatusRequestDTO updateStatusRequestDTO);
     FumigationInfoDTO getFumigationInfo(Long id, String token);
-    Page<FumigationDetailDTO> getFumigationsByStatus(String status, Pageable pageable);
+    Page<FumigationDetailDTO> getFumigationsByStatus(String status, String token, Pageable pageable);
 }
