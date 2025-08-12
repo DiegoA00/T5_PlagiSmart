@@ -25,6 +25,44 @@ export interface FumigationApplicationRequest {
   fumigations: FumigationRequestData[];
 }
 
+// Interfaces para la respuesta de aplicaciones del cliente
+export interface LegalRepresentativeResponse {
+  id: number;
+  firstName: string;
+  lastName: string;
+}
+
+export interface CompanyResponse {
+  id: number;
+  name: string;
+  businessName: string;
+  phoneNumber: string;
+  ruc: string;
+  address: string;
+  legalRepresentative: LegalRepresentativeResponse;
+}
+
+export interface FumigationResponse {
+  id: number;
+  lotNumber: string;
+  ton: number;
+  portDestination: string;
+  sacks: number;
+  quality: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'FAILED' | 'FINISHED';
+  message: string;
+  dateTime: string;
+}
+
+export interface ClientFumigationApplication {
+  id: number;
+  company: CompanyResponse;
+  createdAt: string;
+  totalTons: number;
+  earlyDate: string;
+  fumigations: FumigationResponse[];
+}
+
 const formatSortParams = (sort?: string[]): string | undefined => {
   if (!sort || sort.length === 0) return undefined;
   return sort.join(',');
@@ -171,6 +209,37 @@ export const fumigationService = {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || "Error al crear la aplicación de fumigación");
+    }
+  },
+
+  getMyApplications: async (pageableRequest?: PageableRequest): Promise<PaginatedResponse<ClientFumigationApplication>> => {
+    try {
+      const defaultPageable: PageableRequest = {
+        page: 0,
+        size: 3,
+        sort: ["id"]
+      };
+
+      const pageable = { ...defaultPageable, ...pageableRequest };
+      
+      const params: any = {
+        page: pageable.page,
+        size: pageable.size
+      };
+
+      if (pageable.sort && pageable.sort.length > 0) {
+        params.sort = formatSortParams(pageable.sort);
+      }
+      
+      const response = await apiClient.get('/fumigation-applications/my-applications', { params });
+      
+      return response.data || createEmptyPaginatedResponse<ClientFumigationApplication>();
+    } catch (error: any) {
+      if (error.response?.status >= 500) {
+        return createEmptyPaginatedResponse<ClientFumigationApplication>();
+      }
+      
+      throw new Error(`Error al cargar mis aplicaciones: ${error.response?.data?.message || error.message}`);
     }
   }
 };
