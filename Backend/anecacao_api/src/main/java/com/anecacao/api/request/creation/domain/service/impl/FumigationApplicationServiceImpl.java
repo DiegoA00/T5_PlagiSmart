@@ -5,11 +5,13 @@ import com.anecacao.api.auth.data.entity.User;
 import com.anecacao.api.auth.domain.exception.UserInvalidException;
 import com.anecacao.api.auth.domain.service.UserService;
 import com.anecacao.api.request.creation.data.dto.request.FumigationApplicationDTO;
+import com.anecacao.api.request.creation.data.dto.response.ClientFumigationApplicationDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationSummaryDTO;
 import com.anecacao.api.request.creation.data.entity.Company;
 import com.anecacao.api.request.creation.data.entity.FumigationApplication;
 import com.anecacao.api.request.creation.data.entity.Status;
+import com.anecacao.api.request.creation.data.mapper.ClientFumigationApplicationMapper;
 import com.anecacao.api.request.creation.data.mapper.FumigationApplicationMapper;
 import com.anecacao.api.request.creation.data.mapper.FumigationApplicationSummaryMapper;
 import com.anecacao.api.request.creation.data.repository.FumigationApplicationRepository;
@@ -33,6 +35,7 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
     private final CompanyService companyService;
     private final FumigationApplicationMapper mapper;
     private final FumigationApplicationSummaryMapper summaryMapper;
+    private final ClientFumigationApplicationMapper clientMapper;
 
     @Override
     public FumigationApplicationResponseDTO createFumigationApplication(FumigationApplicationDTO dto, String jwt) {
@@ -95,4 +98,21 @@ public class FumigationApplicationServiceImpl implements FumigationApplicationSe
         }
     }
 
+    @Override
+    public Page<ClientFumigationApplicationDTO> getClientFumigationApplications(String token, Pageable pageable) {
+        // Obtener el usuario del token
+        User user = userService.getUserReferenceById(token);
+
+        // Validar que sea un cliente
+        if (!userService.hasRole(user.getId().toString(), RoleName.ROLE_CLIENT)) {
+            // Usar la excepción con el formato correcto: resource, resourceId, userId
+            throw new UnauthorizedAccessException("ClientFumigationApplications", 0L, user.getId());
+        }
+
+        // Obtener todas las aplicaciones del cliente
+        Page<FumigationApplication> applications = repository.findByCompanyLegalRepresentativeId(user.getId(), pageable);
+
+        // Mapear a DTO con los campos calculados usando el mapper dedicado
+        return applications.map(clientMapper::toDto);
+    }
 }

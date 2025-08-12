@@ -86,6 +86,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/fumigation-applications").hasRole("CLIENT")
                         .requestMatchers(HttpMethod.GET, "/fumigation-applications/{id}").hasAnyRole("CLIENT", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/fumigation-applications").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/fumigation-applications/my-applications").hasRole("CLIENT")
 
                         // ========== FUMIGATIONS ENDPOINTS ==========
                         .requestMatchers(HttpMethod.PUT, "/fumigations/{id}/status").hasRole("ADMIN")

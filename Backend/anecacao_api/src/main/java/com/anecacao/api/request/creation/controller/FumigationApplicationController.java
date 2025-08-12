@@ -1,6 +1,7 @@
 package com.anecacao.api.request.creation.controller;
 
 import com.anecacao.api.request.creation.data.dto.request.FumigationApplicationDTO;
+import com.anecacao.api.request.creation.data.dto.response.ClientFumigationApplicationDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationSummaryDTO;
 import com.anecacao.api.request.creation.domain.service.FumigationApplicationService;
@@ -46,6 +47,15 @@ public class FumigationApplicationController {
             Pageable pageable
     ) {
         Page<FumigationApplicationSummaryDTO> applications = fumigationApplicationService.getFumigationApplicationsByStatus(status, pageable);
+        return ResponseEntity.ok(applications);
+    }
+
+    @GetMapping("/my-applications")
+    public ResponseEntity<Page<ClientFumigationApplicationDTO>> getMyFumigationApplications(
+            @RequestHeader("Authorization") String token,
+            Pageable pageable
+    ) {
+        Page<ClientFumigationApplicationDTO> applications = fumigationApplicationService.getClientFumigationApplications(token, pageable);
         return ResponseEntity.ok(applications);
     }
 }

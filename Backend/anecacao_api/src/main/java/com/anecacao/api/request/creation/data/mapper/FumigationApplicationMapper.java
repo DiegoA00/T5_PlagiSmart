@@ -7,6 +7,7 @@ import com.anecacao.api.reporting.data.entity.CleanupReport;
 import com.anecacao.api.reporting.data.entity.FumigationReport;
 import com.anecacao.api.reporting.data.entity.IndustrialSafetyConditions;
 import com.anecacao.api.request.creation.data.dto.request.FumigationApplicationDTO;
+import com.anecacao.api.request.creation.data.dto.response.ClientFumigationApplicationDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationApplicationResponseDTO;
 import com.anecacao.api.request.creation.data.dto.request.FumigationCreationRequestDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationResponseDTO;
@@ -18,9 +19,11 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Mapper(componentModel = "spring", uses = {CompanyMapper.class})
