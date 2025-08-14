@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,10 @@ import {
   StyleSheet,
   Alert,
   Dimensions,
-  PanResponder,
 } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
-import { stringToBase64 } from '../utils/base64';
+import SignatureCanvas from 'react-native-signature-canvas';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get('window');
 
 interface SignatureModalProps {
   isOpen: boolean;
@@ -29,98 +27,59 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
   onSave,
   existingSignature
 }) => {
-  const [paths, setPaths] = useState<string[]>([]);
-  const [currentPath, setCurrentPath] = useState<string>('');
-  const [isDrawing, setIsDrawing] = useState(false);
+  const [hasSignature, setHasSignature] = useState(false);
+  const signatureRef = useRef<any>(null);
 
-  // Limpiar datos cuando el modal se abre
-  React.useEffect(() => {
-    if (isOpen) {
-      clearSignature();
+  useEffect(() => {
+    if (isOpen && existingSignature) {
+      setTimeout(() => {
+        signatureRef.current?.fromDataURL(existingSignature);
+        setHasSignature(true);
+      }, 100);
+    } else if (isOpen) {
+      setHasSignature(false);
     }
-  }, [isOpen]);
+  }, [isOpen, existingSignature]);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: (evt) => {
-        setIsDrawing(true);
-        const { locationX, locationY } = evt.nativeEvent;
-        const newPath = `M${locationX},${locationY}`;
-        setCurrentPath(newPath);
-      },
-      onPanResponderMove: (evt) => {
-        if (isDrawing) {
-          const { locationX, locationY } = evt.nativeEvent;
-          const newPath = `${currentPath} L${locationX},${locationY}`;
-          setCurrentPath(newPath);
-        }
-      },
-      onPanResponderRelease: () => {
-        setIsDrawing(false);
-        if (currentPath) {
-          setPaths(prev => [...prev, currentPath]);
-          setCurrentPath('');
-        }
-      },
-    })
-  ).current;
-
-  const clearSignature = () => {
-    setPaths([]);
-    setCurrentPath('');
-    setIsDrawing(false);
+  const handleSignature = () => {
+    console.log('Signature detected!');
+    setHasSignature(true);
   };
 
-  const saveSignature = () => {
-    try {
-      if (paths.length === 0 && !currentPath) {
-        Alert.alert('Error', 'Por favor, dibuje su firma antes de guardar.');
-        return;
-      }
+  const handleEmpty = () => {
+    console.log('Signature area is empty');
+    setHasSignature(false);
+  };
 
-      // Validar que la firma tenga al menos un trazo con cierta longitud
-      const allPaths = [...paths];
-      if (currentPath) {
-        allPaths.push(currentPath);
-      }
-      
-      const totalLength = allPaths.reduce((acc, path) => {
-        // Calcular longitud aproximada del path
-        const points = path.split(/[ML]/).filter(p => p.trim());
-        return acc + points.length;
-      }, 0);
-      
-      if (totalLength < 3) {
-        Alert.alert('Error', 'Por favor, dibuje una firma más completa.');
-        return;
-      }
+  const handleBegin = () => {
+    console.log('Signature drawing started');
+  };
 
-      // Convertir SVG a base64
-      const svgWidth = Math.min(350, screenWidth * 0.8);
-      const svgContent = `
-        <svg width="${svgWidth}" height="200" xmlns="http://www.w3.org/2000/svg">
-          ${paths.map(path => `<path d="${path}" stroke="black" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" />`).join('')}
-          ${currentPath ? `<path d="${currentPath}" stroke="black" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" />` : ''}
-        </svg>
-      `;
-      
-      // Convertir SVG a base64
-      const base64 = stringToBase64(svgContent);
-      const signatureData = `data:image/svg+xml;base64,${base64}`;
-      
-      onSave(signatureData);
-      clearSignature();
-      onClose();
-    } catch (error) {
-      console.error('Error saving signature:', error);
-      Alert.alert('Error', 'No se pudo guardar la firma. Inténtelo nuevamente.');
-    }
+  const handleEnd = () => {
+    console.log('Signature drawing ended');
+    setHasSignature(true);
+  };
+
+  const handleClear = () => {
+    signatureRef.current?.clearSignature();
+    setHasSignature(false);
+  };
+
+  const handleSave = () => {
+    // For now, allow saving even without signature detection
+    // The signature canvas will handle empty signatures
+    console.log('Attempting to save signature...');
+    signatureRef.current?.readSignature();
+  };
+
+  const handleData = (data: string) => {
+    onSave(data);
+    onClose();
   };
 
   const handleClose = () => {
-    clearSignature();
+    signatureRef.current?.clearSignature();
+    setHasSignature(false);
     onClose();
   };
 
@@ -145,44 +104,44 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
               Toque y arrastre su dedo para firmar
             </Text>
             
-            <View 
-              style={[
-                styles.signatureArea,
-                isDrawing && styles.signatureAreaActive
-              ]}
-              {...panResponder.panHandlers}
-            >
-              <Svg height="200" width={Math.min(350, screenWidth * 0.8)} style={styles.svg}>
-                {paths.map((path, index) => (
-                  <Path
-                    key={index}
-                    d={path}
-                    stroke="black"
-                    strokeWidth="3"
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                ))}
-                {currentPath && (
-                  <Path
-                    d={currentPath}
-                    stroke="black"
-                    strokeWidth="3"
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                )}
-              </Svg>
-              <View style={styles.signatureLine} />
+            <View style={styles.signatureArea}>
+              <SignatureCanvas
+                ref={signatureRef}
+                onOK={handleData}
+                onEmpty={handleEmpty}
+                onBegin={handleBegin}
+                onEnd={handleEnd}
+                webStyle={`
+                  .m-signature-pad {
+                    box-shadow: none;
+                    border: none;
+                  }
+                  .m-signature-pad--body {
+                    border: none;
+                  }
+                  .m-signature-pad--footer {
+                    display: none;
+                  }
+                `}
+                style={{
+                  width: Math.min(350, screenWidth * 0.8),
+                  height: 200,
+                  borderWidth: 2,
+                  borderColor: '#d1d5db',
+                  borderRadius: 8,
+                  backgroundColor: '#ffffff',
+                }}
+                backgroundColor="rgba(255,255,255,1)"
+                penColor="black"
+                descriptionText=""
+              />
             </View>
           </View>
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.button, styles.clearButton]}
-              onPress={clearSignature}
+              onPress={handleClear}
             >
               <Text style={styles.clearButtonText}>Limpiar</Text>
             </TouchableOpacity>
@@ -195,10 +154,30 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={[styles.button, styles.saveButton]}
-              onPress={saveSignature}
+              style={[
+                styles.button, 
+                styles.saveButton
+              ]}
+              onPress={handleSave}
             >
-              <Text style={styles.saveButtonText}>Guardar</Text>
+              <Text style={styles.saveButtonText}>
+                Guardar
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.statusContainer}>
+            <Text style={styles.statusText}>
+              {hasSignature ? '✓ Firma detectada' : '○ Sin firma'}
+            </Text>
+            <TouchableOpacity
+              style={styles.debugButton}
+              onPress={() => {
+                console.log('Debug: Forcing signature state');
+                setHasSignature(true);
+              }}
+            >
+              <Text style={styles.debugButtonText}>Debug: Forzar Firma</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -218,7 +197,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 20,
-    width: Math.min(screenWidth * 0.9, 400),
+    width: Math.min(screenWidth * 0.95, 450),
     alignItems: 'center',
   },
   modalTitle: {
@@ -231,6 +210,7 @@ const styles = StyleSheet.create({
   signatureContainer: {
     alignItems: 'center',
     marginBottom: 20,
+    width: '100%',
   },
   instructionText: {
     fontSize: 14,
@@ -246,16 +226,10 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   signatureArea: {
-    position: 'relative',
-    backgroundColor: '#ffffff',
-    borderWidth: 2,
-    borderColor: '#d1d5db',
-    borderStyle: 'solid',
-    borderRadius: 8,
     width: Math.min(350, screenWidth * 0.8),
     height: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderRadius: 8,
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -265,28 +239,12 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  signatureAreaActive: {
-    borderColor: '#3b82f6',
-    backgroundColor: '#f0f9ff',
-  },
-  svg: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-  },
-  signatureLine: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-    height: 1,
-    backgroundColor: '#9ca3af',
-  },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
     gap: 12,
+    marginBottom: 12,
   },
   button: {
     flex: 1,
@@ -318,9 +276,35 @@ const styles = StyleSheet.create({
   saveButton: {
     backgroundColor: '#3b82f6',
   },
+  saveButtonDisabled: {
+    backgroundColor: '#9ca3af',
+  },
   saveButtonText: {
     color: '#ffffff',
     fontSize: 14,
+    fontWeight: '600',
+  },
+  saveButtonTextDisabled: {
+    color: '#6b7280',
+  },
+  statusContainer: {
+    alignItems: 'center',
+  },
+  statusText: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontStyle: 'italic',
+  },
+  debugButton: {
+    backgroundColor: '#ef4444',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    marginTop: 8,
+  },
+  debugButtonText: {
+    color: '#ffffff',
+    fontSize: 12,
     fontWeight: '600',
   },
 });
