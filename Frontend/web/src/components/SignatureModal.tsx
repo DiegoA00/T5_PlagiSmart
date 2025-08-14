@@ -1,6 +1,7 @@
 import { FC, useRef, useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { SignaturePad, SignaturePadRef } from "@/components/ui/signature-pad";
+import { signatureService } from "@/services/signatureService";
 
 interface SignatureModalProps {
   isOpen: boolean;
@@ -8,6 +9,10 @@ interface SignatureModalProps {
   onClose: () => void;
   onSave: (signatureDataURL: string) => void;
   existingSignature?: string;
+  fumigationId?: number;
+  cleanupId?: number;
+  signatureType?: 'technician' | 'client';
+  autoUpload?: boolean;
 }
 
 export const SignatureModal: FC<SignatureModalProps> = ({
@@ -15,10 +20,15 @@ export const SignatureModal: FC<SignatureModalProps> = ({
   title,
   onClose,
   onSave,
-  existingSignature
+  existingSignature,
+  fumigationId,
+  cleanupId,
+  signatureType,
+  autoUpload = false
 }) => {
   const signaturePadRef = useRef<SignaturePadRef>(null);
   const [hasSignature, setHasSignature] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -44,11 +54,30 @@ export const SignatureModal: FC<SignatureModalProps> = ({
     setHasSignature(false);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (signaturePadRef.current) {
-      const dataURL = signaturePadRef.current.toDataURL();
-      onSave(dataURL);
-      onClose();
+      try {
+        setIsUploading(true);
+        
+        const dataURL = signaturePadRef.current.toDataURL("image/jpeg", 0.7);
+        
+        if (autoUpload && signatureType && (fumigationId || cleanupId)) {
+          await signatureService.uploadSignature({
+            fumigationId: fumigationId || null,
+            cleanupId: cleanupId || null,
+            signatureType,
+            signatureData: dataURL
+          });
+        }
+        
+        onSave(dataURL);
+        onClose();
+      } catch (error) {
+        console.error('Error saving signature:', error);
+        alert('Error al guardar la firma. Por favor, inténtelo nuevamente.');
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -82,7 +111,7 @@ export const SignatureModal: FC<SignatureModalProps> = ({
               variant="outline"
               onClick={handleClear}
               className="px-6"
-              disabled={!hasSignature}
+              disabled={!hasSignature || isUploading}
             >
               Limpiar
             </Button>
@@ -90,18 +119,20 @@ export const SignatureModal: FC<SignatureModalProps> = ({
               variant="outline"
               onClick={onClose}
               className="px-6"
+              disabled={isUploading}
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSave}
+              disabled={isUploading}
               className={`px-6 text-white transition-colors ${
                 hasSignature 
                   ? "bg-[#003595] hover:bg-[#002060]" 
                   : "bg-gray-400 hover:bg-gray-500"
               }`}
             >
-              {hasSignature ? "Guardar Firma" : "Guardar (Vacío)"}
+              {isUploading ? "Guardando..." : hasSignature ? "Guardar Firma" : "Guardar (Vacío)"}
             </Button>
           </div>
           

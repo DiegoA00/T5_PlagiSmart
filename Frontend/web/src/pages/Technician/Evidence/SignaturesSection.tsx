@@ -10,6 +10,8 @@ interface SignaturesSectionProps {
   clientSignature?: string;
   onTechnicianSignatureChange?: (signature: string) => void;
   onClientSignatureChange?: (signature: string) => void;
+  fumigationId?: number;
+  cleanupId?: number;
 }
 
 export const SignaturesSection: FC<SignaturesSectionProps> = ({ 
@@ -18,7 +20,9 @@ export const SignaturesSection: FC<SignaturesSectionProps> = ({
   technicianSignature,
   clientSignature,
   onTechnicianSignatureChange,
-  onClientSignatureChange
+  onClientSignatureChange,
+  fumigationId,
+  cleanupId
 }) => {
   const [showTechnicianModal, setShowTechnicianModal] = useState(false);
   const [showClientModal, setShowClientModal] = useState(false);
@@ -31,11 +35,11 @@ export const SignaturesSection: FC<SignaturesSectionProps> = ({
     setShowClientModal(true);
   };
 
-  const handleTechnicianSave = (signature: string) => {
+  const handleTechnicianSignatureSave = (signature: string) => {
     onTechnicianSignatureChange?.(signature);
   };
 
-  const handleClientSave = (signature: string) => {
+  const handleClientSignatureSave = (signature: string) => {
     onClientSignatureChange?.(signature);
   };
 
@@ -142,7 +146,7 @@ export const SignaturesSection: FC<SignaturesSectionProps> = ({
                 {isEditable && !fumigationReportSubmitted && (
                   <Button
                     onClick={handleClientSign}
-                    className="w-full mt-3 bg-green-600 hover:bg-green-700 text-white"
+                    className="w-full mt-3 bg-[#003595] hover:bg-[#002060] text-white"
                   >
                     Firmar
                   </Button>
@@ -157,16 +161,24 @@ export const SignaturesSection: FC<SignaturesSectionProps> = ({
         isOpen={showTechnicianModal}
         title="Firma del Técnico"
         onClose={() => setShowTechnicianModal(false)}
-        onSave={handleTechnicianSave}
+        onSave={handleTechnicianSignatureSave}
         existingSignature={technicianSignature}
+        fumigationId={fumigationId}
+        cleanupId={cleanupId}
+        signatureType="technician"
+        autoUpload={true}
       />
 
       <SignatureModal
         isOpen={showClientModal}
         title="Firma del Cliente"
         onClose={() => setShowClientModal(false)}
-        onSave={handleClientSave}
+        onSave={handleClientSignatureSave}
         existingSignature={clientSignature}
+        fumigationId={fumigationId}
+        cleanupId={cleanupId}
+        signatureType="client"
+        autoUpload={true}
       />
     </>
   );

@@ -7,7 +7,6 @@ import { EnvironmentalSection } from "./Evidence/EnvironmentalSection";
 import { SafetySection } from "./Evidence/SafetySection";
 import { SuppliesSection } from "./Evidence/SuppliesSection";
 import { ObservationsSection } from "./Evidence/ObservationsSection";
-import { SignaturesSection } from "./Evidence/SignaturesSection";
 import { ValidationErrorList } from "../Admin/Components/Evidence/components/ValidationErrorList";
 import { FumigationData, ValidationErrors } from "../../hooks/useFumigationEvidence";
 
@@ -34,14 +33,6 @@ export const FumigationForm: FC<FumigationFormProps> = ({
   addToArray,
   removeFromArray
 }) => {
-  const handleTechnicianSignatureChange = (signature: string) => {
-    updateField('technicianSignature', signature);
-  };
-
-  const handleClientSignatureChange = (signature: string) => {
-    updateField('clientSignature', signature);
-  };
-
   return (
     <div className="space-y-4">
       <ValidationErrorList errors={validationErrors} />
@@ -106,15 +97,6 @@ export const FumigationForm: FC<FumigationFormProps> = ({
         setFumigationData={setFumigationData}
         isEditable={isEditable}
         fumigationReportSubmitted={fumigationReportSubmitted}
-      />
-
-      <SignaturesSection 
-        isEditable={isEditable}
-        fumigationReportSubmitted={fumigationReportSubmitted}
-        technicianSignature={fumigationData.technicianSignature}
-        clientSignature={fumigationData.clientSignature}
-        onTechnicianSignatureChange={handleTechnicianSignatureChange}
-        onClientSignatureChange={handleClientSignatureChange}
       />
     </div>
   );

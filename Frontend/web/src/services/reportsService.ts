@@ -87,7 +87,7 @@ const isReportNotFoundError = (error: any, reportType?: string): boolean => {
 };
 
 export const reportsService = {
-  createFumigationReport: async (data: FumigationReportRequest): Promise<ApiResponse> => {
+  createFumigationReport: async (data: FumigationReportRequest): Promise<FumigationReportResponse> => {
     try {
       const response = await apiClient.post('/reports/fumigations', data);
       return response.data;
@@ -99,7 +99,7 @@ export const reportsService = {
     }
   },
 
-  createCleanupReport: async (data: CleanupReportRequest): Promise<ApiResponse> => {
+  createCleanupReport: async (data: CleanupReportRequest): Promise<CleanupReportResponse> => {
     try {
       const response = await apiClient.post('/reports/cleanup', data);
       return response.data;

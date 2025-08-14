@@ -4,7 +4,6 @@ import { GeneralInfoSection } from "./Evidence/GeneralInfoSection";
 import { PersonnelSection } from "./Evidence/PersonnelSection";
 import { LotDetailsSection } from "./Evidence/LotDetailsSection";
 import { SafetySection } from "./Evidence/SafetySection";
-import { SignaturesSection } from "./Evidence/SignaturesSection";
 import { ValidationErrorList } from "../Admin/Components/Evidence/components/ValidationErrorList";
 import { CleanupData, CleanupValidationErrors } from "../../hooks/useUncoveringEvidence";
 
@@ -71,9 +70,7 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
       hitDanger: cleanupData.industrialSafetyConditions.hitDanger,
       otherDanger: cleanupData.industrialSafetyConditions.otherDanger
     },
-    observations: "",
-    technicianSignature: cleanupData.technicianSignature || "",
-    clientSignature: cleanupData.clientSignature || ""
+    observations: ""
   };
 
   const updateFumigationField = (field: any, value: any) => {
@@ -184,14 +181,6 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
     }
   };
 
-  const handleTechnicianSignatureChange = (signature: string) => {
-    updateField('technicianSignature', signature);
-  };
-
-  const handleClientSignatureChange = (signature: string) => {
-    updateField('clientSignature', signature);
-  };
-
   return (
     <div className="space-y-4">
       <ValidationErrorList errors={validationErrors} />
@@ -229,15 +218,6 @@ export const UncoveringForm: FC<UncoveringFormProps> = ({
         isEditable={isEditable}
         fumigationReportSubmitted={cleanupReportSubmitted}
         mode="cleanup"
-      />
-
-      <SignaturesSection 
-        isEditable={isEditable}
-        fumigationReportSubmitted={cleanupReportSubmitted}
-        technicianSignature={cleanupData.technicianSignature}
-        clientSignature={cleanupData.clientSignature}
-        onTechnicianSignatureChange={handleTechnicianSignatureChange}
-        onClientSignatureChange={handleClientSignatureChange}
       />
     </div>
   );
