@@ -89,9 +89,28 @@ const isReportNotFoundError = (error: any, reportType?: string): boolean => {
 export const reportsService = {
   createFumigationReport: async (data: FumigationReportRequest): Promise<ApiResponse> => {
     try {
+      console.log("🔥 FUMIGATION REPORT - API SERVICE LAYER");
+      console.log("📤 Making POST request to: /reports/fumigations");
+      console.log("📦 Payload size:", JSON.stringify(data).length, "characters");
+      console.log("🏷️  Fumigation ID (lot.id):", data.id);
+      console.log("👥 Technicians:", data.technicians.length, "technicians");
+      console.log("📋 Supplies:", data.supplies.length, "supplies");
+      console.log("🎯 Request timestamp:", new Date().toISOString());
+      
       const response = await apiClient.post('/reports/fumigations', data);
+      
+      console.log("✅ FUMIGATION REPORT - RESPONSE RECEIVED");
+      console.log("📨 Response status:", response.status);
+      console.log("📄 Response data:", response.data);
+      console.log("⏰ Response timestamp:", new Date().toISOString());
+      
       return response.data;
     } catch (error: any) {
+      console.error("❌ FUMIGATION REPORT - ERROR OCCURRED");
+      console.error("🚨 Error details:", error);
+      console.error("📊 Error status:", error.response?.status);
+      console.error("💬 Error message:", error.response?.data);
+      
       if (error.response?.status === 400) {
         throw new Error(error.response?.data?.message || "Datos inválidos");
       }
@@ -107,7 +126,7 @@ export const reportsService = {
       if (error.response?.status === 400) {
         throw new Error(error.response?.data?.message || "Datos inválidos");
       }
-      throw new Error(error.response?.data?.message || "Error al crear el reporte de descarpe");
+      throw new Error(error.response?.data?.message || "Error al crear el reporte de limpieza");
     }
   },
 
@@ -116,98 +135,22 @@ export const reportsService = {
       const response = await apiClient.get(`/reports/fumigations/by-fumigation/${fumigationId}`);
       return response.data;
     } catch (error: any) {
-      const status = error.response?.status;
-      const errorMessage = error.response?.data?.message || error.message || "Error desconocido";
-      
-      console.log(`Error getting fumigation report for ID ${fumigationId}:`, {
-        status,
-        message: errorMessage,
-        fullError: error
-      });
-
-      if (status === 404 || isReportNotFoundError(error, 'fumigation')) {
-        const notFoundError = new Error("REPORT_NOT_FOUND");
-        (notFoundError as any).status = 404;
-        (notFoundError as any).originalMessage = errorMessage;
-        throw notFoundError;
+      if (isReportNotFoundError(error, 'fumigation')) {
+        throw new Error(`No se encontró un reporte de fumigación para el ID ${fumigationId}`);
       }
-      
-      if (status === 401) {
-        const authError = new Error("NO_AUTH");
-        (authError as any).status = 401;
-        (authError as any).originalMessage = errorMessage;
-        throw authError;
-      }
-      
-      if (status === 403) {
-        const forbiddenError = new Error("NO_PERMISSION");
-        (forbiddenError as any).status = 403;
-        (forbiddenError as any).originalMessage = errorMessage;
-        throw forbiddenError;
-      }
-      
-      if (status === 500 && !isReportNotFoundError(error, 'fumigation')) {
-        const serverError = new Error("SERVER_ERROR");
-        (serverError as any).status = 500;
-        (serverError as any).originalMessage = errorMessage;
-        throw serverError;
-      }
-      
-      const genericError = new Error("UNKNOWN_ERROR");
-      (genericError as any).status = status || 0;
-      (genericError as any).originalMessage = errorMessage;
-      throw genericError;
+      throw new Error(error.response?.data?.message || "Error al obtener el reporte de fumigación");
     }
   },
 
   getCleanupReport: async (fumigationId: number): Promise<CleanupReportResponse> => {
     try {
-      console.log(`Requesting cleanup report for fumigation ID: ${fumigationId}`);
       const response = await apiClient.get(`/reports/cleanup/by-fumigation/${fumigationId}`);
-      console.log(`Cleanup report response:`, response.data);
       return response.data;
     } catch (error: any) {
-      const status = error.response?.status;
-      const errorMessage = error.response?.data?.message || error.message || "Error desconocido";
-      
-      console.log(`Error getting cleanup report for ID ${fumigationId}:`, {
-        status,
-        message: errorMessage,
-        fullError: error
-      });
-
-      if (status === 404 || isReportNotFoundError(error, 'cleanup')) {
-        const notFoundError = new Error("REPORT_NOT_FOUND");
-        (notFoundError as any).status = 404;
-        (notFoundError as any).originalMessage = errorMessage;
-        throw notFoundError;
+      if (isReportNotFoundError(error, 'cleanup')) {
+        throw new Error(`No se encontró un reporte de limpieza para el ID ${fumigationId}`);
       }
-      
-      if (status === 401) {
-        const authError = new Error("NO_AUTH");
-        (authError as any).status = 401;
-        (authError as any).originalMessage = errorMessage;
-        throw authError;
-      }
-      
-      if (status === 403) {
-        const forbiddenError = new Error("NO_PERMISSION");
-        (forbiddenError as any).status = 403;
-        (forbiddenError as any).originalMessage = errorMessage;
-        throw forbiddenError;
-      }
-      
-      if (status === 500 && !isReportNotFoundError(error, 'cleanup')) {
-        const serverError = new Error("SERVER_ERROR");
-        (serverError as any).status = 500;
-        (serverError as any).originalMessage = errorMessage;
-        throw serverError;
-      }
-      
-      const genericError = new Error("UNKNOWN_ERROR");
-      (genericError as any).status = status || 0;
-      (genericError as any).originalMessage = errorMessage;
-      throw genericError;
+      throw new Error(error.response?.data?.message || "Error al obtener el reporte de limpieza");
     }
   }
 };
