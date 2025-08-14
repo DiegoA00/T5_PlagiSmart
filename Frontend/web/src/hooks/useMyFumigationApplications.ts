@@ -7,6 +7,19 @@ export interface ApplicationTableData {
   fechaAprox: string;
   toneladas: number;
   hasRejectedOrFailed?: boolean;
+  lots?: FumigationLot[];
+}
+
+export interface FumigationLot {
+  id: number;
+  lotNumber: string;
+  ton: number;
+  portDestination: string;
+  sacks: number;
+  quality: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'FAILED' | 'FINISHED';
+  message: string;
+  dateTime: string;
 }
 
 export interface CategorizedApplications {
@@ -33,7 +46,18 @@ const categorizeApplications = (applications: ClientFumigationApplication[]): Ca
       estado: '', // Por ahora vacío según los requisitos
       fechaAprox: app.earlyDate,
       toneladas: app.totalTons,
-      hasRejectedOrFailed
+      hasRejectedOrFailed,
+      lots: app.fumigations.map(fumigation => ({
+        id: fumigation.id,
+        lotNumber: fumigation.lotNumber,
+        ton: fumigation.ton,
+        portDestination: fumigation.portDestination,
+        sacks: fumigation.sacks,
+        quality: fumigation.quality,
+        status: fumigation.status,
+        message: fumigation.message,
+        dateTime: fumigation.dateTime
+      }))
     };
 
     // Lógica de categorización según los estados de las fumigaciones

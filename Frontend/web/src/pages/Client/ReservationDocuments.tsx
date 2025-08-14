@@ -47,7 +47,7 @@ interface GridData {
 }
 
 interface DocumentSection {
-  type: 'header' | 'personal-info' | 'request-details' | 'supplies-details' | 'lot-details' | 'signatures' | 'single-signature' | 'text' | 'grid' | 'footer';
+  type: 'header' | 'personal-info' | 'request-details' | 'conditions' | 'supplies-details' | 'lot-details' | 'signatures' | 'single-signature' | 'text' | 'grid' | 'footer';
   data?: any[];
   signatures?: string[];
   signature?: string;
@@ -79,7 +79,7 @@ function ReservationDocuments() {
     if (!codigoReserva) return [];
     
     const allDocuments: DocumentsData = {
-      "000001": [
+      "1": [
         {
           type: "registro-fumigacion",
           title: "Registro de Fumigación",
@@ -167,6 +167,17 @@ function ReservationDocuments() {
                     sacks: "[Número de sacos de Lote 5]",
                     destination: "[Destino de Lote 5]"
                   }
+                ]
+              },
+              {
+                type: "conditions",
+                data: [
+                  { label: "Temperatura", value: "[Temperatura]" },
+                  { label: "Humedad", value: "[Humedad]" },
+                  { label: "Peligro eléctrico", value: "[Peligro eléctrico]" },
+                  { label: "Peligro de caídas", value: "[Peligro de caídas]" },
+                  { label: "Peligro de atropellos", value: "[Peligro de atropellos]" },
+                  { label: "Observaciones", value: "[Observaciones]" }
                 ]
               },
               {
@@ -323,7 +334,7 @@ function ReservationDocuments() {
           }
         }
       ],
-      "000002": [
+      "2": [
         {
           type: "registro-fumigacion",
           title: "Registro de Fumigación",
@@ -411,6 +422,17 @@ function ReservationDocuments() {
                     sacks: "[Número de sacos de Lote 5]",
                     destination: "[Destino de Lote 5]"
                   }
+                ]
+              },
+              {
+                type: "conditions",
+                data: [
+                  { label: "Temperatura", value: "[Temperatura]" },
+                  { label: "Humedad", value: "[Humedad]" },
+                  { label: "Peligro eléctrico", value: "[Peligro eléctrico]" },
+                  { label: "Peligro de caídas", value: "[Peligro de caídas]" },
+                  { label: "Peligro de atropellos", value: "[Peligro de atropellos]" },
+                  { label: "Observaciones", value: "[Observaciones]" }
                 ]
               },
               {
@@ -461,7 +483,7 @@ function ReservationDocuments() {
           }
         },
       ],
-      "000003": [
+      "3": [
         {
           type: "registro-fumigacion",
           title: "Registro de Fumigación",
@@ -549,6 +571,17 @@ function ReservationDocuments() {
                     sacks: "[Número de sacos de Lote 5]",
                     destination: "[Destino de Lote 5]"
                   }
+                ]
+              },
+              {
+                type: "conditions",
+                data: [
+                  { label: "Temperatura", value: "[Temperatura]" },
+                  { label: "Humedad", value: "[Humedad]" },
+                  { label: "Peligro eléctrico", value: "[Peligro eléctrico]" },
+                  { label: "Peligro de caídas", value: "[Peligro de caídas]" },
+                  { label: "Peligro de atropellos", value: "[Peligro de atropellos]" },
+                  { label: "Observaciones", value: "[Observaciones]" }
                 ]
               },
               {
@@ -836,25 +869,37 @@ function ReservationDocuments() {
                     <td className="p-2 text-center" colSpan={2}>{value.destination}</td>
                   </tr>
                 )}
-                <tr>
+              </tbody>
+            </table>
+          </div>
+        );
+      
+      case 'conditions':
+        return (
+          <div>
+            <table className="w-full mb-4 border">
+              <thead>
+                <tr className="bg-gray-100">
                   <th className="p-2" colSpan={2}>Condiciones Ambientales</th>
                   <th className="p-2" colSpan={6}>Condiciones de seguridad industrial</th>
                   <th className="p-2" colSpan={4}>Observaciones:</th>
                 </tr>
+              </thead>
+              <tbody>
                 <tr>
                   <th className="p-2">Temperatura:</th>
-                  <td className="p-2">[Temperatura]</td>
+                  <td className="p-2">{section.data?.find((item: any) => item.label === "Temperatura")?.value}</td>
                   <th className="p-2" colSpan={2}>Peligro eléctrico</th>
                   <th className='p-2' colSpan={2}>Peligro de caídas</th>
                   <th className="p-2" colSpan={2}>Peligro de atropellos</th>
-                  <td className="p-2 text-center" colSpan={4}>[Sí/No]</td>
+                  <td className="p-2 text-center" colSpan={4} rowSpan={2}>{section.data?.find((item: any) => item.label === "Observaciones")?.value}</td>
                 </tr>
                 <tr>
                   <th className="p-2">Humedad:</th>
-                  <td className="p-2">[Humedad]</td>
-                  <td className="p-2 text-center" colSpan={2}>[Sí/No]</td>
-                  <td className="p-2 text-center" colSpan={2}>[Sí/No]</td>
-                  <td className="p-2 text-center" colSpan={2}>[Sí/No]</td>
+                  <td className="p-2">{section.data?.find((item: any) => item.label === "Humedad")?.value}</td>
+                  <td className="p-2 text-center" colSpan={2}>{section.data?.find((item: any) => item.label === "Peligro eléctrico")?.value}</td>
+                  <td className="p-2 text-center" colSpan={2}>{section.data?.find((item: any) => item.label === "Peligro de caídas")?.value}</td>
+                  <td className="p-2 text-center" colSpan={2}>{section.data?.find((item: any) => item.label === "Peligro de atropellos")?.value}</td>
                 </tr>
               </tbody>
             </table>
@@ -863,12 +908,15 @@ function ReservationDocuments() {
             </caption>
           </div>
         );
-      
+
       case 'supplies-details':
         return (
           <div className="mt-6">
             <table className="w-full mb-4 border">
               <thead>
+                <tr>
+                  <th className="p-2" colSpan={5}>Insumos utilizados</th>
+                </tr>
                 <tr className="bg-gray-100">
                   <th className="p-2">Producto</th>
                   <th className="p-2">Cantidad</th>
