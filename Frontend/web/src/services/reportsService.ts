@@ -89,28 +89,9 @@ const isReportNotFoundError = (error: any, reportType?: string): boolean => {
 export const reportsService = {
   createFumigationReport: async (data: FumigationReportRequest): Promise<ApiResponse> => {
     try {
-      console.log("🔥 FUMIGATION REPORT - API SERVICE LAYER");
-      console.log("📤 Making POST request to: /reports/fumigations");
-      console.log("📦 Payload size:", JSON.stringify(data).length, "characters");
-      console.log("🏷️  Fumigation ID (lot.id):", data.id);
-      console.log("👥 Technicians:", data.technicians.length, "technicians");
-      console.log("📋 Supplies:", data.supplies.length, "supplies");
-      console.log("🎯 Request timestamp:", new Date().toISOString());
-      
       const response = await apiClient.post('/reports/fumigations', data);
-      
-      console.log("✅ FUMIGATION REPORT - RESPONSE RECEIVED");
-      console.log("📨 Response status:", response.status);
-      console.log("📄 Response data:", response.data);
-      console.log("⏰ Response timestamp:", new Date().toISOString());
-      
       return response.data;
     } catch (error: any) {
-      console.error("❌ FUMIGATION REPORT - ERROR OCCURRED");
-      console.error("🚨 Error details:", error);
-      console.error("📊 Error status:", error.response?.status);
-      console.error("💬 Error message:", error.response?.data);
-      
       if (error.response?.status === 400) {
         throw new Error(error.response?.data?.message || "Datos inválidos");
       }
