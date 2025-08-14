@@ -30,6 +30,7 @@ export default function LotsPage() {
   const [fumigations, setFumigations] = useState<ExtendedFumigationListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedFumigationStatus, setSelectedFumigationStatus] = useState<string | null>(null);
 
   const { fumigationDetails, loading: detailsLoading, loadFumigationDetails, clearDetails } = useFumigationDetails();
 
@@ -89,7 +90,6 @@ export default function LotsPage() {
     { header: "Empresa", key: "companyName" },
     { header: "Representante", key: "representative" },
     { header: "Teléfono", key: "phoneNumber" },
-    { header: "Ubicación", key: "location" },
     { 
       header: "Fecha Planificada", 
       key: "plannedDate",
@@ -128,18 +128,21 @@ export default function LotsPage() {
   const handleViewDetails = async (fumigation: ExtendedFumigationListItem) => {
     setSelectedLotId(fumigation.id);
     setShowingEvidence(false);
+    setSelectedFumigationStatus(null);
     await loadFumigationDetails(fumigation.id);
   };
 
   const handleViewEvidence = async (fumigation: ExtendedFumigationListItem) => {
     setSelectedLotId(fumigation.id);
     setShowingEvidence(true);
+    setSelectedFumigationStatus(fumigation.status);
     await loadFumigationDetails(fumigation.id);
   };
 
   const handleCloseDetails = () => {
     setSelectedLotId(null);
     setShowingEvidence(false);
+    setSelectedFumigationStatus(null);
     clearDetails();
   };
 
@@ -256,6 +259,7 @@ export default function LotsPage() {
             fumigationDetails={fumigationDetails}
             loading={detailsLoading}
             isEditable={false}
+            fumigationStatus={selectedFumigationStatus}
             onClose={handleCloseDetails}
           />
         </Overlay>

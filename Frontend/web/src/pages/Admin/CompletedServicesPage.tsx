@@ -7,12 +7,12 @@ import { FumigationListItem } from "@/types/request";
 import { LotOverlayContent } from "./Components/LotOverlayContent";
 import { EvidenceOverlay } from "./Components/Evidence/EvidenceOverlay";
 import { useFumigationData, useFumigationDetails } from "@/hooks/useFumigationData";
-import { formatDate } from "@/utils/dateUtils";
 
 export default function CompletedServicesPage() {
   const [search, setSearch] = useState("");
   const [selectedLotId, setSelectedLotId] = useState<number | null>(null);
   const [showingEvidence, setShowingEvidence] = useState(false);
+  const [selectedFumigationStatus, setSelectedFumigationStatus] = useState<string | null>(null);
 
   const { fumigations, fumigationsResponse, loading, error } = useFumigationData("FINISHED");
   const { fumigationDetails, loading: detailsLoading, loadFumigationDetails, clearDetails } = useFumigationDetails();
@@ -26,23 +26,19 @@ export default function CompletedServicesPage() {
     { header: "Empresa", key: "companyName" },
     { header: "Representante", key: "representative" },
     { header: "Teléfono", key: "phoneNumber" },
-    { header: "Ubicación", key: "location" },
-    { 
-      header: "Fecha Planificada", 
-      key: "plannedDate",
-      render: (value: string) => formatDate(value)
-    },
   ];
 
   const handleViewDetails = async (fumigation: FumigationListItem) => {
     setSelectedLotId(fumigation.id);
     setShowingEvidence(false);
+    setSelectedFumigationStatus(null);
     await loadFumigationDetails(fumigation.id);
   };
 
   const handleViewEvidence = async (fumigation: FumigationListItem) => {
     setSelectedLotId(fumigation.id);
     setShowingEvidence(true);
+    setSelectedFumigationStatus("FINISHED");
     await loadFumigationDetails(fumigation.id);
   };
 
@@ -53,6 +49,7 @@ export default function CompletedServicesPage() {
   const handleCloseDetails = () => {
     setSelectedLotId(null);
     setShowingEvidence(false);
+    setSelectedFumigationStatus(null);
     clearDetails();
   };
 
@@ -161,6 +158,7 @@ export default function CompletedServicesPage() {
             fumigationDetails={fumigationDetails}
             loading={detailsLoading}
             isEditable={false}
+            fumigationStatus={selectedFumigationStatus}
             onClose={handleCloseDetails}
           />
         </Overlay>
