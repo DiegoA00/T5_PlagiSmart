@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { CollapsibleSection } from './CollapsibleSection';
 import { FumigationData, ValidationErrors } from '@/hooks/useFumigationEvidence';
+import { TimePicker } from '../../TimePicker';
 
 interface GeneralInfoSectionProps {
   fumigationData: FumigationData;
@@ -25,6 +26,52 @@ export const GeneralInfoSection: React.FC<GeneralInfoSectionProps> = ({
   validationErrors = {},
   updateField
 }) => {
+  // Función para validar tiempo en tiempo real
+  const validateTimeRange = (startTime: string, endTime: string) => {
+    if (startTime && endTime) {
+      const start = new Date(`2000-01-01T${startTime}`);
+      const end = new Date(`2000-01-01T${endTime}`);
+      
+      if (end <= start) {
+        return "La hora de finalización debe ser posterior a la hora de inicio";
+      }
+      
+      // Validar que la diferencia sea al menos de 1 minuto
+      const timeDiff = end.getTime() - start.getTime();
+      const minutesDiff = timeDiff / (1000 * 60);
+      
+      if (minutesDiff < 1) {
+        return "La hora de finalización debe ser al menos 1 minuto después de la hora de inicio";
+      }
+    }
+    return null;
+  };
+
+  const handleStartTimeChange = (value: string) => {
+    updateField('startTime', value);
+    
+    // Validar inmediatamente si hay hora de finalización
+    if (fumigationData.endTime) {
+      const timeRangeError = validateTimeRange(value, fumigationData.endTime);
+      if (timeRangeError) {
+        // Aquí podrías actualizar los errores de validación si tienes acceso a setValidationErrors
+        console.log('Time range error:', timeRangeError);
+      }
+    }
+  };
+
+  const handleEndTimeChange = (value: string) => {
+    updateField('endTime', value);
+    
+    // Validar inmediatamente si hay hora de inicio
+    if (fumigationData.startTime) {
+      const timeRangeError = validateTimeRange(fumigationData.startTime, value);
+      if (timeRangeError) {
+        // Aquí podrías actualizar los errores de validación si tienes acceso a setValidationErrors
+        console.log('Time range error:', timeRangeError);
+      }
+    }
+  };
   return (
     <CollapsibleSection title="Información General" defaultOpen>
       <View style={styles.container}>
@@ -69,16 +116,12 @@ export const GeneralInfoSection: React.FC<GeneralInfoSectionProps> = ({
         <View style={styles.row}>
           <View style={styles.field}>
             <Text style={[styles.label, styles.required]}>Hora de Inicio</Text>
-            <TextInput
-              style={[
-                styles.input,
-                validationErrors.startTime ? styles.inputError : null,
-                (!isEditable || fumigationReportSubmitted) ? styles.disabledInput : null
-              ]}
+            <TimePicker
               value={fumigationData.startTime}
-              onChangeText={(value) => updateField('startTime', value)}
-              editable={isEditable && !fumigationReportSubmitted}
+              onChange={handleStartTimeChange}
+              disabled={!isEditable || fumigationReportSubmitted}
               placeholder="HH:MM"
+              error={!!validationErrors.startTime}
             />
             {validationErrors.startTime && (
               <Text style={styles.errorText}>{validationErrors.startTime}</Text>
@@ -86,16 +129,14 @@ export const GeneralInfoSection: React.FC<GeneralInfoSectionProps> = ({
           </View>
           <View style={styles.field}>
             <Text style={[styles.label, styles.required]}>Hora de Finalización</Text>
-            <TextInput
-              style={[
-                styles.input,
-                validationErrors.endTime ? styles.inputError : null,
-                (!isEditable || fumigationReportSubmitted) ? styles.disabledInput : null
-              ]}
+            <TimePicker
               value={fumigationData.endTime}
-              onChangeText={(value) => updateField('endTime', value)}
-              editable={isEditable && !fumigationReportSubmitted}
+              onChange={handleEndTimeChange}
+              disabled={!isEditable || fumigationReportSubmitted}
               placeholder="HH:MM"
+              error={!!validationErrors.endTime || !!validationErrors.timeRange}
+              otherTime={fumigationData.startTime}
+              isEndTime={true}
             />
             {validationErrors.endTime && (
               <Text style={styles.errorText}>{validationErrors.endTime}</Text>

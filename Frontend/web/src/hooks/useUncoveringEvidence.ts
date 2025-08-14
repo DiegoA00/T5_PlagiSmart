@@ -102,6 +102,14 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
       if (endTime <= startTime) {
         errors.timeRange = "La hora de finalización debe ser posterior a la hora de inicio";
       }
+      
+      // Validar que la diferencia sea al menos de 1 minuto
+      const timeDiff = endTime.getTime() - startTime.getTime();
+      const minutesDiff = timeDiff / (1000 * 60);
+      
+      if (minutesDiff < 1) {
+        errors.timeRange = "La hora de finalización debe ser al menos 1 minuto después de la hora de inicio";
+      }
     }
     
     if (!cleanupData.supervisor || cleanupData.supervisor.trim() === "") {
