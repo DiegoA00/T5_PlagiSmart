@@ -2,7 +2,7 @@ import { Layout } from "../../layouts/Layout";
 import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
 import { useParams } from "react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { fumigationReportsService, FumigationReport } from "@/services/fumigationReportsService";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -75,7 +75,10 @@ interface Document {
 type DocumentsData = Record<string, Document[]>;
 
 function ReservationDocuments() {
+  console.log('ReservationDocuments component renderizando...');
   const { codigo, lotId } = useParams<{ codigo?: string; lotId?: string }>();
+  console.log('Parámetros recibidos:', { codigo, lotId });
+  
   const { profileData } = useProfile();
   const [fumigationReport, setFumigationReport] = useState<FumigationReport | null>(null);
   const [loading, setLoading] = useState(false);
@@ -88,12 +91,15 @@ function ReservationDocuments() {
       if (!lotId) return;
 
       try {
+        console.log('Iniciando carga de reporte para lote:', lotId);
         setLoading(true);
         setError(null);
         setNoDataFound(false);
         const report = await fumigationReportsService.getFumigationReport(parseInt(lotId));
+        console.log('Reporte cargado exitosamente:', report);
         setFumigationReport(report);
       } catch (err: any) {
+        console.error('Error completo al cargar reporte:', err);
         // Distinguir entre diferentes tipos de errores
         const errorMessage = err.message || 'Error al cargar el reporte de fumigación';
         
@@ -111,7 +117,6 @@ function ReservationDocuments() {
           setError(errorMessage);
           setNoDataFound(false);
         }
-        console.error('Error loading fumigation report:', err);
       } finally {
         setLoading(false);
       }
@@ -122,77 +127,86 @@ function ReservationDocuments() {
 
   // Función para crear documentos basados en datos de la API
   const createDocumentsFromReport = (report: FumigationReport): Document[] => {
+    console.log('Creando documentos desde reporte:', report);
+    console.log('Profile data disponible:', profileData);
+    
     const companyName = profileData?.company?.businessName || "[Nombre de la Empresa]";
     
-    return [
-      {
-        type: "registro-fumigacion",
-        title: "Registro de Fumigación",
-        fileName: "Registro_Fumigacion",
-        content: {
-          mainTitle: "REGISTRO DE FUMIGACIÓN",
-          subtitle: `Código de Documentos reserva: ${report.id}`,
-          sections: [
-            {
-              type: "header",
-              data: [
-                { label: "Empresa", value: companyName },
-                { label: "Ubicación", value: report.location },
-                { label: "Fecha", value: report.date },
-                { label: "Hora/Inicio", value: report.startTime },
-                { label: "Hora/Fin", value: report.endTime },
-                { label: "Supervisor", value: report.supervisor }
-              ]
-            },
-            {
-              type: "personal-info",
-              data: report.technicians.map(tech => ({
-                name: `${tech.firstName} ${tech.lastName}`,
-                position: "Técnico"
-              }))
-            },
-            {
-              type: "request-details",
-              data: [
-                {
-                  lot: report.fumigationInfo.lotNumber,
-                  dimension: `${report.dimensions.height}m x ${report.dimensions.width}m x ${report.dimensions.length}m`,
-                  tons: report.fumigationInfo.ton.toString(),
-                  quality: report.fumigationInfo.quality,
-                  sacks: report.fumigationInfo.sacks.toString(),
-                  destination: report.fumigationInfo.portDestination
-                }
-              ]
-            },
-            {
-              type: "conditions",
-              data: [
-                { label: "Temperatura", value: `${report.environmentalConditions.temperature}°C` },
-                { label: "Humedad", value: `${report.environmentalConditions.humidity}%` },
-                { label: "Peligro eléctrico", value: report.industrialSafetyConditions.electricDanger ? "Sí" : "No" },
-                { label: "Peligro de caídas", value: report.industrialSafetyConditions.fallingDanger ? "Sí" : "No" },
-                { label: "Peligro de atropellos", value: report.industrialSafetyConditions.hitDanger ? "Sí" : "No" },
-                { label: "Observaciones", value: report.observations }
-              ]
-            },
-            {
-              type: "supplies-details",
-              data: report.supplies.map(supply => ({
-                product: supply.name,
-                quantity: supply.quantity.toString(),
-                dose: supply.dosage,
-                fumigationMethod: supply.kindOfSupply,
-                ribbonsNumber: supply.numberOfStrips
-              }))
-            },
-            {
-              type: "signatures",
-              signatures: ["Supervisor", "Técnico 1", "Técnico 2", "Cliente"]
-            }
-          ]
-        }
-      }
-    ];
+    try {
+      return [
+        {
+          type: "registro-fumigacion",
+          title: "Registro de Fumigación",
+          fileName: "Registro_Fumigacion",
+          content: {
+            mainTitle: "REGISTRO DE FUMIGACIÓN",
+            subtitle: `Código de Reserva: ${report.id || 'N/A'}`,
+            sections: [
+              {
+                type: "header",
+                data: [
+                  { label: "Empresa", value: companyName },
+                  { label: "Ubicación", value: report.location || 'N/A' },
+                  { label: "Fecha", value: report.date || 'N/A' },
+                  { label: "Hora/Inicio", value: report.startTime || 'N/A' },
+                  { label: "Hora/Fin", value: report.endTime || 'N/A' },
+                  { label: "Supervisor", value: report.supervisor || 'N/A' }
+                ]
+              },
+              {
+                type: "personal-info",
+                data: (report.technicians || []).map(tech => ({
+                  name: `${tech.firstName || ''} ${tech.lastName || ''}`,
+                  position: "Técnico"
+                }))
+              },
+              {
+                type: "request-details",
+                data: [
+                  {
+                    lot: report.fumigationInfo?.lotNumber || 'N/A',
+                    dimension: `${report.dimensions?.height || 0}m x ${report.dimensions?.width || 0}m x ${report.dimensions?.length || 0}m`,
+                    tons: (report.fumigationInfo?.ton || 0).toString(),
+                    quality: report.fumigationInfo?.quality || 'N/A',
+                    sacks: (report.fumigationInfo?.sacks || 0).toString(),
+                    destination: report.fumigationInfo?.portDestination || 'N/A'
+                  }
+                ]
+              },
+              {
+                type: "conditions",
+                data: [
+                  { label: "Temperatura", value: `${report.environmentalConditions?.temperature || 0}°C` },
+                  { label: "Humedad", value: `${report.environmentalConditions?.humidity || 0}%` },
+                  { label: "Peligro eléctrico", value: report.industrialSafetyConditions?.electricDanger ? "Sí" : "No" },
+                  { label: "Peligro de caídas", value: report.industrialSafetyConditions?.fallingDanger ? "Sí" : "No" },
+                  { label: "Peligro de atropellos", value: report.industrialSafetyConditions?.hitDanger ? "Sí" : "No" },
+                  { label: "Observaciones", value: report.observations || 'N/A' }
+                ]
+              },
+              {
+                type: "supplies-details",
+                data: (report.supplies || []).map(supply => ({
+                  product: supply.name || 'N/A',
+                  quantity: (supply.quantity || 0).toString(),
+                  dose: supply.dosage || 'N/A',
+                  fumigationMethod: supply.kindOfSupply || 'N/A',
+                  ribbonsNumber: supply.numberOfStrips || 0
+                }))
+              },
+              {
+                type: "signatures",
+                signatures: ["Supervisor", "Técnico 1", "Técnico 2", "Cliente"]
+              }
+            ]
+          }
+        },
+        
+      ];
+    } catch (error) {
+      console.error('Error creando documentos desde reporte:', error);
+      return [];
+    }
   };
 
   // Simulación de datos de documentos por reserva - esto vendría de una API
@@ -912,13 +926,34 @@ function ReservationDocuments() {
     return allDocuments[codigoReserva] || [];
   };
 
-  const documents = (() => {
-    if (fumigationReport) {
-      return createDocumentsFromReport(fumigationReport);
-    }
-    if (noDataFound || error) {
+  // Función para obtener documentos basados en datos del reporte
+  const getDocumentsFromReport = useMemo(() => {
+    if (!fumigationReport) return [];
+    
+    console.log('Usando datos del reporte API para crear documentos');
+    try {
+      const docs = createDocumentsFromReport(fumigationReport);
+      // Si llegamos aquí sin error, limpiamos cualquier error previo
+      if (error && error === 'Error al procesar los datos del reporte') {
+        setError(null);
+      }
+      return docs;
+    } catch (error) {
+      console.error('Error en getDocumentsFromReport:', error);
+      setError('Error al procesar los datos del reporte');
       return [];
     }
+  }, [fumigationReport, error]);
+
+  const documents = (() => {
+    if (fumigationReport) {
+      return getDocumentsFromReport;
+    }
+    if (noDataFound || error) {
+      console.log('No hay datos o hay error, retornando array vacío');
+      return [];
+    }
+    console.log('Usando datos simulados para código:', codigo);
     return getDocumentsByReservation(codigo);
   })();
 
@@ -1306,6 +1341,8 @@ function ReservationDocuments() {
       alert(errorMessage);
     }
   };
+
+  console.log('Estado actual:', { loading, error, noDataFound, fumigationReport: !!fumigationReport, documents: documents.length });
 
   return (
     <Layout>

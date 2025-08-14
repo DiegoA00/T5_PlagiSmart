@@ -16,12 +16,17 @@ export interface IndustrialSafetyConditions {
   electricDanger: boolean;
   fallingDanger: boolean;
   hitDanger: boolean;
+  otherDanger: boolean;
 }
 
 export interface Technician {
   id: number;
   firstName: string;
   lastName: string;
+  email: string;
+  // Agregamos campos adicionales que podrían estar en UserResponseDTO
+  username?: string;
+  role?: string;
 }
 
 export interface Supply {
@@ -72,7 +77,75 @@ export interface FumigationReport {
 export const fumigationReportsService = {
   getFumigationReport: async (fumigationId: number): Promise<FumigationReport> => {
     try {
+      console.log(`Solicitando reporte para fumigación ID: ${fumigationId}`);
+      
+      // Para pruebas, simulemos algunos datos cuando no hay backend
+      if (fumigationId === 999) {
+        console.log('Devolviendo datos simulados para ID 999');
+        return {
+          id: 999,
+          supervisor: "Juan Pérez",
+          location: "Bodega Central",
+          date: "2024-08-14",
+          startTime: "08:00",
+          endTime: "17:00",
+          observations: "Fumigación completada satisfactoriamente",
+          dimensions: {
+            height: 10,
+            width: 20,
+            length: 30
+          },
+          environmentalConditions: {
+            temperature: 28,
+            humidity: 65
+          },
+          industrialSafetyConditions: {
+            electricDanger: false,
+            fallingDanger: true,
+            hitDanger: false,
+            otherDanger: false
+          },
+          technicians: [
+            {
+              id: 1,
+              firstName: "Carlos",
+              lastName: "Rodríguez",
+              email: "carlos@empresa.com"
+            },
+            {
+              id: 2,
+              firstName: "Ana",
+              lastName: "García",
+              email: "ana@empresa.com"
+            }
+          ],
+          supplies: [
+            {
+              id: 1,
+              name: "Fosfina",
+              quantity: 50,
+              dosage: "2g/m³",
+              kindOfSupply: "Fumigante",
+              numberOfStrips: "10"
+            }
+          ],
+          fumigationInfo: {
+            id: 1,
+            lotNumber: "LOT-2024-001",
+            ton: 25,
+            portDestination: "Puerto de Guayaquil",
+            sacks: 500,
+            quality: "Primera",
+            dateTime: "2024-08-14T08:00:00",
+            status: "COMPLETED",
+            message: "Fumigación exitosa"
+          },
+          signatures: []
+        };
+      }
+      
       const response = await apiClient.get(`/reports/fumigations/by-fumigation/${fumigationId}`);
+      console.log('Respuesta del backend recibida:', response.data);
       return response.data;
     } catch (error: any) {
       console.log('Fumigation Report Service Error:', {
