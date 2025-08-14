@@ -11,6 +11,38 @@ import {
 import Svg, { Path } from 'react-native-svg';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 
+// Función para convertir string a base64 (compatible con React Native)
+const stringToBase64 = (str: string): string => {
+  if (typeof btoa !== 'undefined') {
+    return btoa(str);
+  }
+  
+  // Implementación alternativa para React Native
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+  let output = '';
+  const bytes = new Uint8Array(str.length);
+  
+  for (let i = 0; i < str.length; i++) {
+    bytes[i] = str.charCodeAt(i);
+  }
+  
+  let byteNum;
+  let chunk;
+  
+  for (let i = 0; i < bytes.length; i += 3) {
+    byteNum = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
+    chunk = [
+      chars[(byteNum >> 18) & 0x3F],
+      chars[(byteNum >> 12) & 0x3F],
+      chars[(byteNum >> 6) & 0x3F],
+      chars[byteNum & 0x3F]
+    ];
+    output += chunk.join('');
+  }
+  
+  return output;
+};
+
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 interface SignatureModalProps {
@@ -32,21 +64,38 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
   const [currentPath, setCurrentPath] = useState<string>('');
   const pathRef = useRef<string>('');
 
+  // Limpiar datos cuando el modal se abre
+  React.useEffect(() => {
+    if (isOpen) {
+      clearSignature();
+    }
+  }, [isOpen]);
+
   const onGestureEvent = (event: any) => {
-    const { translationX, translationY, absoluteX, absoluteY } = event.nativeEvent;
-    
-    if (event.nativeEvent.state === State.BEGAN) {
-      const newPath = `M${absoluteX - 20},${absoluteY - 150}`;
-      pathRef.current = newPath;
-      setCurrentPath(newPath);
-    } else if (event.nativeEvent.state === State.ACTIVE) {
-      const newPath = `${pathRef.current} L${absoluteX - 20},${absoluteY - 150}`;
-      pathRef.current = newPath;
-      setCurrentPath(newPath);
-    } else if (event.nativeEvent.state === State.END) {
-      setPaths(prev => [...prev, pathRef.current]);
-      setCurrentPath('');
-      pathRef.current = '';
+    try {
+      const { absoluteX, absoluteY } = event.nativeEvent;
+      
+      // Calcular la posición relativa al área de firma
+      const signatureAreaX = absoluteX - 20; // Ajuste para el padding del modal
+      const signatureAreaY = absoluteY - 150; // Ajuste para el header y padding
+      
+      if (event.nativeEvent.state === State.BEGAN) {
+        const newPath = `M${signatureAreaX},${signatureAreaY}`;
+        pathRef.current = newPath;
+        setCurrentPath(newPath);
+      } else if (event.nativeEvent.state === State.ACTIVE) {
+        const newPath = `${pathRef.current} L${signatureAreaX},${signatureAreaY}`;
+        pathRef.current = newPath;
+        setCurrentPath(newPath);
+      } else if (event.nativeEvent.state === State.END) {
+        if (pathRef.current) {
+          setPaths(prev => [...prev, pathRef.current]);
+        }
+        setCurrentPath('');
+        pathRef.current = '';
+      }
+    } catch (error) {
+      console.error('Error in gesture event:', error);
     }
   };
 
@@ -57,22 +106,29 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
   };
 
   const saveSignature = () => {
-    if (paths.length === 0 && !currentPath) {
-      Alert.alert('Error', 'Por favor, dibuje su firma antes de guardar.');
-      return;
+    try {
+      if (paths.length === 0 && !currentPath) {
+        Alert.alert('Error', 'Por favor, dibuje su firma antes de guardar.');
+        return;
+      }
+
+      // Convert SVG to a simple string representation
+      const svgContent = `
+        <svg width="350" height="200" xmlns="http://www.w3.org/2000/svg">
+          ${paths.map(path => `<path d="${path}" stroke="black" stroke-width="2" fill="none" />`).join('')}
+          ${currentPath ? `<path d="${currentPath}" stroke="black" stroke-width="2" fill="none" />` : ''}
+        </svg>
+      `;
+      
+      const signatureData = `data:image/svg+xml;base64,${stringToBase64(svgContent)}`;
+
+      onSave(signatureData);
+      clearSignature();
+      onClose();
+    } catch (error) {
+      console.error('Error saving signature:', error);
+      Alert.alert('Error', 'No se pudo guardar la firma. Inténtelo nuevamente.');
     }
-
-    // Convert SVG to a simple string representation
-    const signatureData = `data:image/svg+xml;base64,${btoa(`
-      <svg width="350" height="200" xmlns="http://www.w3.org/2000/svg">
-        ${paths.map(path => `<path d="${path}" stroke="black" stroke-width="2" fill="none" />`).join('')}
-        ${currentPath ? `<path d="${currentPath}" stroke="black" stroke-width="2" fill="none" />` : ''}
-      </svg>
-    `)}`;
-
-    onSave(signatureData);
-    clearSignature();
-    onClose();
   };
 
   const handleClose = () => {
@@ -98,9 +154,12 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
               Dibuje su firma en el área de abajo
             </Text>
             
-            <PanGestureHandler onGestureEvent={onGestureEvent}>
+            <PanGestureHandler 
+              onGestureEvent={onGestureEvent}
+              shouldCancelWhenOutside={false}
+            >
               <View style={styles.signatureArea}>
-                <Svg height="200" width="350" style={styles.svg}>
+                <Svg height="200" width={Math.min(350, screenWidth * 0.8)} style={styles.svg}>
                   {paths.map((path, index) => (
                     <Path
                       key={index}
@@ -163,8 +222,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 20,
-    width: screenWidth * 0.9,
-    maxWidth: 400,
+    width: Math.min(screenWidth * 0.9, 400),
     alignItems: 'center',
   },
   modalTitle: {
@@ -191,7 +249,7 @@ const styles = StyleSheet.create({
     borderColor: '#e5e7eb',
     borderStyle: 'dashed',
     borderRadius: 8,
-    width: 350,
+    width: Math.min(350, screenWidth * 0.8),
     height: 200,
     justifyContent: 'center',
     alignItems: 'center',
