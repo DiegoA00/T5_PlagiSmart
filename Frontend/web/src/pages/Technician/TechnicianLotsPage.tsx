@@ -21,6 +21,7 @@ const FILTER_OPTIONS = [
 
 interface ExtendedFumigationListItem extends FumigationListItem {
   status: string;
+  ton?: number;
 }
 
 export default function TechnicianLotsPage() {
@@ -87,15 +88,17 @@ export default function TechnicianLotsPage() {
   );
 
   const columns = [
-    { header: "Número de Lote", key: "lotNumber" },
     { header: "Empresa", key: "companyName" },
-    { header: "Representante", key: "representative" },
-    { header: "Teléfono", key: "phoneNumber" },
-    { header: "Ubicación", key: "location" },
     { 
       header: "Fecha Planificada", 
       key: "plannedDate",
       render: (value: string) => formatDate(value)
+    },
+    { header: "Número de Lote", key: "lotNumber" },
+    { 
+      header: "Toneladas", 
+      key: "ton",
+      render: (value: number) => value || 0
     },
     {
       header: "Servicio",
