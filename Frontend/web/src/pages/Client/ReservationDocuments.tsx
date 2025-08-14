@@ -2,6 +2,9 @@ import { Layout } from "../../layouts/Layout";
 import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
 import { useParams } from "react-router";
+import { useState, useEffect } from "react";
+import { fumigationReportsService, FumigationReport } from "@/services/fumigationReportsService";
+import { useProfile } from "@/hooks/useProfile";
 
 interface HeaderData {
   label: string;
@@ -72,7 +75,125 @@ interface Document {
 type DocumentsData = Record<string, Document[]>;
 
 function ReservationDocuments() {
-  const { codigo } = useParams<{ codigo: string }>();
+  const { codigo, lotId } = useParams<{ codigo?: string; lotId?: string }>();
+  const { profileData } = useProfile();
+  const [fumigationReport, setFumigationReport] = useState<FumigationReport | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [noDataFound, setNoDataFound] = useState(false);
+
+  // Cargar datos de la API cuando hay un lotId
+  useEffect(() => {
+    const loadFumigationReport = async () => {
+      if (!lotId) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+        setNoDataFound(false);
+        const report = await fumigationReportsService.getFumigationReport(parseInt(lotId));
+        setFumigationReport(report);
+      } catch (err: any) {
+        // Distinguir entre diferentes tipos de errores
+        const errorMessage = err.message || 'Error al cargar el reporte de fumigación';
+        
+        if (errorMessage.includes("No se encontró ningún reporte") || 
+            errorMessage.includes("no está disponible")) {
+          setNoDataFound(true);
+          setError(null);
+          console.info('No hay reportes disponibles para este lote');
+        } else if (err.response?.status === 401) {
+          // Si aún llega un 401 aquí, tratarlo como "no disponible" para este endpoint específico
+          setNoDataFound(true);
+          setError(null);
+          console.warn('401 tratado como "no disponible" para reporte de fumigación');
+        } else {
+          setError(errorMessage);
+          setNoDataFound(false);
+        }
+        console.error('Error loading fumigation report:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadFumigationReport();
+  }, [lotId]);
+
+  // Función para crear documentos basados en datos de la API
+  const createDocumentsFromReport = (report: FumigationReport): Document[] => {
+    const companyName = profileData?.company?.businessName || "[Nombre de la Empresa]";
+    
+    return [
+      {
+        type: "registro-fumigacion",
+        title: "Registro de Fumigación",
+        fileName: "Registro_Fumigacion",
+        content: {
+          mainTitle: "REGISTRO DE FUMIGACIÓN",
+          subtitle: `Código de Documentos reserva: ${report.id}`,
+          sections: [
+            {
+              type: "header",
+              data: [
+                { label: "Empresa", value: companyName },
+                { label: "Ubicación", value: report.location },
+                { label: "Fecha", value: report.date },
+                { label: "Hora/Inicio", value: report.startTime },
+                { label: "Hora/Fin", value: report.endTime },
+                { label: "Supervisor", value: report.supervisor }
+              ]
+            },
+            {
+              type: "personal-info",
+              data: report.technicians.map(tech => ({
+                name: `${tech.firstName} ${tech.lastName}`,
+                position: "Técnico"
+              }))
+            },
+            {
+              type: "request-details",
+              data: [
+                {
+                  lot: report.fumigationInfo.lotNumber,
+                  dimension: `${report.dimensions.height}m x ${report.dimensions.width}m x ${report.dimensions.length}m`,
+                  tons: report.fumigationInfo.ton.toString(),
+                  quality: report.fumigationInfo.quality,
+                  sacks: report.fumigationInfo.sacks.toString(),
+                  destination: report.fumigationInfo.portDestination
+                }
+              ]
+            },
+            {
+              type: "conditions",
+              data: [
+                { label: "Temperatura", value: `${report.environmentalConditions.temperature}°C` },
+                { label: "Humedad", value: `${report.environmentalConditions.humidity}%` },
+                { label: "Peligro eléctrico", value: report.industrialSafetyConditions.electricDanger ? "Sí" : "No" },
+                { label: "Peligro de caídas", value: report.industrialSafetyConditions.fallingDanger ? "Sí" : "No" },
+                { label: "Peligro de atropellos", value: report.industrialSafetyConditions.hitDanger ? "Sí" : "No" },
+                { label: "Observaciones", value: report.observations }
+              ]
+            },
+            {
+              type: "supplies-details",
+              data: report.supplies.map(supply => ({
+                product: supply.name,
+                quantity: supply.quantity.toString(),
+                dose: supply.dosage,
+                fumigationMethod: supply.kindOfSupply,
+                ribbonsNumber: supply.numberOfStrips
+              }))
+            },
+            {
+              type: "signatures",
+              signatures: ["Supervisor", "Técnico 1", "Técnico 2", "Cliente"]
+            }
+          ]
+        }
+      }
+    ];
+  };
 
   // Simulación de datos de documentos por reserva - esto vendría de una API
   const getDocumentsByReservation = (codigoReserva: string | undefined): Document[] => {
@@ -791,7 +912,15 @@ function ReservationDocuments() {
     return allDocuments[codigoReserva] || [];
   };
 
-  const documents = getDocumentsByReservation(codigo);
+  const documents = (() => {
+    if (fumigationReport) {
+      return createDocumentsFromReport(fumigationReport);
+    }
+    if (noDataFound || error) {
+      return [];
+    }
+    return getDocumentsByReservation(codigo);
+  })();
 
   // Función para renderizar diferentes tipos de secciones
   const renderSection = (section: DocumentSection, index: number) => {
@@ -1184,12 +1313,46 @@ function ReservationDocuments() {
         <div className="px-6 py-4 pb-12">
           <div className="mb-6 no-print">
             <h1 className="text-2xl font-bold text-[#003595] mb-2">
-              Documentos de Reserva - {codigo}
+              Documentos de Reserva - {codigo || lotId}
             </h1>
             <p className="text-gray-600">
               Gestiona y descarga los documentos relacionados con tu reserva
             </p>
-            {documents.length === 0 && (
+            
+            {/* Estados de carga y error */}
+            {loading && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-blue-800">Cargando datos del reporte...</p>
+              </div>
+            )}
+            
+            {error && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-800">Error: {error}</p>
+              </div>
+            )}
+            
+            {noDataFound && (
+              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <h3 className="text-yellow-800 font-medium mb-2">No hay reportes disponibles</h3>
+                <p className="text-yellow-700 text-sm mb-2">
+                  No se encontraron reportes para este lote de fumigación.
+                </p>
+                <div className="text-sm text-yellow-600">
+                  <p><strong>Posibles razones:</strong></p>
+                  <ul className="list-disc list-inside mt-1 space-y-1">
+                    <li>El proceso de fumigación aún no ha sido completado</li>
+                    <li>El reporte aún no ha sido generado por los técnicos</li>
+                    <li>El lote especificado no existe o fue ingresado incorrectamente</li>
+                  </ul>
+                  <p className="mt-3 text-yellow-700">
+                    <strong>Sugerencia:</strong> Contacta con el equipo técnico para verificar el estado de la fumigación de este lote.
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {documents.length === 0 && !loading && !error && !noDataFound && (
               <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <p className="text-yellow-800">No hay documentos disponibles para esta reserva.</p>
               </div>

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = (import.meta as any).env.VITE_API_URL;
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -25,7 +25,7 @@ apiClient.interceptors.request.use(
         return config;
     },
     (error) => {
-        return Promise.reject(error);
+        return Promise.reject(error instanceof Error ? error : new Error(error?.message || 'Request failed'));
     }
 );
 
@@ -34,7 +34,33 @@ apiClient.interceptors.response.use(
         return response;
     },
     (error) => {
+        console.log('API Error Response:', {
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            url: error.config?.url,
+            data: error.response?.data
+        });
+        
         if (error.response?.status === 401) {
+            const url = error.config?.url || '';
+            
+            // Lista de endpoints donde un 401 no debería cerrar sesión automáticamente
+            const nonAuthEndpoints = [
+                '/reports/fumigations/by-fumigation',
+                '/reports/',
+                '/documents/'
+            ];
+            
+            // Verificar si el error 401 viene de un endpoint de reportes/documentos
+            const isNonAuthEndpoint = nonAuthEndpoints.some(endpoint => url.includes(endpoint));
+            
+            if (isNonAuthEndpoint) {
+                console.warn(`401 en endpoint de recursos (${url}) - no cerrando sesión automáticamente`);
+                // No cerrar sesión para estos endpoints, dejar que el servicio específico maneje el error
+                return Promise.reject(error instanceof Error ? error : new Error(error?.message || 'API Error'));
+            }
+            
+            console.log('401 Unauthorized - Clearing tokens and redirecting to login');
             localStorage.removeItem('auth_token');
             localStorage.removeItem('token_type');
             localStorage.removeItem('user_data');
@@ -47,7 +73,7 @@ apiClient.interceptors.response.use(
             }
         }
         
-        return Promise.reject(error);
+        return Promise.reject(error instanceof Error ? error : new Error(error?.message || 'API Error'));
     }
 );
 
