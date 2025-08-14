@@ -46,9 +46,24 @@ export const usersService = {
 
   async getUsersByRole(role: string): Promise<{ data: ApiUser[] | null; success: boolean; message?: string }> {
     try {
-      const response = await apiService.get<ApiUser[]>(`/users/role/${role}`);
+      // Use the same endpoint as web: /users with role parameter
+      const response = await apiService.get<{ content: ApiUser[] }>(`/users?role=${role}&page=0&size=50`);
+      
+      let usersData: ApiUser[] | null = null;
+      
+      if (response.data && response.success) {
+        // Handle both paginated response and direct array
+        if (typeof response.data === 'object' && 'content' in response.data && Array.isArray(response.data.content)) {
+          usersData = response.data.content;
+        } else if (Array.isArray(response.data)) {
+          usersData = response.data;
+        } else {
+          usersData = [];
+        }
+      }
+      
       return {
-        data: response.data || null,
+        data: usersData,
         success: response.success,
         message: response.message
       };

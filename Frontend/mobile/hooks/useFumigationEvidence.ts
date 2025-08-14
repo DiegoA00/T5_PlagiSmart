@@ -27,6 +27,7 @@ export interface Hazards {
   electricDanger: boolean;
   fallingDanger: boolean;
   hitDanger: boolean;
+  otherDanger?: boolean;
 }
 
 export interface Supply {
@@ -132,7 +133,8 @@ export const useFumigationEvidence = (fumigationDetails: FumigationDetailRespons
     hazards: {
       electricDanger: false,
       fallingDanger: false,
-      hitDanger: false
+      hitDanger: false,
+      otherDanger: false
     },
     supplies: [],
     observations: "",
@@ -141,20 +143,20 @@ export const useFumigationEvidence = (fumigationDetails: FumigationDetailRespons
   });
 
   useEffect(() => {
-    if (fumigationDetails) {
+    if (fumigationDetails?.lot?.id && fumigationDetails?.company) {
       setFumigationData(prev => ({
         ...prev,
         fumigationId: fumigationDetails.lot.id.toString(),
-        registrationNumber: fumigationDetails.lot.lotNumber,
-        company: fumigationDetails.company.businessName,
-        location: fumigationDetails.company.address,
+        registrationNumber: fumigationDetails.lot.lotNumber || "",
+        company: fumigationDetails.company.businessName || "",
+        location: fumigationDetails.company.address || "",
         supervisor: "",
         lotDetails: {
-          lotNumber: fumigationDetails.lot.lotNumber,
-          tons: fumigationDetails.lot.tons.toString(),
-          quality: fumigationDetails.lot.quality,
-          sacks: fumigationDetails.lot.sacks.toString(),
-          destination: fumigationDetails.lot.portDestination,
+          lotNumber: fumigationDetails.lot.lotNumber || "",
+          tons: fumigationDetails.lot.tons?.toString() || "",
+          quality: fumigationDetails.lot.quality || "",
+          sacks: fumigationDetails.lot.sacks?.toString() || "",
+          destination: fumigationDetails.lot.portDestination || "",
           ppmFosfina: "",
           fumigationTime: "",
           stripsState: ""
@@ -278,7 +280,8 @@ export const useFumigationEvidence = (fumigationDetails: FumigationDetailRespons
       hazards: {
         electricDanger: false,
         fallingDanger: false,
-        hitDanger: false
+        hitDanger: false,
+        otherDanger: false
       },
       supplies: [],
       observations: "",
@@ -286,14 +289,17 @@ export const useFumigationEvidence = (fumigationDetails: FumigationDetailRespons
       clientSignature: ""
     };
 
-    if (fumigationDetails) {
+    if (fumigationDetails?.lot?.id && fumigationDetails?.company) {
       initialData.fumigationId = fumigationDetails.lot.id.toString();
+      initialData.registrationNumber = fumigationDetails.lot.lotNumber || "";
+      initialData.company = fumigationDetails.company.businessName || "";
+      initialData.location = fumigationDetails.company.address || "";
       initialData.lotDetails = {
-        lotNumber: fumigationDetails.lot.lotNumber,
-        tons: fumigationDetails.lot.tons.toString(),
-        quality: fumigationDetails.lot.quality,
-        sacks: fumigationDetails.lot.sacks.toString(),
-        destination: fumigationDetails.lot.portDestination,
+        lotNumber: fumigationDetails.lot.lotNumber || "",
+        tons: fumigationDetails.lot.tons?.toString() || "",
+        quality: fumigationDetails.lot.quality || "",
+        sacks: fumigationDetails.lot.sacks?.toString() || "",
+        destination: fumigationDetails.lot.portDestination || "",
         ppmFosfina: "",
         fumigationTime: "",
         stripsState: ""

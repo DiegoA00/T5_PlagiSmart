@@ -127,7 +127,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     }, 4 * 60 * 1000); // 4 minutos
 
-    setTokenRefreshInterval(interval);
+    setTokenRefreshInterval(interval as any);
     console.log('AuthContext - Token refresh scheduled every 4 minutes');
   };
 

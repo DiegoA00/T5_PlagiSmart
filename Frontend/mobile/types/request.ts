@@ -8,6 +8,9 @@ export interface ApiFumigationApplication {
   description?: string;
   contactEmail?: string;
   contactPhone?: string;
+  contactInfo?: string;
+  estimatedVolume?: string;
+  preferredDate?: string;
 }
 
 export interface FumigationListItem {
@@ -78,4 +81,94 @@ export interface ApiService {
   completionDate: string;
   status: 'COMPLETED';
   notes?: string;
+}
+
+export interface PageableRequest {
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
+export interface ApiCompany {
+  id: number;
+  businessName: string;
+  address: string;
+  phone?: string;
+  email?: string;
+}
+
+export interface ApiLotDetail {
+  id: number;
+  lotNumber: string;
+  tons: number;
+  quality: string;
+  sacks: number;
+  portDestination: string;
+}
+
+export interface FumigationDetailResponse {
+  lot: ApiLotDetail;
+  company: ApiCompany;
+  plannedDate: string;
+  status: string;
+}
+
+export interface FumigationReportResponse {
+  id: number;
+  location: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  supervisor: string;
+  technicians: Array<{ id: number; name: string }>;
+  supplies: Array<{
+    name: string;
+    quantity: number;
+    dosage: string;
+    kindOfSupply: string;
+    numberOfStrips: string;
+  }>;
+  dimensions: {
+    height: number;
+    width: number;
+    length: number;
+  };
+  environmentalConditions: {
+    temperature: number;
+    humidity: number;
+  };
+  industrialSafetyConditions: {
+    electricDanger: boolean;
+    fallingDanger: boolean;
+    hitDanger: boolean;
+  };
+  observations: string;
+  signatures: {
+    technician: string;
+    client: string;
+  };
+}
+
+export interface CleanupReportResponse {
+  id: number;
+  date: string;
+  startTime: string;
+  endTime: string;
+  supervisor: string;
+  technicians: Array<{ id: number; name: string }>;
+  lotDescription: {
+    stripsState: string;
+    fumigationTime: number;
+    ppmFosfina: number;
+  };
+  industrialSafetyConditions: {
+    electricDanger: boolean;
+    fallingDanger: boolean;
+    hitDanger: boolean;
+    otherDanger: boolean;
+  };
+  signatures: {
+    technician: string;
+    client: string;
+  };
 }

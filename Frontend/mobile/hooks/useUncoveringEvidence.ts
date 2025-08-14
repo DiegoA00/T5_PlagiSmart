@@ -76,7 +76,7 @@ export const useUncoveringEvidence = (fumigationDetails: FumigationDetailRespons
   });
 
   useEffect(() => {
-    if (fumigationDetails) {
+    if (fumigationDetails?.lot?.id && fumigationDetails?.company) {
       setCleanupData(prev => ({
         ...prev,
         supervisor: ""

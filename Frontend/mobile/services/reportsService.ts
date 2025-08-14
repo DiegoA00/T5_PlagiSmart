@@ -99,7 +99,7 @@ export const reportsService = {
     try {
       const response = await apiService.post('/reports/fumigations', data);
       if (response.success) {
-        return response.data;
+        return response.data as ApiResponse;
       } else {
         throw new Error(response.message || "Error al crear el reporte de fumigación");
       }
@@ -112,7 +112,7 @@ export const reportsService = {
     try {
       const response = await apiService.post('/reports/cleanup', data);
       if (response.success) {
-        return response.data;
+        return response.data as ApiResponse;
       } else {
         throw new Error(response.message || "Error al crear el reporte de descarpe");
       }
@@ -125,7 +125,7 @@ export const reportsService = {
     try {
       const response = await apiService.get(`/reports/fumigations/by-fumigation/${fumigationId}`);
       if (response.success) {
-        return response.data;
+        return response.data as ApiResponse;
       } else {
         throw new Error(response.message || "Error al obtener el reporte");
       }

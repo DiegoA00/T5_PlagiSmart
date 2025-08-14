@@ -14,8 +14,10 @@ import {
 } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { fumigationService } from '@/services/fumigationService';
-import { FumigationListItem } from '@/types/request';
+import { FumigationListItem, FumigationDetailResponse } from '@/types/request';
+import { useFumigationDetails } from '@/hooks/useFumigationData';
 import AppLayout from '@/components/AppLayout';
+import { TechnicianEvidenceOverlay } from '@/components/Evidence/TechnicianEvidenceOverlay';
 
 interface ExtendedFumigationListItem extends FumigationListItem {
   status: string;
@@ -31,6 +33,10 @@ export default function TechnicianLotsScreen() {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [selectedLot, setSelectedLot] = useState<ExtendedFumigationListItem | null>(null);
   const [showLotDetails, setShowLotDetails] = useState(false);
+  const [showEvidenceOverlay, setShowEvidenceOverlay] = useState(false);
+  const [selectedFumigationStatus, setSelectedFumigationStatus] = useState<string | null>(null);
+
+  const { fumigationDetails, loading: detailsLoading, loadFumigationDetails, clearDetails } = useFumigationDetails();
 
   const FILTER_OPTIONS = [
     { value: 'ALL', label: 'Todos los lotes' },
@@ -121,26 +127,64 @@ export default function TechnicianLotsScreen() {
     });
   };
 
-  const handleViewDetails = (fumigation: ExtendedFumigationListItem) => {
+  const handleViewDetails = async (fumigation: ExtendedFumigationListItem) => {
     setSelectedLot(fumigation);
     setShowLotDetails(true);
+    await loadFumigationDetails(fumigation.id);
   };
 
-  const handleUploadEvidence = (fumigation: ExtendedFumigationListItem) => {
-    Alert.alert(
-      'Subir Evidencias',
-      `¿Desea subir evidencias para el lote ${fumigation.lotNumber}?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Continuar', 
-          onPress: () => {
-            // TODO: Navegar a la pantalla de evidencias
-            Alert.alert('En desarrollo', 'Funcionalidad de evidencias en desarrollo');
-          }
-        }
-      ]
-    );
+  const handleUploadEvidence = async (fumigation: ExtendedFumigationListItem) => {
+    setSelectedLot(fumigation);
+    setSelectedFumigationStatus(fumigation.status);
+    setShowEvidenceOverlay(true);
+    await loadFumigationDetails(fumigation.id);
+  };
+
+  const handleCloseDetails = () => {
+    setSelectedLot(null);
+    setShowLotDetails(false);
+    setShowEvidenceOverlay(false);
+    setSelectedFumigationStatus(null);
+    clearDetails();
+  };
+
+  const handleEvidenceSubmitted = async () => {
+    try {
+      // Recargar la lista de fumigaciones
+      let allFumigations: ExtendedFumigationListItem[] = [];
+
+      if (selectedFilter === 'ALL') {
+        const [approvedResponse, fumigatedResponse] = await Promise.all([
+          fumigationService.getFumigationsByStatus('APPROVED'),
+          fumigationService.getFumigationsByStatus('FUMIGATED')
+        ]);
+        
+        const approvedWithStatus = approvedResponse.content.map(item => ({
+          ...item,
+          status: 'APPROVED'
+        }));
+        
+        const fumigatedWithStatus = fumigatedResponse.content.map(item => ({
+          ...item,
+          status: 'FUMIGATED'
+        }));
+        
+        allFumigations = [
+          ...approvedWithStatus,
+          ...fumigatedWithStatus
+        ];
+      } else {
+        const response = await fumigationService.getFumigationsByStatus(selectedFilter);
+        allFumigations = response.content.map(item => ({
+          ...item,
+          status: selectedFilter
+        }));
+      }
+
+      setFumigations(allFumigations);
+    } catch (err) {
+      console.error("Error al refrescar la lista:", err);
+    }
   };
 
   const renderLotCard = ({ item }: { item: ExtendedFumigationListItem }) => {
@@ -372,6 +416,16 @@ export default function TechnicianLotsScreen() {
 
         {renderFilterModal()}
         {renderLotDetailsModal()}
+        
+        <TechnicianEvidenceOverlay
+          visible={showEvidenceOverlay}
+          fumigationDetails={fumigationDetails}
+          loading={detailsLoading}
+          isEditable={true}
+          fumigationStatus={selectedFumigationStatus}
+          onClose={handleCloseDetails}
+          onSave={handleEvidenceSubmitted}
+        />
       </View>
     </AppLayout>
   );

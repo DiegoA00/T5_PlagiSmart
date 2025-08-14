@@ -30,15 +30,17 @@ class ApiService {
         return null;
       }
 
-      // Match web client: send raw token (no Bearer) for normal requests
-      const tokenWithoutPrefix = token.replace(/^Bearer\s+/i, '');
+      // Get token type from storage and construct header like loginService does
+      const tokenType = await AsyncStorage.getItem('token_type') || 'Bearer';
+      const authHeader = `${tokenType} ${token}`;
 
       console.log('=== AUTH HEADER DEBUG ===');
       console.log('Token in storage:', token.substring(0, 30) + '...');
-      console.log('Auth header to send (RAW):', tokenWithoutPrefix.substring(0, 30) + '...');
+      console.log('Token type:', tokenType);
+      console.log('Auth header to send:', authHeader.substring(0, 30) + '...');
       console.log('========================');
 
-      return tokenWithoutPrefix;
+      return authHeader;
     } catch (error) {
       console.error('Error getting auth header:', error);
       return null;

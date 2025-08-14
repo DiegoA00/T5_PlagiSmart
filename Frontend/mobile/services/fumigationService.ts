@@ -170,6 +170,24 @@ export const fumigationService = {
     }
   },
 
+  // Obtener lotes activos (alias para getFumigationsByStatus con APPROVED)
+  async getActiveLots(): Promise<{ data: PaginatedResponse<FumigationListItem> | null; success: boolean; message?: string }> {
+    try {
+      const response = await this.getFumigationsByStatus('APPROVED');
+      return {
+        data: response,
+        success: true
+      };
+    } catch (error: any) {
+      console.error('Error getting active lots:', error);
+      return {
+        data: null,
+        success: false,
+        message: error.message || 'Error al obtener lotes activos'
+      };
+    }
+  },
+
   // Obtener detalles de una fumigación específica
   async getFumigationDetails(id: number): Promise<FumigationDetailResponse> {
     try {
