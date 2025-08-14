@@ -1,6 +1,5 @@
 package com.anecacao.api.reporting.data.dto;
 
-import com.anecacao.api.reporting.data.entity.IndustrialSafetyConditions;
 import com.anecacao.api.reporting.data.entity.EnvironmentalConditions;
 import com.anecacao.api.request.creation.data.entity.Dimensions;
 import com.anecacao.api.reporting.data.entity.Supply;
@@ -17,6 +16,9 @@ import java.util.List;
 public class FumigationReportDTO {
     @NotNull(message = "Fumigation ID must not be null")
     private Long id;
+
+    @NotNull(message = "Supervisor must not be null")
+    private String supervisor;
 
     @NotNull(message = "Location must not be null")
     private String location;

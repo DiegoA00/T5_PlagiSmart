@@ -76,10 +76,19 @@ public class SecurityConfig {
                                 "/swagger-ui/**"
                         ).permitAll()
 
+                        // ========== USERS ENDPOINTS ==========
                         .requestMatchers(HttpMethod.PUT, "/users/role").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("ADMIN", "TECHNICIAN")
+                        .requestMatchers(HttpMethod.GET, "/users/all").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/users/me").authenticated()
+
+                        // ========== FUMIGATION APPLICATIONS ENDPOINTS ==========
                         .requestMatchers(HttpMethod.POST, "/fumigation-applications").hasRole("CLIENT")
-                        .requestMatchers(HttpMethod.PUT, "/fumigations/{id}/status").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/fumigation-applications/{id}").hasAnyRole("CLIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/fumigation-applications").hasAnyRole("ADMIN")
+
+                        // ========== FUMIGATIONS ENDPOINTS ==========
+                        .requestMatchers(HttpMethod.PUT, "/fumigations/{id}/status").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/fumigations/{id}").hasAnyRole("CLIENT", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/fumigations").hasAnyRole("ADMIN", "TECHNICIAN", "CLIENT")
                         .requestMatchers(HttpMethod.GET, "/fumigations/info/{id}").hasAnyRole("CLIENT", "TECHNICIAN", "ADMIN")
@@ -87,13 +96,20 @@ public class SecurityConfig {
                         // ========== REPORTS ENDPOINTS - CREACIÓN ==========
                         .requestMatchers(HttpMethod.POST, "/reports/fumigations").hasRole("TECHNICIAN")
                         .requestMatchers(HttpMethod.POST, "/reports/cleanup").hasRole("TECHNICIAN")
-                        .requestMatchers(HttpMethod.GET, "/fumigations").hasAnyRole("ADMIN", "TECHNICIAN", "CLIENT")
-                        .requestMatchers(HttpMethod.GET, "/fumigations/info/{id}").hasAnyRole("CLIENT", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("ADMIN", "TECHNICIAN")
-                        .requestMatchers(HttpMethod.GET, "/users/all").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/fumigation-applications").hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/users/me").authenticated()
 
+                        // ========== REPORTS ENDPOINTS - FUMIGATION REPORTS (LECTURA) ==========
+                        .requestMatchers(HttpMethod.GET, "/reports/fumigations").hasAnyRole("ADMIN", "TECHNICIAN")
+                        .requestMatchers(HttpMethod.GET, "/reports/fumigations/by-fumigation/*").hasAnyRole("ADMIN", "TECHNICIAN", "CLIENT")
+                        .requestMatchers(HttpMethod.GET, "/reports/fumigations/*").hasAnyRole("ADMIN", "TECHNICIAN", "CLIENT")
+
+                        // ========== REPORTS ENDPOINTS - CLEANUP REPORTS (LECTURA) ==========
+                        .requestMatchers(HttpMethod.GET, "/reports/cleanup").hasAnyRole("ADMIN", "TECHNICIAN")
+                        .requestMatchers(HttpMethod.GET, "/reports/cleanup/by-fumigation/*").hasAnyRole("ADMIN", "TECHNICIAN", "CLIENT")
+                        .requestMatchers(HttpMethod.GET, "/reports/cleanup/*").hasAnyRole("ADMIN", "TECHNICIAN", "CLIENT")
+
+
+                        // ========== SIGNATURES ENDPOINTS ==========
+                        .requestMatchers(HttpMethod.POST, "api/signatures").hasRole("TECHNICIAN")
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());

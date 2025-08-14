@@ -142,7 +142,7 @@ public class FumigationServiceImpl implements FumigationService {
         }
 
         if (fumigation.getDateTime() != null) {
-            infoDTO.setPlannedDate(fumigation.getDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+            infoDTO.setPlannedDate(fumigation.getDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
         } else {
             infoDTO.setPlannedDate("No date");
         }
