@@ -22,25 +22,24 @@ class ApiService {
 
   private async getAuthHeader(): Promise<string | null> {
     try {
-      const token = await AsyncStorage.getItem('auth_token');
-      if (!token) {
-        console.log('=== AUTH HEADER DEBUG ===');
-        console.log('No token in storage');
-        console.log('========================');
+      // Get the stored auth header (already contains "Bearer token")
+      const authHeader = await AsyncStorage.getItem('auth_token');
+      
+      if (!authHeader) {
         return null;
       }
 
-      // Get token type from storage and construct header like loginService does
-      const tokenType = await AsyncStorage.getItem('token_type') || 'Bearer';
-      const authHeader = `${tokenType} ${token}`;
+      // Clean any extra whitespace but preserve single space between Bearer and token
+      const cleanAuthHeader = authHeader.trim().replace(/\s+/g, ' ');
 
-      console.log('=== AUTH HEADER DEBUG ===');
-      console.log('Token in storage:', token.substring(0, 30) + '...');
-      console.log('Token type:', tokenType);
-      console.log('Auth header to send:', authHeader.substring(0, 30) + '...');
-      console.log('========================');
+      // Debug: Log the exact token being used
+      console.log('=== JWT TOKEN DEBUG ===');
+      console.log('Raw auth header:', `"${authHeader}"`);
+      console.log('Clean auth header:', `"${cleanAuthHeader}"`);
+      console.log('Auth header length:', cleanAuthHeader.length);
+      console.log('======================');
 
-      return authHeader;
+      return cleanAuthHeader;
     } catch (error) {
       console.error('Error getting auth header:', error);
       return null;
@@ -71,37 +70,11 @@ class ApiService {
         },
       };
 
-      console.log('API Request:', { 
-        url, 
-        method: options.method || 'GET',
-        hasAuth: !!authHeader,
-        authHeader: authHeader ? authHeader.substring(0, 30) + '...' : 'No auth',
-        retryCount
-      });
       let response = await fetch(url, config);
       console.log('API Response status:', response.status, 'for', url);
       
-      // Si recibimos 401 y tenemos token, intentar renovarlo una sola vez
+      // If we get 401 and have a token, try to refresh it once
       if (response.status === 401 && authHeader && retryCount === 0) {
-        // Primero, intentar con el formato alternativo del header (con/sin Bearer)
-        const alternateHeader = authHeader.startsWith('Bearer ')
-          ? authHeader.replace(/^Bearer\s+/i, '')
-          : `Bearer ${authHeader}`;
-        console.log('401 received. Retrying once with alternate Authorization header format');
-        const altConfig: RequestInit = {
-          ...config,
-          headers: {
-            ...(config.headers as any),
-            Authorization: alternateHeader,
-          },
-        };
-        response = await fetch(url, altConfig);
-        console.log('Alternate header retry status:', response.status);
-        if (response.ok) {
-          const altData = await response.json();
-          return { success: true, data: altData };
-        }
-
         console.log('=== 401 ERROR DETECTED ===');
         console.log('Attempting token refresh...');
         const refreshed = await this.refreshToken();
@@ -110,9 +83,8 @@ class ApiService {
           return this.request(endpoint, options, retryCount + 1);
         } else {
           console.log('Token refresh failed, clearing invalid auth data...');
-          // Si no se puede renovar el token, limpiar datos de autenticación inválidos
+          // Clear invalid auth data if token refresh fails
           await AsyncStorage.multiRemove(['auth_token', 'user_data', 'temp_password']);
-          // No limpiar token_type ya que no lo estamos usando
         }
         console.log('=====================');
       }
@@ -125,18 +97,27 @@ class ApiService {
 
       const data = await response.json();
       console.log('API Response data:', data);
+      console.log('API Response status:', response.status);
+      console.log('API Response headers:', response.headers);
+      console.log('API Response URL:', response.url);
+      console.log('API Response type:', response.type);
+      console.log('API Response ok:', response.ok);
       
-      return {
+      const result = {
         success: true,
         data
       };
+      console.log('Returning API response:', result);
+      return result;
     } catch (error: any) {
       console.error('API request error:', error);
-      return {
+      const result = {
         success: false,
         message: error.message || 'Error de conexión',
         error: error.message
       };
+      console.log('Returning API error response:', result);
+      return result;
     }
   }
 
@@ -199,10 +180,12 @@ class ApiService {
         method: 'POST', 
         baseURL: this.baseURL,
         endpoint,
-        fullURL: url
+        fullURL: url,
+        data: data ? JSON.stringify(data).substring(0, 200) + '...' : 'No data'
       });
       const response = await fetch(url, config);
       console.log('API Response status:', response.status);
+      console.log('API Response headers:', response.headers);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -213,17 +196,21 @@ class ApiService {
       const responseData = await response.json();
       console.log('API Response data:', responseData);
       
-      return {
+      const result = {
         success: true,
         data: responseData
       };
+      console.log('Returning API response (no auth):', result);
+      return result;
     } catch (error: any) {
       console.error('API request error:', error);
-      return {
+      const result = {
         success: false,
         message: error.message || 'Error de conexión',
         error: error.message
       };
+      console.log('Returning API error response (no auth):', result);
+      return result;
     }
   }
 
@@ -245,36 +232,23 @@ class ApiService {
     });
   }
 
-  // Método para verificar si el token actual es válido
+  // Method to verify if the current token is valid
   async verifyToken(): Promise<boolean> {
     try {
-      console.log('=== VERIFYING TOKEN ===');
       const authHeader = await this.getAuthHeader();
       if (!authHeader) {
-        console.log('No auth header available');
         return false;
       }
-
-      // For token verification, always use the Bearer scheme explicitly
-      const tokenInStorage = await AsyncStorage.getItem('auth_token');
-      const bearerHeader = tokenInStorage?.startsWith('Bearer ')
-        ? tokenInStorage
-        : tokenInStorage
-        ? `Bearer ${tokenInStorage}`
-        : null;
 
       const response = await fetch(`${this.baseURL}/users/me`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          ...(bearerHeader ? { Authorization: bearerHeader } : {})
+          'Authorization': authHeader
         }
       });
 
-      const isValid = response.ok;
-      console.log('Token verification result:', isValid);
-      console.log('=====================');
-      return isValid;
+      return response.ok;
     } catch (error) {
       console.error('Error verifying token:', error);
       return false;

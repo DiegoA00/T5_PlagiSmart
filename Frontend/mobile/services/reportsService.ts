@@ -97,26 +97,50 @@ const isReportNotFoundError = (error: any, reportType?: string): boolean => {
 export const reportsService = {
   createFumigationReport: async (data: FumigationReportRequest): Promise<ApiResponse> => {
     try {
+      console.log('=== CREATING FUMIGATION REPORT ===');
+      console.log('Request data:', JSON.stringify(data, null, 2));
+      console.log('Request endpoint:', '/reports/fumigations');
+      
       const response = await apiService.post('/reports/fumigations', data);
+      console.log('API Response:', response);
+      console.log('API Response success:', response.success);
+      console.log('API Response data:', response.data);
+      console.log('API Response message:', response.message);
+      
       if (response.success) {
-        return response.data as ApiResponse;
+        console.log('Report created successfully:', response.data);
+        return response.data;
       } else {
+        console.error('API returned error:', response.message);
         throw new Error(response.message || "Error al crear el reporte de fumigación");
       }
     } catch (error: any) {
+      console.error('Exception in createFumigationReport:', error);
       throw new Error(error.message || "Error al crear el reporte de fumigación");
     }
   },
 
   createCleanupReport: async (data: CleanupReportRequest): Promise<ApiResponse> => {
     try {
+      console.log('=== CREATING CLEANUP REPORT ===');
+      console.log('Request data:', JSON.stringify(data, null, 2));
+      console.log('Request endpoint:', '/reports/cleanup');
+      
       const response = await apiService.post('/reports/cleanup', data);
+      console.log('API Response:', response);
+      console.log('API Response success:', response.success);
+      console.log('API Response data:', response.data);
+      console.log('API Response message:', response.message);
+      
       if (response.success) {
-        return response.data as ApiResponse;
+        console.log('Report created successfully:', response.data);
+        return response.data;
       } else {
+        console.error('API returned error:', response.message);
         throw new Error(response.message || "Error al crear el reporte de descarpe");
       }
     } catch (error: any) {
+      console.error('Exception in createCleanupReport:', error);
       throw new Error(error.message || "Error al crear el reporte de descarpe");
     }
   },
@@ -125,7 +149,7 @@ export const reportsService = {
     try {
       const response = await apiService.get(`/reports/fumigations/by-fumigation/${fumigationId}`);
       if (response.success) {
-        return response.data as ApiResponse;
+        return response.data;
       } else {
         throw new Error(response.message || "Error al obtener el reporte");
       }

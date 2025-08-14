@@ -150,14 +150,21 @@ export default function TechnicianLotsScreen() {
 
   const handleEvidenceSubmitted = async () => {
     try {
+      console.log('=== HANDLING EVIDENCE SUBMITTED ===');
+      console.log('Selected filter:', selectedFilter);
+      
       // Recargar la lista de fumigaciones
       let allFumigations: ExtendedFumigationListItem[] = [];
 
       if (selectedFilter === 'ALL') {
+        console.log('Loading ALL fumigations...');
         const [approvedResponse, fumigatedResponse] = await Promise.all([
           fumigationService.getFumigationsByStatus('APPROVED'),
           fumigationService.getFumigationsByStatus('FUMIGATED')
         ]);
+        
+        console.log('Approved response:', approvedResponse);
+        console.log('Fumigated response:', fumigatedResponse);
         
         const approvedWithStatus = approvedResponse.content.map(item => ({
           ...item,
@@ -174,13 +181,17 @@ export default function TechnicianLotsScreen() {
           ...fumigatedWithStatus
         ];
       } else {
+        console.log('Loading fumigations for status:', selectedFilter);
         const response = await fumigationService.getFumigationsByStatus(selectedFilter);
+        console.log('Response for status', selectedFilter, ':', response);
+        
         allFumigations = response.content.map(item => ({
           ...item,
           status: selectedFilter
         }));
       }
 
+      console.log('Final fumigations list:', allFumigations);
       setFumigations(allFumigations);
     } catch (err) {
       console.error("Error al refrescar la lista:", err);

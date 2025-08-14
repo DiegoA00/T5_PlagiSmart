@@ -71,12 +71,23 @@ export const TechnicianEvidenceOverlay: React.FC<TechnicianEvidenceOverlayProps>
   useEffect(() => {
     const loadTechnicians = async () => {
       try {
+        console.log('=== LOADING TECHNICIANS ===');
         const response = await usersService.getUsersByRole('TECHNICIAN');
-        if (response.data) {
+        console.log('Technicians response:', response);
+        console.log('Response data:', response.data);
+        console.log('Response success:', response.success);
+        
+        if (response.success && response.data) {
+          console.log('Setting available technicians:', response.data.length, 'technicians');
           setAvailableTechnicians(response.data);
+        } else {
+          console.log('No technicians data received or request failed');
+          setAvailableTechnicians([]);
         }
+        console.log('==========================');
       } catch (error) {
         console.error("Error loading technicians:", error);
+        setAvailableTechnicians([]);
       }
     };
 
@@ -86,22 +97,39 @@ export const TechnicianEvidenceOverlay: React.FC<TechnicianEvidenceOverlayProps>
   }, [isEditable, visible]);
 
   const handleSubmitClick = () => {
+    console.log('=== HANDLE SUBMIT CLICK ===');
+    console.log('Fumigation status:', fumigationStatus);
+    
     if (fumigationStatus === "APPROVED") {
+      console.log('Validating fumigation form...');
       if (!validateFumigationForm()) {
+        console.log('Fumigation form validation failed');
         return;
       }
+      console.log('Fumigation form validation passed');
     } else if (fumigationStatus === "FUMIGATED") {
+      console.log('Validating cleanup form...');
       if (!validateCleanupForm()) {
+        console.log('Cleanup form validation failed');
         return;
       }
+      console.log('Cleanup form validation passed');
     }
     
+    console.log('Setting show confirm dialog to true');
     setShowConfirmDialog(true);
   };
 
   const handleSubmitFumigationReport = async () => {
-    if (isSubmitting) return;
+    console.log('=== HANDLE SUBMIT FUMIGATION REPORT START ===');
+    console.log('Is submitting:', isSubmitting);
     
+    if (isSubmitting) {
+      console.log('Already submitting, returning');
+      return;
+    }
+    
+    console.log('Setting is submitting to true');
     setIsSubmitting(true);
 
     try {
@@ -146,10 +174,17 @@ export const TechnicianEvidenceOverlay: React.FC<TechnicianEvidenceOverlayProps>
         }
       };
 
-      await reportsService.createFumigationReport(reportData);
+      console.log('=== SUBMITTING FUMIGATION REPORT ===');
+      console.log('Report data to submit:', JSON.stringify(reportData, null, 2));
+      
+      const result = await reportsService.createFumigationReport(reportData);
+      console.log('Report submission result:', result);
       
       setFumigationReportSubmitted(true);
       setShowConfirmDialog(false);
+      
+      // Call onSave immediately after successful submission
+      onSave?.(reportData);
       
       Alert.alert(
         'Éxito',
@@ -158,7 +193,6 @@ export const TechnicianEvidenceOverlay: React.FC<TechnicianEvidenceOverlayProps>
           {
             text: 'OK',
             onPress: () => {
-              onSave?.(reportData);
               onClose?.();
             }
           }
@@ -168,13 +202,21 @@ export const TechnicianEvidenceOverlay: React.FC<TechnicianEvidenceOverlayProps>
       console.error("Error submitting fumigation report:", error);
       Alert.alert('Error', 'No se pudo enviar el registro. Inténtelo nuevamente.');
     } finally {
+      console.log('Setting is submitting to false');
       setIsSubmitting(false);
     }
   };
 
   const handleSubmitCleanupReport = async () => {
-    if (isSubmitting) return;
+    console.log('=== HANDLE SUBMIT CLEANUP REPORT START ===');
+    console.log('Is submitting:', isSubmitting);
     
+    if (isSubmitting) {
+      console.log('Already submitting, returning');
+      return;
+    }
+    
+    console.log('Setting is submitting to true');
     setIsSubmitting(true);
 
     try {
@@ -207,10 +249,17 @@ export const TechnicianEvidenceOverlay: React.FC<TechnicianEvidenceOverlayProps>
         }
       };
 
-      await reportsService.createCleanupReport(reportData);
+      console.log('=== SUBMITTING CLEANUP REPORT ===');
+      console.log('Report data to submit:', JSON.stringify(reportData, null, 2));
+      
+      const result = await reportsService.createCleanupReport(reportData);
+      console.log('Report submission result:', result);
       
       setCleanupReportSubmitted(true);
       setShowConfirmDialog(false);
+      
+      // Call onSave immediately after successful submission
+      onSave?.(reportData);
       
       Alert.alert(
         'Éxito',
@@ -219,7 +268,6 @@ export const TechnicianEvidenceOverlay: React.FC<TechnicianEvidenceOverlayProps>
           {
             text: 'OK',
             onPress: () => {
-              onSave?.(reportData);
               onClose?.();
             }
           }
@@ -229,14 +277,20 @@ export const TechnicianEvidenceOverlay: React.FC<TechnicianEvidenceOverlayProps>
       console.error("Error submitting cleanup report:", error);
       Alert.alert('Error', 'No se pudo enviar el registro. Inténtelo nuevamente.');
     } finally {
+      console.log('Setting is submitting to false');
       setIsSubmitting(false);
     }
   };
 
   const handleConfirmSubmit = () => {
+    console.log('=== HANDLE CONFIRM SUBMIT ===');
+    console.log('Fumigation status:', fumigationStatus);
+    
     if (fumigationStatus === "APPROVED") {
+      console.log('Calling handleSubmitFumigationReport');
       handleSubmitFumigationReport();
     } else {
+      console.log('Calling handleSubmitCleanupReport');
       handleSubmitCleanupReport();
     }
   };

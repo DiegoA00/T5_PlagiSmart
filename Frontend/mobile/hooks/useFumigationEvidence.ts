@@ -133,8 +133,7 @@ export const useFumigationEvidence = (fumigationDetails: FumigationDetailRespons
     hazards: {
       electricDanger: false,
       fallingDanger: false,
-      hitDanger: false,
-      otherDanger: false
+      hitDanger: false
     },
     supplies: [],
     observations: "",
@@ -143,20 +142,30 @@ export const useFumigationEvidence = (fumigationDetails: FumigationDetailRespons
   });
 
   useEffect(() => {
-    if (fumigationDetails?.lot?.id && fumigationDetails?.company) {
+    console.log('=== USE FUMIGATION EVIDENCE EFFECT ===');
+    console.log('Fumigation details:', fumigationDetails);
+    
+    if (fumigationDetails) {
+      // Handle the actual API response structure
+      const lotData = fumigationDetails.lot || fumigationDetails;
+      const companyData = fumigationDetails.company;
+      
+      console.log('Lot data:', lotData);
+      console.log('Company data:', companyData);
+      
       setFumigationData(prev => ({
         ...prev,
-        fumigationId: fumigationDetails.lot.id.toString(),
-        registrationNumber: fumigationDetails.lot.lotNumber || "",
-        company: fumigationDetails.company.businessName || "",
-        location: fumigationDetails.company.address || "",
+        fumigationId: lotData.id?.toString() || "",
+        registrationNumber: lotData.lotNumber || "",
+        company: companyData?.businessName || "Empresa no disponible",
+        location: companyData?.address || "Ubicación no disponible",
         supervisor: "",
         lotDetails: {
-          lotNumber: fumigationDetails.lot.lotNumber || "",
-          tons: fumigationDetails.lot.tons?.toString() || "",
-          quality: fumigationDetails.lot.quality || "",
-          sacks: fumigationDetails.lot.sacks?.toString() || "",
-          destination: fumigationDetails.lot.portDestination || "",
+          lotNumber: lotData.lotNumber || "",
+          tons: lotData.tons?.toString() || (lotData as any).ton?.toString() || "",
+          quality: lotData.quality || "",
+          sacks: lotData.sacks?.toString() || "",
+          destination: lotData.portDestination || "",
           ppmFosfina: "",
           fumigationTime: "",
           stripsState: ""
@@ -280,8 +289,7 @@ export const useFumigationEvidence = (fumigationDetails: FumigationDetailRespons
       hazards: {
         electricDanger: false,
         fallingDanger: false,
-        hitDanger: false,
-        otherDanger: false
+        hitDanger: false
       },
       supplies: [],
       observations: "",
@@ -289,17 +297,20 @@ export const useFumigationEvidence = (fumigationDetails: FumigationDetailRespons
       clientSignature: ""
     };
 
-    if (fumigationDetails?.lot?.id && fumigationDetails?.company) {
-      initialData.fumigationId = fumigationDetails.lot.id.toString();
-      initialData.registrationNumber = fumigationDetails.lot.lotNumber || "";
-      initialData.company = fumigationDetails.company.businessName || "";
-      initialData.location = fumigationDetails.company.address || "";
+    if (fumigationDetails) {
+      const lotData = fumigationDetails.lot || fumigationDetails;
+      const companyData = fumigationDetails.company;
+      
+      initialData.fumigationId = lotData.id?.toString() || "";
+      initialData.registrationNumber = lotData.lotNumber || "";
+      initialData.company = companyData?.businessName || "Empresa no disponible";
+      initialData.location = companyData?.address || "Ubicación no disponible";
       initialData.lotDetails = {
-        lotNumber: fumigationDetails.lot.lotNumber || "",
-        tons: fumigationDetails.lot.tons?.toString() || "",
-        quality: fumigationDetails.lot.quality || "",
-        sacks: fumigationDetails.lot.sacks?.toString() || "",
-        destination: fumigationDetails.lot.portDestination || "",
+        lotNumber: lotData.lotNumber || "",
+        tons: lotData.tons?.toString() || (lotData as any).ton?.toString() || "",
+        quality: lotData.quality || "",
+        sacks: lotData.sacks?.toString() || "",
+        destination: lotData.portDestination || "",
         ppmFosfina: "",
         fumigationTime: "",
         stripsState: ""

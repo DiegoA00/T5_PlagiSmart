@@ -8,9 +8,13 @@ const USER_DATA_KEY = 'user_data';
 export const authService = {
   async setAuthData(token: string, tokenType = 'Bearer', userData: any = null) {
     try {
+      // Store complete authorization header like web does
+      const authHeader = `${tokenType || 'Bearer'} ${token}`.trim().replace(/\s+/g, ' ');
+      const cleanTokenType = (tokenType || 'Bearer').trim();
+      
       await AsyncStorage.multiSet([
-        [AUTH_TOKEN_KEY, token],
-        [TOKEN_TYPE_KEY, tokenType || 'Bearer'],
+        [AUTH_TOKEN_KEY, authHeader],
+        [TOKEN_TYPE_KEY, cleanTokenType],
         [USER_DATA_KEY, userData ? JSON.stringify(userData) : '']
       ]);
     } catch (error) {
@@ -29,9 +33,9 @@ export const authService = {
 
   async getAuthHeader(): Promise<string | null> {
     try {
-      const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
-      const tokenType = await AsyncStorage.getItem(TOKEN_TYPE_KEY) || 'Bearer';
-      return token ? `${tokenType} ${token}` : null;
+      // Return the stored auth header (which already contains "Bearer token")
+      const authHeader = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+      return authHeader ? authHeader.trim() : null;
     } catch (error) {
       console.error('Error getting auth header:', error);
       return null;
@@ -88,6 +92,14 @@ export const authService = {
 
       const { token, tokenType } = authResponse.data;
       console.log('Auth token received:', { token: token.substring(0, 10) + '...', tokenType });
+      
+      // Debug: Check for spaces in received token
+      console.log('=== TOKEN RECEIVED DEBUG ===');
+      console.log('Token length:', token.length);
+      console.log('Token contains spaces:', token.includes(' '));
+      console.log('Token type:', `"${tokenType}"`);
+      console.log('Raw token preview:', `"${token.substring(0, 50)}..."`);
+      console.log('===========================');
 
       // Segunda llamada: obtener datos del usuario usando el token
       const userResponse = await fetch(`${apiService.baseURL}/users/me`, {
@@ -110,9 +122,11 @@ export const authService = {
       const userData = await userResponse.json();
       console.log('User data received:', userData);
 
-      // Guardar token crudo (sin Bearer) y tipo por separado como en web
-      await AsyncStorage.setItem('auth_token', token);
-      await AsyncStorage.setItem('token_type', tokenType || 'Bearer');
+      // Store the complete authorization header like web does
+      // The web stores the full "Bearer token" string in auth_token
+      const authHeader = `${tokenType || 'Bearer'} ${token}`.trim().replace(/\s+/g, ' ');
+      await AsyncStorage.setItem('auth_token', authHeader);
+      await AsyncStorage.setItem('token_type', (tokenType || 'Bearer').trim());
       await AsyncStorage.setItem('user_data', JSON.stringify(userData));
       
       // Verificar que se guardó correctamente

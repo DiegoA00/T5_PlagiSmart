@@ -146,6 +146,10 @@ export const fumigationService = {
   // Métodos para técnicos - obtener fumigaciones por estado
   async getFumigationsByStatus(status: string, pageableRequest?: PageableRequest): Promise<PaginatedResponse<FumigationListItem>> {
     try {
+      console.log('=== GETTING FUMIGATIONS BY STATUS ===');
+      console.log('Status:', status);
+      console.log('Pageable request:', pageableRequest);
+      
       let url = `/fumigations?status=${status}`;
       
       if (pageableRequest) {
@@ -157,11 +161,16 @@ export const fumigationService = {
         url += '&page=0&size=50&sort=id';
       }
 
+      console.log('Request URL:', url);
+      
       const response = await apiService.get<PaginatedResponse<FumigationListItem>>(url);
+      console.log('API Response:', response);
       
       if (response.success && response.data) {
+        console.log('Fumigations data:', response.data);
         return response.data;
       } else {
+        console.error('API returned error:', response.message);
         throw new Error(response.message || 'Error al obtener fumigaciones');
       }
     } catch (error: any) {
@@ -191,11 +200,17 @@ export const fumigationService = {
   // Obtener detalles de una fumigación específica
   async getFumigationDetails(id: number): Promise<FumigationDetailResponse> {
     try {
-      const response = await apiService.get<FumigationDetailResponse>(`/fumigations/${id}`);
+      console.log('=== GETTING FUMIGATION DETAILS ===');
+      console.log('Fumigation ID:', id);
+      
+      const response = await apiService.get<FumigationDetailResponse>(`/fumigations/info/${id}`);
+      console.log('API Response:', response);
       
       if (response.success && response.data) {
+        console.log('Fumigation details:', response.data);
         return response.data;
       } else {
+        console.error('API returned error:', response.message);
         throw new Error(response.message || 'Error al obtener detalles de fumigación');
       }
     } catch (error: any) {

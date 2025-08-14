@@ -46,8 +46,14 @@ export const usersService = {
 
   async getUsersByRole(role: string): Promise<{ data: ApiUser[] | null; success: boolean; message?: string }> {
     try {
+      console.log(`=== getUsersByRole(${role}) ===`);
       // Use the same endpoint as web: /users with role parameter
       const response = await apiService.get<{ content: ApiUser[] }>(`/users?role=${role}&page=0&size=50`);
+      
+      console.log('Raw API response:', response);
+      console.log('Response success:', response.success);
+      console.log('Response data type:', typeof response.data);
+      console.log('Response data:', response.data);
       
       let usersData: ApiUser[] | null = null;
       
@@ -55,18 +61,29 @@ export const usersService = {
         // Handle both paginated response and direct array
         if (typeof response.data === 'object' && 'content' in response.data && Array.isArray(response.data.content)) {
           usersData = response.data.content;
+          console.log('Extracted paginated data:', usersData.length, 'users');
         } else if (Array.isArray(response.data)) {
           usersData = response.data;
+          console.log('Using direct array data:', usersData.length, 'users');
         } else {
+          console.log('Unknown data format, setting empty array');
           usersData = [];
         }
+      } else {
+        console.log('No data or not successful');
+        usersData = [];
       }
       
-      return {
+      const result = {
         data: usersData,
         success: response.success,
         message: response.message
       };
+      
+      console.log('Final result:', result);
+      console.log('============================');
+      
+      return result;
     } catch (error: any) {
       console.error(`Error getting users by role ${role}:`, error);
       return {
