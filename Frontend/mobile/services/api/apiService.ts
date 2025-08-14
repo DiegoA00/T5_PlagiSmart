@@ -1,9 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { FINAL_API_CONFIG } from '../../config/final-api';
+import '../../config/test-config'; // Import test config to ensure it loads
 
-// Para iOS, forzamos la IP local - no usar localhost
-const API_BASE_URL = 'http://192.168.1.45:8082/api';
-
-console.log('API_BASE_URL FORCED TO:', API_BASE_URL);
+console.log('API_BASE_URL loaded from config:', FINAL_API_CONFIG.BASE_URL);
 console.log('Environment EXPO_PUBLIC_API_URL:', process.env.EXPO_PUBLIC_API_URL);
 
 interface ApiResponse<T = any> {
@@ -17,7 +16,11 @@ class ApiService {
   public baseURL: string;
 
   constructor() {
-    this.baseURL = API_BASE_URL;
+    this.baseURL = FINAL_API_CONFIG.BASE_URL;
+    console.log('=== API SERVICE CONSTRUCTOR ===');
+    console.log('FINAL_API_CONFIG.BASE_URL:', FINAL_API_CONFIG.BASE_URL);
+    console.log('this.baseURL:', this.baseURL);
+    console.log('==============================');
   }
 
   private async getAuthHeader(): Promise<string | null> {
@@ -175,6 +178,13 @@ class ApiService {
         body: data ? JSON.stringify(data) : undefined,
       };
 
+      console.log('=== API REQUEST DEBUG ===');
+      console.log('this.baseURL:', this.baseURL);
+      console.log('endpoint:', endpoint);
+      console.log('url:', url);
+      console.log('FINAL_API_CONFIG.BASE_URL:', FINAL_API_CONFIG.BASE_URL);
+      console.log('========================');
+      
       console.log('API Request (no auth):', { 
         url, 
         method: 'POST', 
@@ -183,7 +193,17 @@ class ApiService {
         fullURL: url,
         data: data ? JSON.stringify(data).substring(0, 200) + '...' : 'No data'
       });
-      const response = await fetch(url, config);
+      
+      // Add timeout to the request
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(url, {
+        ...config,
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
       console.log('API Response status:', response.status);
       console.log('API Response headers:', response.headers);
       
@@ -203,7 +223,13 @@ class ApiService {
       console.log('Returning API response (no auth):', result);
       return result;
     } catch (error: any) {
-      console.error('API request error:', error);
+      console.error('=== API REQUEST ERROR ===');
+      console.error('Error type:', error.constructor.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      console.error('Base URL:', this.baseURL);
+      console.error('========================');
+      
       const result = {
         success: false,
         message: error.message || 'Error de conexión',

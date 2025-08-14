@@ -7,41 +7,10 @@ import {
   StyleSheet,
   Alert,
   Dimensions,
+  PanResponder,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { PanGestureHandler, State } from 'react-native-gesture-handler';
-
-// Función para convertir string a base64 (compatible con React Native)
-const stringToBase64 = (str: string): string => {
-  if (typeof btoa !== 'undefined') {
-    return btoa(str);
-  }
-  
-  // Implementación alternativa para React Native
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-  let output = '';
-  const bytes = new Uint8Array(str.length);
-  
-  for (let i = 0; i < str.length; i++) {
-    bytes[i] = str.charCodeAt(i);
-  }
-  
-  let byteNum;
-  let chunk;
-  
-  for (let i = 0; i < bytes.length; i += 3) {
-    byteNum = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
-    chunk = [
-      chars[(byteNum >> 18) & 0x3F],
-      chars[(byteNum >> 12) & 0x3F],
-      chars[(byteNum >> 6) & 0x3F],
-      chars[byteNum & 0x3F]
-    ];
-    output += chunk.join('');
-  }
-  
-  return output;
-};
+import { stringToBase64 } from '../utils/base64';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -62,7 +31,7 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
 }) => {
   const [paths, setPaths] = useState<string[]>([]);
   const [currentPath, setCurrentPath] = useState<string>('');
-  const pathRef = useRef<string>('');
+  const [isDrawing, setIsDrawing] = useState(false);
 
   // Limpiar datos cuando el modal se abre
   React.useEffect(() => {
@@ -71,38 +40,37 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
     }
   }, [isOpen]);
 
-  const onGestureEvent = (event: any) => {
-    try {
-      const { absoluteX, absoluteY } = event.nativeEvent;
-      
-      // Calcular la posición relativa al área de firma
-      const signatureAreaX = absoluteX - 20; // Ajuste para el padding del modal
-      const signatureAreaY = absoluteY - 150; // Ajuste para el header y padding
-      
-      if (event.nativeEvent.state === State.BEGAN) {
-        const newPath = `M${signatureAreaX},${signatureAreaY}`;
-        pathRef.current = newPath;
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (evt) => {
+        setIsDrawing(true);
+        const { locationX, locationY } = evt.nativeEvent;
+        const newPath = `M${locationX},${locationY}`;
         setCurrentPath(newPath);
-      } else if (event.nativeEvent.state === State.ACTIVE) {
-        const newPath = `${pathRef.current} L${signatureAreaX},${signatureAreaY}`;
-        pathRef.current = newPath;
-        setCurrentPath(newPath);
-      } else if (event.nativeEvent.state === State.END) {
-        if (pathRef.current) {
-          setPaths(prev => [...prev, pathRef.current]);
+      },
+      onPanResponderMove: (evt) => {
+        if (isDrawing) {
+          const { locationX, locationY } = evt.nativeEvent;
+          const newPath = `${currentPath} L${locationX},${locationY}`;
+          setCurrentPath(newPath);
         }
-        setCurrentPath('');
-        pathRef.current = '';
-      }
-    } catch (error) {
-      console.error('Error in gesture event:', error);
-    }
-  };
+      },
+      onPanResponderRelease: () => {
+        setIsDrawing(false);
+        if (currentPath) {
+          setPaths(prev => [...prev, currentPath]);
+          setCurrentPath('');
+        }
+      },
+    })
+  ).current;
 
   const clearSignature = () => {
     setPaths([]);
     setCurrentPath('');
-    pathRef.current = '';
+    setIsDrawing(false);
   };
 
   const saveSignature = () => {
@@ -112,16 +80,36 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
         return;
       }
 
-      // Convert SVG to a simple string representation
+      // Validar que la firma tenga al menos un trazo con cierta longitud
+      const allPaths = [...paths];
+      if (currentPath) {
+        allPaths.push(currentPath);
+      }
+      
+      const totalLength = allPaths.reduce((acc, path) => {
+        // Calcular longitud aproximada del path
+        const points = path.split(/[ML]/).filter(p => p.trim());
+        return acc + points.length;
+      }, 0);
+      
+      if (totalLength < 3) {
+        Alert.alert('Error', 'Por favor, dibuje una firma más completa.');
+        return;
+      }
+
+      // Convertir SVG a base64
+      const svgWidth = Math.min(350, screenWidth * 0.8);
       const svgContent = `
-        <svg width="350" height="200" xmlns="http://www.w3.org/2000/svg">
-          ${paths.map(path => `<path d="${path}" stroke="black" stroke-width="2" fill="none" />`).join('')}
-          ${currentPath ? `<path d="${currentPath}" stroke="black" stroke-width="2" fill="none" />` : ''}
+        <svg width="${svgWidth}" height="200" xmlns="http://www.w3.org/2000/svg">
+          ${paths.map(path => `<path d="${path}" stroke="black" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" />`).join('')}
+          ${currentPath ? `<path d="${currentPath}" stroke="black" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" />` : ''}
         </svg>
       `;
       
-      const signatureData = `data:image/svg+xml;base64,${stringToBase64(svgContent)}`;
-
+      // Convertir SVG a base64
+      const base64 = stringToBase64(svgContent);
+      const signatureData = `data:image/svg+xml;base64,${base64}`;
+      
       onSave(signatureData);
       clearSignature();
       onClose();
@@ -153,34 +141,42 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
             <Text style={styles.instructionText}>
               Dibuje su firma en el área de abajo
             </Text>
+            <Text style={styles.touchHint}>
+              Toque y arrastre su dedo para firmar
+            </Text>
             
-            <PanGestureHandler 
-              onGestureEvent={onGestureEvent}
-              shouldCancelWhenOutside={false}
+            <View 
+              style={[
+                styles.signatureArea,
+                isDrawing && styles.signatureAreaActive
+              ]}
+              {...panResponder.panHandlers}
             >
-              <View style={styles.signatureArea}>
-                <Svg height="200" width={Math.min(350, screenWidth * 0.8)} style={styles.svg}>
-                  {paths.map((path, index) => (
-                    <Path
-                      key={index}
-                      d={path}
-                      stroke="black"
-                      strokeWidth="2"
-                      fill="none"
-                    />
-                  ))}
-                  {currentPath && (
-                    <Path
-                      d={currentPath}
-                      stroke="black"
-                      strokeWidth="2"
-                      fill="none"
-                    />
-                  )}
-                </Svg>
-                <View style={styles.signatureLine} />
-              </View>
-            </PanGestureHandler>
+              <Svg height="200" width={Math.min(350, screenWidth * 0.8)} style={styles.svg}>
+                {paths.map((path, index) => (
+                  <Path
+                    key={index}
+                    d={path}
+                    stroke="black"
+                    strokeWidth="3"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                ))}
+                {currentPath && (
+                  <Path
+                    d={currentPath}
+                    stroke="black"
+                    strokeWidth="3"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                )}
+              </Svg>
+              <View style={styles.signatureLine} />
+            </View>
           </View>
 
           <View style={styles.buttonContainer}>
@@ -239,20 +235,39 @@ const styles = StyleSheet.create({
   instructionText: {
     fontSize: 14,
     color: '#6b7280',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  touchHint: {
+    fontSize: 12,
+    color: '#9ca3af',
     marginBottom: 12,
     textAlign: 'center',
+    fontStyle: 'italic',
   },
   signatureArea: {
     position: 'relative',
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#ffffff',
     borderWidth: 2,
-    borderColor: '#e5e7eb',
-    borderStyle: 'dashed',
+    borderColor: '#d1d5db',
+    borderStyle: 'solid',
     borderRadius: 8,
     width: Math.min(350, screenWidth * 0.8),
     height: 200,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  signatureAreaActive: {
+    borderColor: '#3b82f6',
+    backgroundColor: '#f0f9ff',
   },
   svg: {
     position: 'absolute',
