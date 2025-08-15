@@ -43,10 +43,6 @@ function TableReservations({
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'codigo', direction: 'asc' });
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
-  const handleDocumentosClick = (codigo: string) => {
-    navigate(`/client/documentos/${codigo}`);
-  };
-
   const handleLotDocumentosClick = (lotId: number) => {
     navigate(`/client/documentos/lote/${lotId}`);
   };
@@ -208,17 +204,11 @@ function TableReservations({
                       )}
                     </div>
                   </td>
-                  <td className="p-2 font-medium">{reserva.codigo}</td>
+                  <td className="p-2">{reserva.codigo}</td>
                   <td className="p-2">{reserva.estado}</td>
                   <td className="p-2">{reserva.fechaAprox}</td>
                   <td className="p-2">{reserva.toneladas}</td>
                   <td className="p-2 flex flex-wrap gap-2 items-center">
-                    <button 
-                      onClick={() => handleDocumentosClick(reserva.codigo)}
-                      className="border border-[#003595] text-[#003595] px-3 py-1 rounded flex items-center hover:bg-[#003595] hover:text-white transition-colors"
-                    >
-                      <FaFileAlt className="mr-2" /> Documentos
-                    </button>
                     {reserva.hasRejectedOrFailed && (
                       <div className="flex items-center text-red-600 text-sm">
                         <FaExclamationTriangle className="mr-1" />

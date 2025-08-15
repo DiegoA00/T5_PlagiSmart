@@ -76,8 +76,8 @@ type DocumentsData = Record<string, Document[]>;
 
 function ReservationDocuments() {
   console.log('ReservationDocuments component renderizando...');
-  const { codigo, lotId } = useParams<{ codigo?: string; lotId?: string }>();
-  console.log('Parámetros recibidos:', { codigo, lotId });
+  const { lotId } = useParams<{ lotId?: string }>();
+  console.log('Parámetro recibidos:', { lotId });
   
   const { profileData } = useProfile();
   const [fumigationReport, setFumigationReport] = useState<FumigationReport | null>(null);
@@ -1074,8 +1074,8 @@ function ReservationDocuments() {
       console.log('No hay datos o hay error, retornando array vacío');
       return [];
     }
-    console.log('Usando datos simulados para código:', codigo);
-    return getDocumentsByReservation(codigo);
+    console.log('Usando datos simulados para código:', lotId);
+    return getDocumentsByReservation(lotId);
   })();
 
   // Función para renderizar diferentes tipos de secciones
@@ -1481,7 +1481,7 @@ function ReservationDocuments() {
         <div className="px-6 py-4 pb-12">
           <div className="mb-6 no-print">
             <h1 className="text-2xl font-bold text-[#003595] mb-2">
-              Documentos de Reserva - {codigo || lotId}
+              Documentos de Reserva - {lotId}
             </h1>
             <p className="text-gray-600">
               Gestiona y descarga los documentos relacionados con tu reserva

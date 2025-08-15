@@ -47,7 +47,6 @@ export default function AppRouter() {
         <Route path='/client/solicitudes-pendientes' element={<PendingRequest />} />
         <Route path='/client/solicitudes-en-curso' element={<OnGoingRequest />} />
         <Route path='/client/solicitudes-finalizadas' element={<FinishedRequest />} />
-        <Route path='/client/documentos/:codigo' element={<DocumentosReserva />} />
         <Route path='/client/documentos/lote/:lotId' element={<DocumentosReserva />} />
         <Route path='/client/profile' element={<ClientProfile />} />
         <Route path='/client/profile/edit' element={<NotImplemented />} />
