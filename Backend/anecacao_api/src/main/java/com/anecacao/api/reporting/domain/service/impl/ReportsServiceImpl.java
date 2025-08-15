@@ -4,11 +4,13 @@ import com.anecacao.api.auth.data.entity.RoleName;
 import com.anecacao.api.auth.domain.service.UserService;
 import com.anecacao.api.common.data.dto.MessageDTO;
 import com.anecacao.api.reporting.data.dto.*;
+import com.anecacao.api.reporting.data.dto.response.CertificateDTO;
 import com.anecacao.api.reporting.data.dto.response.CleanupReportResponseDTO;
 import com.anecacao.api.reporting.data.dto.response.FumigationReportResponseDTO;
 import com.anecacao.api.reporting.data.entity.CleanupReport;
 import com.anecacao.api.reporting.data.entity.FumigationReport;
 import com.anecacao.api.reporting.data.entity.IndustrialSafetyConditions;
+import com.anecacao.api.reporting.data.mapper.CertificateMapper;
 import com.anecacao.api.reporting.data.mapper.CleanupReportMapper;
 import com.anecacao.api.reporting.data.mapper.FumigationReportMapper;
 import com.anecacao.api.reporting.data.repository.CleanupReportRepository;
@@ -41,6 +43,7 @@ public class ReportsServiceImpl implements ReportsService {
     private final FumigationApplicationMapper mapper;
     private final FumigationReportMapper fumigationReportMapper;
     private final CleanupReportMapper cleanupReportMapper;
+    private final CertificateMapper certificateMapper;
 
     @Transactional
     @Override
@@ -66,6 +69,30 @@ public class ReportsServiceImpl implements ReportsService {
         CleanupReport report = getOrCreateCleanupReport(reportDTO, fumigation);
 
         return processReportAndUpdateStatus(reportDTO.getIndustrialSafetyConditions(), fumigation, report, Status.FINISHED,false);
+    }
+
+    @Transactional
+    @Override
+    public CertificateDTO getCertificateByFumigationId(Long fumigationId) {
+        // Obtener la fumigación con todas sus relaciones
+        Fumigation fumigation = fumigationRepository.findById(fumigationId)
+                .orElseThrow(() -> new FumigationNotFoundException(fumigationId));
+
+        // Verificar que la fumigación esté en estado FINISHED para generar certificado
+        if (!Status.FINISHED.equals(fumigation.getStatus())) {
+            throw new InvalidFumigationStatusException(fumigationId, Status.FINISHED);
+        }
+
+        // Cargar las relaciones necesarias (lazy loading)
+        // Esto asegura que todas las entidades relacionadas estén disponibles
+        FumigationReport fumigationReport = fumigationReportRepository.findByFumigationId(fumigationId)
+                .orElse(null);
+
+        CleanupReport cleanupReport = cleanupReportRepository.findByFumigationId(fumigationId)
+                .orElse(null);
+
+        // Usar el mapper para crear el CertificateDTO
+        return certificateMapper.toCertificateDTO(fumigation, fumigationReport, cleanupReport);
     }
 
     private void checkTechniciansRole(List<SimpleUserDTO> technicians) {

@@ -2,6 +2,7 @@ package com.anecacao.api.reporting.domain.service;
 
 import com.anecacao.api.common.data.dto.MessageDTO;
 import com.anecacao.api.reporting.data.dto.CleanupReportDTO;
+import com.anecacao.api.reporting.data.dto.response.CertificateDTO;
 import com.anecacao.api.reporting.data.dto.response.CleanupReportResponseDTO;
 import com.anecacao.api.reporting.data.dto.FumigationReportDTO;
 import com.anecacao.api.reporting.data.dto.response.FumigationReportResponseDTO;
@@ -30,4 +31,6 @@ public interface ReportsService {
     CleanupReportResponseDTO getCleanupReportById(Long id);
 
     CleanupReportResponseDTO getCleanupReportByFumigationId(Long fumigationId);
+
+    CertificateDTO getCertificateByFumigationId(Long fumigationId);
 }

@@ -134,14 +134,10 @@ public class UserServiceImpl implements UserService {
 
         if (userUpdateRoleDTO.getEmail().equals(email)) throw new IllegalRoleChangeException();
 
-        Role role = roleRepository.findByName(RoleName.ROLE_TECHNICIAN)
-                .orElseThrow(() -> new RuntimeException("Role not found."));
-
-        Role clientRole = roleRepository.findByName(RoleName.ROLE_CLIENT)
+        Role role = roleRepository.findByName(userUpdateRoleDTO.getRole())
                 .orElseThrow(() -> new RuntimeException("Role not found."));
 
         user.getRoles().add(role);
-        user.getRoles().remove(clientRole);
         userRepository.save(user);
     }
 
