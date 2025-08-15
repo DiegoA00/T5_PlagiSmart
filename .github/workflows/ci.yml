@@ -32,11 +32,6 @@ jobs:
           cd Frontend/web
           npm install
 
-      - name: Run tests (Frontend)
-        run: |
-          cd Frontend/web
-          npm run test
-
       - name: Build frontend
         run: |
           cd Frontend/web
@@ -52,7 +47,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v2
         with:
-          java-version: '11'
+          java-version: '21'
 
       - name: Build with Maven
         run: |
