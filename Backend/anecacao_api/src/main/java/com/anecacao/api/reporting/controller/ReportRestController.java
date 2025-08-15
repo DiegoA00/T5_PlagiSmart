@@ -2,6 +2,7 @@ package com.anecacao.api.reporting.controller;
 
 import com.anecacao.api.common.data.dto.MessageDTO;
 import com.anecacao.api.reporting.data.dto.CleanupReportDTO;
+import com.anecacao.api.reporting.data.dto.response.CertificateDTO;
 import com.anecacao.api.reporting.data.dto.response.CleanupReportResponseDTO;
 import com.anecacao.api.reporting.data.dto.FumigationReportDTO;
 import com.anecacao.api.reporting.data.dto.response.FumigationReportResponseDTO;
@@ -91,5 +92,18 @@ public class ReportRestController {
                 message,
                 HttpStatus.CREATED
         );
+    }
+
+    /**
+     * Obtiene el certificado de fumigación para una fumigación específica.
+     * Solo disponible para fumigaciones en estado FINISHED.
+     *
+     * @param fumigationId ID de la fumigación
+     * @return CertificateDTO con todos los datos del certificado
+     */
+    @GetMapping("/certificate/by-fumigation/{fumigationId}")
+    public ResponseEntity<CertificateDTO> getCertificateByFumigationId(@PathVariable Long fumigationId) {
+        CertificateDTO certificate = reportsService.getCertificateByFumigationId(fumigationId);
+        return ResponseEntity.ok(certificate);
     }
 }
