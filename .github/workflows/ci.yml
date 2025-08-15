@@ -1,0 +1,64 @@
+name: CI Workflow
+
+on:
+  push:
+    branches:
+      - feature/frontend-client-view
+  pull_request:
+    branches:
+      - feature/frontend-client-view
+
+jobs:
+  # Frontend job (React + Vite)
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Run tests (Frontend)
+        run: |
+          cd frontend
+          npm run test
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+
+  # Backend job (Spring Boot)
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+
+      - name: Build with Maven
+        run: |
+          cd backend
+          ./mvnw clean install
+
+      - name: Run tests (Backend)
+        run: |
+          cd backend
+          ./mvnw test
+
+      - name: Build backend (Spring Boot)
+        run: |
+          cd backend
+          ./mvnw package
