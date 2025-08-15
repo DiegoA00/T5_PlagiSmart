@@ -67,8 +67,8 @@ jobs:
           echo "DATABASE_HOST=${{ secrets.DATABASE_HOST }}"
           echo "DATABASE_PORT=${{ secrets.DATABASE_PORT }}"
           echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}"
-          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}"
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
+          echo "DATABASE_USER=${{ secrets.DB_USERNAME }}"
+          echo "DATABASE_PASSWORD=${{ secrets.DB_PASSWORD }}"
 
       - name: Build with Maven
         run: |
