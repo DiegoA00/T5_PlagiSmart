@@ -110,7 +110,7 @@ export default function TechnicianProfileScreen() {
 
           <View style={styles.infoRow}>
             <Text style={styles.label}>Última actualización:</Text>
-            <Text style={styles.value}>2024</Text>
+            <Text style={styles.value}>2025</Text>
           </View>
         </View>
       </ScrollView>
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#374151',
-    width: 100,
+    width: 115,
   },
   value: {
     fontSize: 16,

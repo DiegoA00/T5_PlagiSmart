@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#374151',
-    width: 100,
+    width: 115,
   },
   value: {
     fontSize: 14,
