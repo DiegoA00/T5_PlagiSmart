@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { FumigationReportResponse } from "@/types/request";
 import { CollapsibleSection } from "../shared/CollapsibleSection";
+import { AdminSignaturesView } from "./AdminSignaturesView";
 
 interface FumigationReportViewProps {
   report: FumigationReportResponse | null;
@@ -257,6 +258,11 @@ export const FumigationReportView: FC<FumigationReportViewProps> = ({
           {report.observations || "Sin observaciones"}
         </div>
       </CollapsibleSection>
+
+      <AdminSignaturesView 
+        signatures={report.signatures || []}
+        isLoading={loading}
+      />
     </div>
   );
 };
