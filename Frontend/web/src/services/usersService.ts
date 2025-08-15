@@ -1,13 +1,21 @@
 import apiClient from "./api/apiService";
 import { ApiUser, PaginatedResponse, PageableRequest } from "@/types/request";
 
-// Función helper para convertir array sort a string
+export interface UpdateUserDTO {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  address: string;
+  country: string;
+  city: string;
+  gender: string;
+}
+
 const formatSortParams = (sort?: string[]): string | undefined => {
   if (!sort || sort.length === 0) return undefined;
   return sort.join(',');
 };
 
-// Función helper para crear respuesta paginada vacía
 const createEmptyPaginatedResponse = <T>(): PaginatedResponse<T> => ({
   totalPages: 0,
   totalElements: 0,
@@ -98,6 +106,24 @@ export const usersService = {
       await apiClient.put('/users/role', { email });
     } catch (error: any) {
       throw new Error(error.response?.data?.message || "Error al cambiar el rol");
+    }
+  },
+
+  updateUserProfile: async (profileData: UpdateUserDTO): Promise<ApiUser> => {
+    try {
+      const response = await apiClient.put('/users/profile', profileData);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || "Error al actualizar el perfil del usuario");
+    }
+  },
+
+  getCurrentUser: async (): Promise<ApiUser> => {
+    try {
+      const response = await apiClient.get('/users/me');
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || "Error al obtener información del usuario");
     }
   }
 };

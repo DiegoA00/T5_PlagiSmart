@@ -81,7 +81,9 @@ public class FumigationServiceImpl implements FumigationService {
         FumigationApplication fumigationApplication = fumigation.getFumigationApplication();
         Long companyOwnerId = fumigationApplication.getCompany().getLegalRepresentative().getId();
 
-        boolean isAuthorized = userIdFromToken.equals(companyOwnerId.toString()) || userService.hasRole(userIdFromToken, RoleName.ROLE_ADMIN);
+        boolean isAuthorized = userIdFromToken.equals(companyOwnerId.toString()) ||
+                userService.hasRole(userIdFromToken, RoleName.ROLE_ADMIN) ||
+                userService.hasRole(userIdFromToken, RoleName.ROLE_TECHNICIAN);
 
         if (!isAuthorized) {
             throw new UnauthorizedAccessException("Fumigation", fumigation.getId(), Long.parseLong(userIdFromToken));
