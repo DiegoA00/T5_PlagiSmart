@@ -7,9 +7,9 @@ const menuData = [
     label: "Gestión de servicios",
     items: [
       { label: "Inicio", path: "/admin/inicio" },
-      { label: "Solicitudes en espera", path: "/admin/solicitudes-espera" },
-      { label: "Solicitudes reservadas", path: "/admin/solicitudes-reservadas" },
-      { label: "Solicitudes Finalizadas", path: "/admin/solicitudes-finalizadas" },
+      { label: "Solicitudes pendientes", path: "/client/solicitudes-pendientes" },
+      { label: "Solicitudes en curso", path: "/client/solicitudes-en-curso" },
+      { label: "Solicitudes finalizadas", path: "/client/solicitudes-finalizadas" },
     ],
   },
   {

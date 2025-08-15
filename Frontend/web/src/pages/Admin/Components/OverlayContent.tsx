@@ -41,6 +41,10 @@ export const OverlayContent: FC<OverlayContentProps> = ({
     handleRejectAll
   } = useRequestApproval(request, onClose, onRefresh);
 
+  const approvedFumigations = request.applicationData?.fumigations?.filter(
+    fumigation => fumigation.status === "APPROVED"
+  ) || [];
+
   return (
     <>
       <div className="flex flex-col h-full">
@@ -102,6 +106,17 @@ export const OverlayContent: FC<OverlayContentProps> = ({
                 <label htmlFor="selectAllLots" className="text-sm text-[#003595]">
                   Seleccionar Todos los Lotes
                 </label>
+              </div>
+            )}
+
+            {approvedFumigations.length > 0 && (
+              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded">
+                <div className="text-sm text-green-800 font-medium mb-2">
+                  Lotes Aprobados
+                </div>
+                <div className="text-xs text-green-600">
+                  {approvedFumigations.length} lote(s) aprobado(s) - Las evidencias estarán disponibles en la página de Lotes o Servicios Completados.
+                </div>
               </div>
             )}
           </div>

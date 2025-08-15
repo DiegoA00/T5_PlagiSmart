@@ -15,6 +15,11 @@ import CodeRecovery from "../pages/Recovery/CodeRecovery";
 import PasswordRecovery from "../pages/Recovery/PasswordRecovery";
 
 import ClientHome from "@/pages/Client/ClientHome";
+import ClientProfile from "@/pages/Client/ClientProfile";
+import PendingRequest from "../pages/Client/PendingRequest";
+import OnGoingRequest from "@/pages/Client/OnGoingRequest";
+import FinishedRequest from "@/pages/Client/FinishedRequest";
+import DocumentosReserva from "../pages/Client/ReservationDocuments";
 
 import Solicitudes from "@/pages/Admin/RequestsPage";
 import LotsInService from "../pages/Admin/LotsPage";
@@ -39,11 +44,18 @@ export default function AppRouter() {
         <Route path='/register/terms-and-conditions' element={<TermsAndConditions />} />
         <Route path='/register/success' element={<RegisterSuccess />} />
         <Route path='/register/complete-profile' element={<CompleteProfile />} />
+        <Route path='/client/solicitudes-pendientes' element={<PendingRequest />} />
+        <Route path='/client/solicitudes-en-curso' element={<OnGoingRequest />} />
+        <Route path='/client/solicitudes-finalizadas' element={<FinishedRequest />} />
+        <Route path='/client/documentos/:codigo' element={<DocumentosReserva />} />
+        <Route path='/client/profile' element={<ClientProfile />} />
+        <Route path='/client/profile/edit' element={<NotImplemented />} />
 
         <Route path='/home/*' element={
           <ProtectedRoute allowedRoles={['ROLE_CLIENT']}>
             <Routes>
               <Route path='*' element={<ClientHome />} />
+              
             </Routes>
           </ProtectedRoute>
         } />
