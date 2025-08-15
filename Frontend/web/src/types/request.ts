@@ -144,6 +144,13 @@ export type Request = {
   applicationData?: FumigationApplication;
 };
 
+export interface SignatureResponse {
+  id: number;
+  signatureType: 'technician' | 'client';
+  fileUrl: string;
+  reportId: number;
+}
+
 export interface FumigationReportResponse {
   id: number;
   location: string;
@@ -189,6 +196,7 @@ export interface FumigationReportResponse {
     status: string;
     message: string;
   };
+  signatures: SignatureResponse[];
 }
 
 export interface CleanupReportResponse {
@@ -223,4 +231,5 @@ export interface CleanupReportResponse {
     status: string;
     message: string;
   };
+  signatures: SignatureResponse[];
 }
