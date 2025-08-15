@@ -91,11 +91,11 @@ export const fumigationService = {
   },
 
   // Servicios completados
-  async getCompletedServices(): Promise<{ data: ApiService[] | null; success: boolean; message?: string }> {
+  async getCompletedServices(): Promise<{ data: FumigationListItem[] | null; success: boolean; message?: string }> {
     try {
-      const response = await apiService.get<ApiService[]>('/fumigations?status=COMPLETED');
+      const response = await apiService.get<PaginatedResponse<FumigationListItem>>('/fumigations?status=FINISHED&page=0&size=50&sort=id');
       return {
-        data: response.data || null,
+        data: response.data?.content || null,
         success: response.success,
         message: response.message
       };
@@ -127,7 +127,7 @@ export const fumigationService = {
   },
 
   // Actualizar estado del lote
-  async updateLotStatus(lotId: number, status: 'IN_SERVICE' | 'COMPLETED'): Promise<{ success: boolean; message?: string }> {
+  async updateLotStatus(lotId: number, status: 'IN_SERVICE' | 'FINISHED'): Promise<{ success: boolean; message?: string }> {
     try {
       const response = await apiService.patch(`/fumigations/${lotId}/status`, { status });
       return {

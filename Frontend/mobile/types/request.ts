@@ -66,7 +66,7 @@ export interface ApiLot {
   id: number;
   name: string;
   location: string;
-  status: 'IN_SERVICE' | 'COMPLETED' | 'PENDING';
+  status: 'IN_SERVICE' | 'FINISHED' | 'PENDING';
   assignedTechnician?: string;
   startDate?: string;
   estimatedEndDate?: string;
@@ -79,7 +79,7 @@ export interface ApiService {
   companyName: string;
   technician: string;
   completionDate: string;
-  status: 'COMPLETED';
+  status: 'FINISHED';
   notes?: string;
 }
 

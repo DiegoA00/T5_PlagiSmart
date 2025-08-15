@@ -13,7 +13,7 @@ import { router } from 'expo-router';
 import AdminLayout from '@/components/AdminLayout';
 import { fumigationService } from '@/services/fumigationService';
 import { usersService } from '@/services/usersService';
-import { ApiFumigationApplication, ApiUser } from '@/types/request';
+import { ApiFumigationApplication, ApiUser, FumigationListItem } from '@/types/request';
 
 const { width } = Dimensions.get('window');
 
@@ -61,6 +61,23 @@ export default function DashboardScreen() {
         fumigationService.getCompletedServices()
       ]);
 
+      // Debug completedServices response
+      console.log('CompletedServices response:', {
+        success: completedServices.success,
+        data: completedServices.data,
+        isArray: Array.isArray(completedServices.data),
+        type: typeof completedServices.data,
+        message: completedServices.message
+      });
+
+      // Debug activeLots response
+      console.log('ActiveLots response:', {
+        success: activeLots.success,
+        data: activeLots.data,
+        content: activeLots.data?.content,
+        contentLength: activeLots.data?.content?.length
+      });
+
       // Procesar usuarios por rol - validar que sea un array
       const users = Array.isArray(usersResult.data) ? usersResult.data : [];
       console.log('Users data received:', { 
@@ -80,8 +97,8 @@ export default function DashboardScreen() {
         pendingRequests: pendingResult.data?.content?.length || 0,
         rejectedRequests: rejectedResult.data?.content?.length || 0,
         totalUsers: users.length,
-        activeLots: activeLots.data?.length || 0,
-        completedServices: completedServices.data?.length || 0,
+        activeLots: activeLots.data?.content?.length || 0,
+        completedServices: Array.isArray(completedServices.data) ? completedServices.data.length : 0,
         adminUsers: usersByRole.admin,
         clientUsers: usersByRole.client,
         technicianUsers: usersByRole.technician,
@@ -101,10 +118,10 @@ export default function DashboardScreen() {
         return reqDate.getMonth() === currentMonth && reqDate.getFullYear() === currentYear;
       }).length || 0;
 
-      const thisMonthCompleted = completedServices.data?.filter((service: any) => {
-        const serviceDate = new Date(service.completionDate);
+      const thisMonthCompleted = Array.isArray(completedServices.data) ? completedServices.data.filter((service: FumigationListItem) => {
+        const serviceDate = new Date(service.plannedDate);
         return serviceDate.getMonth() === currentMonth && serviceDate.getFullYear() === currentYear;
-      }).length || 0;
+      }).length : 0;
 
       const thisMonthRejected = rejectedResult.data?.content?.filter((req: ApiFumigationApplication) => {
         const rejDate = new Date(req.submissionDate);
@@ -120,6 +137,23 @@ export default function DashboardScreen() {
 
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      // Set default values in case of error
+      setStats({
+        pendingRequests: 0,
+        rejectedRequests: 0,
+        totalUsers: 0,
+        activeLots: 0,
+        completedServices: 0,
+        adminUsers: 0,
+        clientUsers: 0,
+        technicianUsers: 0,
+      });
+      setMonthlyData({
+        currentMonth: new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
+        pendingThisMonth: 0,
+        completedThisMonth: 0,
+        rejectedThisMonth: 0,
+      });
     } finally {
       setLoading(false);
     }
