@@ -21,6 +21,12 @@ jobs:
         with:
           node-version: '16'
 
+      - name: Clean npm cache and node_modules
+        run: |
+          cd Frontend/web
+          rm -rf node_modules
+          rm package-lock.json
+
       - name: Install dependencies
         run: |
           cd Frontend/web
