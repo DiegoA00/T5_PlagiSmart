@@ -15,6 +15,12 @@ public class CleanupReportDTO {
     @NotNull(message = "Fumigation ID must not be null")
     private Long id;
 
+    @NotNull(message = "Supervisor must not be null")
+    private String supervisor;
+
+    @NotNull(message = "Location must not be null")
+    private String location;
+
     @NotNull(message = "Date must not be null")
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate date;
