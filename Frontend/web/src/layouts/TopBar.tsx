@@ -31,14 +31,10 @@ export const TopBar: FC<TopBarProps> = ({ userImage = "/avatar.png" }) => {
 
   const handleLogout = async () => {
     try {
-      // Primero limpiar el estado de autenticación
       logout();
-      
-      // Forzar navegación inmediata
       window.location.href = '/login';
     } catch (error) {
       console.error('Error durante logout:', error);
-      // Aún así intentar navegar a login
       window.location.href = '/login';
     }
   };
@@ -49,7 +45,6 @@ export const TopBar: FC<TopBarProps> = ({ userImage = "/avatar.png" }) => {
     } else if (hasRole(['ROLE_CLIENT'])) {
       navigate('/client/profile');
     } else {
-      // Fallback en caso de que no tenga rol definido
       navigate('/profile');
     }
   };

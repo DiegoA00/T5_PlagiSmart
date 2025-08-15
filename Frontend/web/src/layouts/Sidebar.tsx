@@ -15,6 +15,10 @@ const adminOptions: SidebarOption[] = [
   { label: "Usuarios", path: "/admin/usuarios" },
 ];
 
+const technicianOptions: SidebarOption[] = [
+  { label: "Lotes a fumigar", path: "/tecnico/lotes" },
+];
+
 const clientOptions: SidebarOption[] = [
   { label: "Inicio", path: "/client" },
   { label: "Solicitudes Pendientes", path: "/client/solicitudes-pendientes" },
@@ -27,21 +31,23 @@ export function Sidebar() {
   const navigate = useNavigate();
   const { hasRole } = useAuth();
 
-  // Determinar qué opciones mostrar según el rol del usuario
-  const getOptionsForUser = (): SidebarOption[] => {
-    if (hasRole(['ROLE_ADMIN'])) {
+  const getMenuOptions = () => {
+    if (hasRole(['ROLE_TECHNICIAN'])) {
+      return technicianOptions;
+    } else if (hasRole(['ROLE_ADMIN'])) {
       return adminOptions;
     } else if (hasRole(['ROLE_CLIENT'])) {
       return clientOptions;
     }
-    // Por defecto, si no tiene rol definido, mostrar opciones de cliente
-    return clientOptions;
+    return [];
   };
+
+  const menuOptions = getMenuOptions();
 
   return (
     <aside className="w-64 bg-[#003595] text-white p-6 flex flex-col">
       <nav className="flex flex-col gap-4">
-        {getOptionsForUser().map((opt) => (
+        {menuOptions.map((opt) => (
           <Button
             key={opt.path}
             variant={

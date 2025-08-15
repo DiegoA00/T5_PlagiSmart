@@ -143,3 +143,84 @@ export type Request = {
   lots: Fumigation[];
   applicationData?: FumigationApplication;
 };
+
+export interface FumigationReportResponse {
+  id: number;
+  location: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  observations: string;
+  dimensions: {
+    height: number;
+    width: number;
+    length: number;
+  };
+  environmentalConditions: {
+    temperature: number;
+    humidity: number;
+  };
+  industrialSafetyConditions: {
+    electricDanger: boolean;
+    fallingDanger: boolean;
+    hitDanger: boolean;
+  };
+  technicians: Array<{
+    id: number;
+    firstName: string;
+    lastName: string;
+  }>;
+  supplies: Array<{
+    id: number;
+    name: string;
+    quantity: number;
+    dosage: string;
+    kindOfSupply: string;
+    numberOfStrips: string;
+  }>;
+  fumigationInfo: {
+    id: number;
+    lotNumber: string;
+    ton: number;
+    portDestination: string;
+    sacks: number;
+    quality: string;
+    dateTime: string;
+    status: string;
+    message: string;
+  };
+}
+
+export interface CleanupReportResponse {
+  id: number;
+  date: string;
+  startTime: string;
+  endTime: string;
+  lotDescription: {
+    stripsState: string;
+    fumigationTime: number;
+    ppmFosfina: number;
+  };
+  industrialSafetyConditions: {
+    electricDanger: boolean;
+    fallingDanger: boolean;
+    hitDanger: boolean;
+    otherDanger: boolean;
+  };
+  technicians: Array<{
+    id: number;
+    firstName: string;
+    lastName: string;
+  }>;
+  fumigationInfo: {
+    id: number;
+    lotNumber: string;
+    ton: number;
+    portDestination: string;
+    sacks: number;
+    quality: string;
+    dateTime: string;
+    status: string;
+    message: string;
+  };
+}

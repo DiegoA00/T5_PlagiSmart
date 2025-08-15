@@ -15,6 +15,31 @@ const getToken = () => {
     return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
 };
 
+const isReportNotFoundError = (error: any): boolean => {
+    const errorMessage = error.response?.data?.message || error.message || "";
+    const url = error.config?.url || "";
+    
+    const isReportEndpoint = url.includes('/reports/');
+    const hasNotFoundKeywords = (
+        errorMessage.includes("FumigationReportNotFoundException") ||
+        errorMessage.includes("No report found for fumigation ID") ||
+        errorMessage.includes("CleanupReportNotFoundException") ||
+        errorMessage.includes("No cleanup report found") ||
+        errorMessage.includes("report found") ||
+        errorMessage.includes("NotFoundException")
+    );
+    
+    console.log('Checking if error is report not found:', {
+        url,
+        isReportEndpoint,
+        hasNotFoundKeywords,
+        errorMessage,
+        result: isReportEndpoint && hasNotFoundKeywords
+    });
+    
+    return isReportEndpoint && hasNotFoundKeywords;
+};
+
 apiClient.interceptors.request.use(
     (config) => {
         const token = getToken();
@@ -34,16 +59,22 @@ apiClient.interceptors.response.use(
         return response;
     },
     (error) => {
-        console.log('API Error Response:', {
-            status: error.response?.status,
+        const status = error.response?.status;
+        const url = error.config?.url || "";
+        const message = error.response?.data?.message || error.message;
+        const isReportNotFound = isReportNotFoundError(error);
+
+        console.log('API Error intercepted:', {
+            status,
+            url,
+            message,
+            isReportNotFound,
             statusText: error.response?.statusText,
-            url: error.config?.url,
-            data: error.response?.data
+            fullResponse: error.response?.data
         });
-        
-        if (error.response?.status === 401) {
-            const url = error.config?.url || '';
-            
+
+        // Manejo de errores 401
+        if (status === 401) {
             // Lista de endpoints donde un 401 no debería cerrar sesión automáticamente
             const nonAuthEndpoints = [
                 '/reports/fumigations/by-fumigation',
@@ -54,9 +85,12 @@ apiClient.interceptors.response.use(
             // Verificar si el error 401 viene de un endpoint de reportes/documentos
             const isNonAuthEndpoint = nonAuthEndpoints.some(endpoint => url.includes(endpoint));
             
-            if (isNonAuthEndpoint) {
-                console.warn(`401 en endpoint de recursos (${url}) - no cerrando sesión automáticamente`);
-                // No cerrar sesión para estos endpoints, dejar que el servicio específico maneje el error
+            // No cerrar sesión si:
+            // 1. Es un error de reporte no encontrado (lógica más inteligente)
+            // 2. O es un endpoint específico de la lista (compatibilidad con lógica anterior)
+            if (isReportNotFound || isNonAuthEndpoint) {
+                const reason = isReportNotFound ? 'report not found error' : `non-auth endpoint (${url})`;
+                console.warn(`401 error detected but NOT clearing session - reason: ${reason}`);
                 return Promise.reject(error instanceof Error ? error : new Error(error?.message || 'API Error'));
             }
             
@@ -69,8 +103,11 @@ apiClient.interceptors.response.use(
             sessionStorage.removeItem('user_data');
             
             if (!window.location.pathname.includes('/login')) {
+                console.log('Redirecting to login page');
                 window.location.href = '/login';
             }
+        } else if (isReportNotFound) {
+            console.log('Report not found error detected (non-401), NOT clearing session');
         }
         
         return Promise.reject(error instanceof Error ? error : new Error(error?.message || 'API Error'));

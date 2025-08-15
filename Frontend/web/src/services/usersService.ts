@@ -62,13 +62,11 @@ export interface UserMeResponse {
   }>;
 }
 
-// Función helper para convertir array sort a string
 const formatSortParams = (sort?: string[]): string | undefined => {
   if (!sort || sort.length === 0) return undefined;
   return sort.join(',');
 };
 
-// Función helper para crear respuesta paginada vacía
 const createEmptyPaginatedResponse = <T>(): PaginatedResponse<T> => ({
   totalPages: 0,
   totalElements: 0,
