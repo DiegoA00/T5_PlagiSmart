@@ -151,7 +151,6 @@ class FumigationServiceImplTest {
         FumigationCreationRequestDTO dto = new FumigationCreationRequestDTO();
         dto.setTon(new BigDecimal("15.5"));
         dto.setSacks(100L);
-        dto.setPortDestination(PortName.AMSTERDAM_HOLANDA);
         dto.setQuality(Grade.GRADE_3.toString());
         dto.setDateTime(LocalDateTime.of(2024, 6, 1, 10, 0));
         return dto;
