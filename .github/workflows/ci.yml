@@ -50,6 +50,10 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Set executable permissions for mvnw
+        run: |
+          chmod +x Backend/anecacao_api/mvnw
+
       - name: Build with Maven
         run: |
           cd Backend/anecacao_api
