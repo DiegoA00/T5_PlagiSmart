@@ -57,6 +57,27 @@ export interface Signature {
   reportId: number;
 }
 
+// Interfaces para Cleanup Report
+export interface LotDescription {
+  stripsState: string;
+  fumigationTime: number;
+  ppmFosfina: number;
+}
+
+export interface CleanupReport {
+  id: number;
+  location: string;
+  supervisor: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  lotDescription: LotDescription;
+  industrialSafetyConditions: IndustrialSafetyConditions;
+  technicians: Technician[];
+  fumigationInfo: FumigationInfo;
+  signatures: Signature[];
+}
+
 export interface FumigationReport {
   id: number;
   supervisor: string;
@@ -182,6 +203,96 @@ export const fumigationReportsService = {
       // Para otros errores, usar el mensaje del servidor si está disponible
       const serverMessage = error.response?.data?.message || error.response?.data?.error;
       throw new Error(serverMessage || "Error al obtener el reporte de fumigación");
+    }
+  },
+
+  // Función para obtener el reporte de cleanup por ID de fumigación
+  async getCleanupReportByFumigationId(fumigationId: number | string): Promise<CleanupReport> {
+    try {
+      console.log(`Solicitando reporte de cleanup para fumigación ID: ${fumigationId}`);
+      
+      // Para pruebas, simulemos algunos datos cuando no hay backend
+      if (fumigationId === 999) {
+        console.log('Devolviendo datos simulados de cleanup para ID 999');
+        return {
+          id: 999,
+          location: "Bodega Central",
+          supervisor: "Juan Pérez",
+          date: "2024-08-14",
+          startTime: "08:00",
+          endTime: "17:00",
+          lotDescription: {
+            stripsState: "Retiradas completamente",
+            fumigationTime: 72,
+            ppmFosfina: 1000
+          },
+          industrialSafetyConditions: {
+            electricDanger: false,
+            fallingDanger: true,
+            hitDanger: false,
+            otherDanger: false
+          },
+          technicians: [
+            {
+              id: 1,
+              firstName: "Carlos",
+              lastName: "Ruiz",
+              email: "carlos.ruiz@example.com"
+            },
+            {
+              id: 2,
+              firstName: "Ana",
+              lastName: "López",
+              email: "ana.lopez@example.com"
+            }
+          ],
+          fumigationInfo: {
+            id: 1,
+            lotNumber: "LOTE-2024-001",
+            ton: 25.5,
+            portDestination: "Puerto de Guayaquil",
+            sacks: 510,
+            quality: "Primera",
+            dateTime: "2024-08-14T08:00:00Z",
+            status: "APPROVED",
+            message: "Lote aprobado para fumigación"
+          },
+          signatures: []
+        };
+      }
+      
+      const response = await apiClient.get(`/reports/cleanup/by-fumigation/${fumigationId}`);
+      console.log('Respuesta del backend de cleanup recibida:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error al obtener reporte de cleanup:', error);
+      
+      // Manejo específico de errores HTTP
+      if (error.response?.status === 404) {
+        throw new Error("No se encontró ningún reporte de descarpe para este lote de fumigación");
+      }
+      
+      if (error.response?.status === 400) {
+        throw new Error("ID de fumigación inválido");
+      }
+      
+      if (error.response?.status === 403) {
+        throw new Error("No tienes permisos para acceder a este reporte de descarpe");
+      }
+      
+      // Para errores 401 en este endpoint específico, tratarlo como "no encontrado"
+      if (error.response?.status === 401) {
+        console.warn('401 en endpoint de reportes de cleanup - tratando como "no encontrado"');
+        throw new Error("No se encontró ningún reporte de descarpe para este lote de fumigación o el reporte aún no está disponible");
+      }
+      
+      if (error.response?.status === 500) {
+        throw new Error("Error interno del servidor. Inténtalo más tarde");
+      }
+      
+      // Para otros errores, usar el mensaje del servidor si está disponible
+      const serverMessage = error.response?.data?.message || error.response?.data?.error;
+      throw new Error(serverMessage || "Error al obtener el reporte de descarpe");
     }
   }
 };

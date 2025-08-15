@@ -3,7 +3,7 @@ import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
 import { useParams } from "react-router";
 import { useState, useEffect, useMemo } from "react";
-import { fumigationReportsService, FumigationReport } from "@/services/fumigationReportsService";
+import { fumigationReportsService, FumigationReport, CleanupReport } from "@/services/fumigationReportsService";
 import { useProfile } from "@/hooks/useProfile";
 
 interface HeaderData {
@@ -50,7 +50,7 @@ interface GridData {
 }
 
 interface DocumentSection {
-  type: 'header' | 'personal-info' | 'request-details' | 'conditions' | 'supplies-details' | 'lot-details' | 'signatures' | 'single-signature' | 'text' | 'grid' | 'footer';
+  type: 'header' | 'personal-info' | 'request-details' | 'fumigation-conditions' | 'cleanup-conditions' | 'supplies-details' | 'lot-details' | 'signatures' | 'single-signature' | 'text' | 'grid' | 'footer';
   data?: any[];
   signatures?: string[];
   signature?: string;
@@ -81,48 +81,65 @@ function ReservationDocuments() {
   
   const { profileData } = useProfile();
   const [fumigationReport, setFumigationReport] = useState<FumigationReport | null>(null);
+  const [cleanupReport, setCleanupReport] = useState<CleanupReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [noDataFound, setNoDataFound] = useState(false);
 
   // Cargar datos de la API cuando hay un lotId
   useEffect(() => {
-    const loadFumigationReport = async () => {
+    const loadReports = async () => {
       if (!lotId) return;
 
       try {
-        console.log('Iniciando carga de reporte para lote:', lotId);
+        console.log('Iniciando carga de reportes para lote:', lotId);
         setLoading(true);
         setError(null);
         setNoDataFound(false);
-        const report = await fumigationReportsService.getFumigationReport(parseInt(lotId));
-        console.log('Reporte cargado exitosamente:', report);
-        setFumigationReport(report);
-      } catch (err: any) {
-        console.error('Error completo al cargar reporte:', err);
-        // Distinguir entre diferentes tipos de errores
-        const errorMessage = err.message || 'Error al cargar el reporte de fumigación';
         
-        if (errorMessage.includes("No se encontró ningún reporte") || 
-            errorMessage.includes("no está disponible")) {
+        // Cargar ambos reportes en paralelo
+        const [fumigationReportResult, cleanupReportResult] = await Promise.allSettled([
+          fumigationReportsService.getFumigationReport(parseInt(lotId)),
+          fumigationReportsService.getCleanupReportByFumigationId(parseInt(lotId))
+        ]);
+
+        // Procesar resultado del reporte de fumigación
+        if (fumigationReportResult.status === 'fulfilled') {
+          console.log('Reporte de fumigación cargado exitosamente:', fumigationReportResult.value);
+          setFumigationReport(fumigationReportResult.value);
+        } else {
+          console.log('Error al cargar reporte de fumigación:', fumigationReportResult.reason);
+        }
+
+        // Procesar resultado del reporte de cleanup
+        if (cleanupReportResult.status === 'fulfilled') {
+          console.log('Reporte de cleanup cargado exitosamente:', cleanupReportResult.value);
+          setCleanupReport(cleanupReportResult.value);
+        } else {
+          console.log('Error al cargar reporte de cleanup:', cleanupReportResult.reason);
+        }
+
+        // Verificar si al menos uno de los reportes se cargó exitosamente
+        const hasAnyReport = fumigationReportResult.status === 'fulfilled' || cleanupReportResult.status === 'fulfilled';
+        
+        if (!hasAnyReport) {
+          // Si ninguno de los reportes se pudo cargar, mostrar mensaje de "no encontrado"
           setNoDataFound(true);
           setError(null);
           console.info('No hay reportes disponibles para este lote');
-        } else if (err.response?.status === 401) {
-          // Si aún llega un 401 aquí, tratarlo como "no disponible" para este endpoint específico
-          setNoDataFound(true);
-          setError(null);
-          console.warn('401 tratado como "no disponible" para reporte de fumigación');
-        } else {
-          setError(errorMessage);
-          setNoDataFound(false);
         }
+
+      } catch (err: any) {
+        console.error('Error general al cargar reportes:', err);
+        const errorMessage = err.message || 'Error al cargar los reportes';
+        setError(errorMessage);
+        setNoDataFound(false);
       } finally {
         setLoading(false);
       }
     };
 
-    loadFumigationReport();
+    loadReports();
   }, [lotId]);
 
   // Función para crear documentos basados en datos de la API
@@ -174,7 +191,7 @@ function ReservationDocuments() {
                 ]
               },
               {
-                type: "conditions",
+                type: "fumigation-conditions",
                 data: [
                   { label: "Temperatura", value: `${report.environmentalConditions?.temperature || 0}°C` },
                   { label: "Humedad", value: `${report.environmentalConditions?.humidity || 0}%` },
@@ -196,15 +213,85 @@ function ReservationDocuments() {
               },
               {
                 type: "signatures",
-                signatures: ["Supervisor", "Técnico 1", "Técnico 2", "Cliente"]
+                signatures: ["Técnico Responsable Anecacao", "Cliente"]
               }
             ]
           }
-        },
-        
+        }
       ];
     } catch (error) {
       console.error('Error creando documentos desde reporte:', error);
+      return [];
+    }
+  };
+
+  // Función para crear documentos desde reporte de cleanup
+  const createDocumentsFromCleanupReport = (cleanupData: CleanupReport): Document[] => {
+    const companyName = profileData?.company?.businessName || "[Nombre de la Empresa]";
+    try {
+      return [
+        {
+          type: "registro-descarpe",
+          title: "Registro de Descarpe",
+          fileName: "Registro_Descarpe",
+          content: {
+            mainTitle: "REGISTRO DE DESCARPE",
+            subtitle: `Código de Reserva: ${cleanupData.id || 'N/A'}`,
+            sections: [
+              {
+                type: "header",
+                data: [
+                  { label: "Empresa", value: companyName },
+                  { label: "Ubicación", value: cleanupData.location || "[Ubicación]" },
+                  { label: "Fecha", value: cleanupData.date || new Date().toLocaleDateString() },
+                  { label: "Hora/Inicio", value: cleanupData.startTime || "[Hora Inicio]" },
+                  { label: "Hora/Fin", value: cleanupData.endTime || "[Hora Fin]" },
+                  { label: "Supervisor", value: cleanupData.supervisor || "[Supervisor]" }
+                ]
+              },
+              {
+                type: "personal-info",
+                data: cleanupData.technicians?.map(tech => ({
+                  name: tech.firstName && tech.lastName ? `${tech.firstName} ${tech.lastName}` : "[Nombre]",
+                  position: "Técnico"
+                }))
+              },
+              {
+                type: "lot-details",
+                data: cleanupData.fumigationInfo ? [
+                  {
+                    lot: cleanupData.fumigationInfo.lotNumber || "[Número de Lote]",
+                    tons: cleanupData.fumigationInfo.ton?.toString() || "[Toneladas]",
+                    quality: cleanupData.fumigationInfo.quality || "[Calidad]",
+                    sacks: cleanupData.fumigationInfo.sacks?.toString() || "[Número de sacos]",
+                    destination: cleanupData.fumigationInfo.portDestination || "[Destino]",
+                    ribbonsStatus: cleanupData.lotDescription?.stripsState || "[Estado de cintas]",
+                    fumigationTime: cleanupData.lotDescription?.fumigationTime?.toString() || "[Tiempo de Fumigación]",
+                    ppmFosfine: cleanupData.lotDescription?.ppmFosfina?.toString() || "[PPM Fosfina]"
+                  }
+                ] : []
+              },
+              {
+                type: "cleanup-conditions",
+                data: [
+                  { label: "Temperatura", value: "[Temperatura]" },
+                  { label: "Humedad", value: "[Humedad]" },
+                  { label: "Peligro eléctrico", value: cleanupData.industrialSafetyConditions?.electricDanger ? "Sí" : "No" },
+                  { label: "Peligro de caídas", value: cleanupData.industrialSafetyConditions?.fallingDanger ? "Sí" : "No" },
+                  { label: "Peligro de atropellos", value: cleanupData.industrialSafetyConditions?.hitDanger ? "Sí" : "No" },
+                  { label: "Otro peligro", value: cleanupData.industrialSafetyConditions?.otherDanger ? "Sí" : "No" }
+                ]
+              },
+              {
+                type: "signatures",
+                signatures: ["Técnico Responsable Anecacao", "Cliente"]
+              }
+            ]
+          }
+        }
+      ];
+    } catch (error) {
+      console.error('Error creando documentos desde reporte de cleanup:', error);
       return [];
     }
   };
@@ -305,7 +392,7 @@ function ReservationDocuments() {
                 ]
               },
               {
-                type: "conditions",
+                type: "fumigation-conditions",
                 data: [
                   { label: "Temperatura", value: "[Temperatura]" },
                   { label: "Humedad", value: "[Humedad]" },
@@ -462,6 +549,17 @@ function ReservationDocuments() {
                 ]
               },
               {
+                type: "cleanup-conditions",
+                data: [
+                  { label: "Temperatura", value: "[Temperatura]" },
+                  { label: "Humedad", value: "[Humedad]" },
+                  { label: "Peligro eléctrico", value: "[Peligro eléctrico]" },
+                  { label: "Peligro de caídas", value: "[Peligro de caídas]" },
+                  { label: "Peligro de atropellos", value: "[Peligro de atropellos]" },
+                  { label: "Otro peligro", value: "[Otro peligro]" }
+                ]
+              },
+              {
                 type: "signatures",
                 signatures: ["Técnico Responsable Anecacao", "Cliente"]
               }
@@ -560,7 +658,7 @@ function ReservationDocuments() {
                 ]
               },
               {
-                type: "conditions",
+                type: "fumigation-conditions",
                 data: [
                   { label: "Temperatura", value: "[Temperatura]" },
                   { label: "Humedad", value: "[Humedad]" },
@@ -709,7 +807,7 @@ function ReservationDocuments() {
                 ]
               },
               {
-                type: "conditions",
+                type: "fumigation-conditions",
                 data: [
                   { label: "Temperatura", value: "[Temperatura]" },
                   { label: "Humedad", value: "[Humedad]" },
@@ -866,6 +964,17 @@ function ReservationDocuments() {
                 ]
               },
               {
+                type: "cleanup-conditions",
+                data: [
+                  { label: "Temperatura", value: "[Temperatura]" },
+                  { label: "Humedad", value: "[Humedad]" },
+                  { label: "Peligro eléctrico", value: "[Peligro eléctrico]" },
+                  { label: "Peligro de caídas", value: "[Peligro de caídas]" },
+                  { label: "Peligro de atropellos", value: "[Peligro de atropellos]" },
+                  { label: "Otro peligro", value: "[Otro peligro]" }
+                ]
+              },
+              {
                 type: "signatures",
                 signatures: ["Técnico Responsable Anecacao", "Cliente"]
               }
@@ -928,25 +1037,37 @@ function ReservationDocuments() {
 
   // Función para obtener documentos basados en datos del reporte
   const getDocumentsFromReport = useMemo(() => {
-    if (!fumigationReport) return [];
+    const allDocs: Document[] = [];
     
-    console.log('Usando datos del reporte API para crear documentos');
-    try {
-      const docs = createDocumentsFromReport(fumigationReport);
-      // Si llegamos aquí sin error, limpiamos cualquier error previo
-      if (error && error === 'Error al procesar los datos del reporte') {
-        setError(null);
+    // Documentos de fumigación
+    if (fumigationReport) {
+      console.log('Usando datos del reporte de fumigación API para crear documentos');
+      try {
+        const fumigationDocs = createDocumentsFromReport(fumigationReport);
+        allDocs.push(...fumigationDocs);
+      } catch (error) {
+        console.error('Error procesando reporte de fumigación:', error);
+        setError('Error al procesar los datos del reporte de fumigación');
       }
-      return docs;
-    } catch (error) {
-      console.error('Error en getDocumentsFromReport:', error);
-      setError('Error al procesar los datos del reporte');
-      return [];
     }
-  }, [fumigationReport, error]);
+
+    // Documentos de cleanup
+    if (cleanupReport) {
+      console.log('Usando datos del reporte de cleanup API para crear documentos');
+      try {
+        const cleanupDocs = createDocumentsFromCleanupReport(cleanupReport);
+        allDocs.push(...cleanupDocs);
+      } catch (error) {
+        console.error('Error procesando reporte de cleanup:', error);
+        setError('Error al procesar los datos del reporte de cleanup');
+      }
+    }
+
+    return allDocs;
+  }, [fumigationReport, cleanupReport]);
 
   const documents = (() => {
-    if (fumigationReport) {
+    if (fumigationReport || cleanupReport) {
       return getDocumentsFromReport;
     }
     if (noDataFound || error) {
@@ -1038,7 +1159,7 @@ function ReservationDocuments() {
           </div>
         );
       
-      case 'conditions':
+      case 'fumigation-conditions':
         return (
           <div>
             <table className="w-full mb-4 border">
@@ -1064,6 +1185,36 @@ function ReservationDocuments() {
                   <td className="p-2 text-center" colSpan={2}>{section.data?.find((item: any) => item.label === "Peligro eléctrico")?.value}</td>
                   <td className="p-2 text-center" colSpan={2}>{section.data?.find((item: any) => item.label === "Peligro de caídas")?.value}</td>
                   <td className="p-2 text-center" colSpan={2}>{section.data?.find((item: any) => item.label === "Peligro de atropellos")?.value}</td>
+                </tr>
+              </tbody>
+            </table>
+            <caption className="w-full flex justify-end mt-2 text-xs text-gray-600 mb-2">
+              Nota: Si las condiciones no son adecuadas, no iniciar la actividad.
+            </caption>
+          </div>
+        );
+      
+      case 'cleanup-conditions':
+        return (
+          <div>
+            <table className="w-full mb-4 border">
+              <thead>
+                <tr>
+                  <th className="p-2" colSpan={8}>Condiciones de seguridad industrial</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-gray-100">
+                  <th className="p-2" colSpan={2}>Peligro eléctrico</th>
+                  <th className='p-2' colSpan={2}>Peligro de caídas</th>
+                  <th className="p-2" colSpan={2}>Peligro de atropellos</th>
+                  <th className="p-2" colSpan={2}>Otro peligro</th>
+                </tr>
+                <tr>
+                  <td className="p-2 text-center" colSpan={2}>{section.data?.find((item: any) => item.label === "Peligro eléctrico")?.value}</td>
+                  <td className="p-2 text-center" colSpan={2}>{section.data?.find((item: any) => item.label === "Peligro de caídas")?.value}</td>
+                  <td className="p-2 text-center" colSpan={2}>{section.data?.find((item: any) => item.label === "Peligro de atropellos")?.value}</td>
+                  <td className="p-2 text-center" colSpan={2}>{section.data?.find((item: any) => item.label === "Otro peligro")?.value}</td>
                 </tr>
               </tbody>
             </table>
@@ -1137,27 +1288,7 @@ function ReservationDocuments() {
                   </tr>
                 )}
               </tbody>
-              <tfoot>
-                <tr>
-                  <th className="p-2 text-center" colSpan={12}>Condiciones de seguridad industrial</th>
-                </tr>
-                <tr>
-                  <th className="p-2" colSpan={2}>Peligro eléctrico</th>
-                  <th className='p-2' colSpan={2}>Peligro de caídas</th>
-                  <th className="p-2" colSpan={2}>Peligro de atropellos</th>
-                  <th className="p-2" colSpan={2}>Otro peligro</th>
-                </tr>
-                <tr>
-                  <td className="p-2 text-center" colSpan={2}>[Sí/No]</td>
-                  <td className="p-2 text-center" colSpan={2}>[Sí/No]</td>
-                  <td className="p-2 text-center" colSpan={2}>[Sí/No]</td>
-                  <td className="p-2 text-center" colSpan={2}>[Sí/No]</td>
-                </tr>
-              </tfoot>
             </table>
-            <caption className="w-full flex justify-end mt-2 text-xs text-gray-600 mb-2">
-              Nota: Si las condiciones no son adecuadas, no iniciar la actividad.
-            </caption>
           </div>
         );
 
@@ -1271,8 +1402,8 @@ function ReservationDocuments() {
       const imgData = canvas.toDataURL('image/png', 0.9);
       
       // Nombre de archivo PDF
-      const pdfFileName = `${documentType}_${codigo}.pdf`;
-      
+      const pdfFileName = `${documentType}_${lotId}.pdf`;
+
       // GENERAR Y DESCARGAR SOLO PDF
       const pdf = new jsPDF({
         orientation: 'portrait',
