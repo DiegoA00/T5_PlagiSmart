@@ -15,13 +15,12 @@ const getApiBaseUrl = () => {
   }
   
   // Production URL
-  return 'https://your-production-api.com/api';
+  return 'https://plagismart-backend.onrender.com/api';
 };
 
 export const API_CONFIG = {
   BASE_URL: getApiBaseUrl(),
-  TIMEOUT: 10000, // 10 seconds
-  RETRY_ATTEMPTS: 3,
+  TIMEOUT: 10000,
 };
 
 console.log('API Configuration loaded:', {
