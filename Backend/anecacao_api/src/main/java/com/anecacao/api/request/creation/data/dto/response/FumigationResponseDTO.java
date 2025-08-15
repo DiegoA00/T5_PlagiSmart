@@ -16,7 +16,7 @@ public class FumigationResponseDTO {
     private Long id;
     private String lotNumber;
     private BigDecimal ton;
-    private PortName portDestination;
+    private String portDestination;
     private Long sacks;
     private String quality;
     private Status status;
