@@ -16,4 +16,6 @@ public interface FumigationApplicationRepository extends JpaRepository<Fumigatio
             "JOIN fa.fumigations f " +
             "WHERE f.status = :status")
     Page<FumigationApplication> findByFumigationStatus(@Param("status") Status status, Pageable pageable);
+
+    Page<FumigationApplication> findByCompanyLegalRepresentativeId(Long userId, Pageable pageable);
 }

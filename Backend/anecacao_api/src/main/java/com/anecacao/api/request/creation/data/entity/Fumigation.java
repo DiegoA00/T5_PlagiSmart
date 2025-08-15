@@ -22,9 +22,8 @@ public class Fumigation {
     @Column(nullable = false)
     private BigDecimal ton;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PortName portDestination;
+    private String portDestination;
 
     @Column(nullable = false)
     private Long sacks;
