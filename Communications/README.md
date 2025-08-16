@@ -15,6 +15,8 @@ This document indexes all pieces of evidence of communications held with the cli
 | File Name                                                | Content Description                                                      | File Type | Participants                 | Date      |
 | :------------------------------------------------------- | :----------------------------------------------------------------------- | :-------- | :--------------------------- | :---------- |
 | [`chat1.jpg`](chat/meeting_confirmations_chat/chat1.jpg) | Screenshot of the chat conversation confirming a virtual meeting.        | JPG       | Project Team, Eng. Noboa     | 13/5/2025 |
+| [`chat2.png`](chat/meeting_confirmations_chat/chat2.png) | Screenshot of the chat conversation confirming a virtual meeting.        | JPG       | Project Team, Assistant Joselyn Asto     | 21/7/2025 |
+| [`chat3.png`](chat/meeting_confirmations_chat/chat3.png) | Screenshot of the chat conversation confirming a virtual meeting.        | JPG       | Project Team, Assistant Joselyn Asto     | 4/8/2025 |
 
 ### [1.2. WhatsApp Client Conversation (chat/whatsapp_client_conversation/)](chat/whatsapp_client_conversation/)
 
@@ -77,3 +79,4 @@ This document indexes all pieces of evidence of communications held with the cli
 | File Name                                                   | Content Description                                          | File Type | Participants                       | Date      |
 | :---------------------------------------------------------- | :----------------------------------------------------------- | :-------- | :--------------------------------- | :---------- |
 | [`photo1.png`](meetings/virtual_meeting_photos/photo1.png) | Screenshot of the virtual meeting with the client.           | PNG       | Project Team, Anecacao Team        | 13/5/2025 |
+| [`photo2.png.jpg`](meetings/virtual_meeting_photos/photo2.png.jpg) | Screenshot of the virtual meeting with the client.           | PNG       | Project Team, Anecacao Team        | 6/8/2025 |
