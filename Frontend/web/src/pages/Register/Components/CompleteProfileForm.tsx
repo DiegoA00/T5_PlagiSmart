@@ -165,10 +165,10 @@ const CompleteProfileForm: React.FC<CompleteProfileFormProps> = ({ initialData, 
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
-      <h2 className="text-2xl font-bold mb-6">Personal info</h2>
+      <h2 className="text-2xl font-bold mb-6">Información Personal</h2>
       <div className='mx-auto w-full flex items-center justify-between gap-10'>
         <div className="w-1/2">
-          <span className="block text-sm font-medium text-gray-700">Name</span>
+          <span className="block text-sm font-medium text-gray-700">Nombre</span>
           <input
             type="text"
             name="name"
@@ -180,7 +180,7 @@ const CompleteProfileForm: React.FC<CompleteProfileFormProps> = ({ initialData, 
         </div>
 
         <div className="w-1/2">
-          <span className="block text-sm font-medium text-gray-700">Last Name</span>
+          <span className="block text-sm font-medium text-gray-700">Apellido</span>
           <input
             type="text"
             name="lastName"
@@ -194,7 +194,7 @@ const CompleteProfileForm: React.FC<CompleteProfileFormProps> = ({ initialData, 
 
       <div className='mx-auto w-full flex items-center justify-between gap-10'>
         <div className="w-1/2">
-          <span className="block text-sm font-medium text-gray-700">National ID</span>
+          <span className="block text-sm font-medium text-gray-700">Cédula</span>
           <input
             type="text"
             name="nationalId"
@@ -208,7 +208,7 @@ const CompleteProfileForm: React.FC<CompleteProfileFormProps> = ({ initialData, 
         </div>
   
         <div className="w-1/2">
-          <span className="block text-sm font-medium text-gray-700">Birthday</span>
+          <span className="block text-sm font-medium text-gray-700">Fecha de Nacimiento</span>
           <input
             type="date"
             name="birthday"
@@ -220,11 +220,11 @@ const CompleteProfileForm: React.FC<CompleteProfileFormProps> = ({ initialData, 
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold mb-6">Contact info</h2>
+      <h2 className="text-2xl font-bold mb-6">Información de Contacto</h2>
 
       <div className='mx-auto w-full flex items-center justify-between gap-10'>
         <div className="w-1/2">
-          <span className="block text-sm font-medium text-gray-700">Country</span>
+          <span className="block text-sm font-medium text-gray-700">País</span>
           <input
             type="text"
             name="country"
@@ -236,7 +236,7 @@ const CompleteProfileForm: React.FC<CompleteProfileFormProps> = ({ initialData, 
         </div>
   
         <div className="w-1/2">
-          <span className="block text-sm font-medium text-gray-700">City</span>
+          <span className="block text-sm font-medium text-gray-700">Ciudad</span>
           <input
             type="text"
             name="city"
@@ -248,7 +248,7 @@ const CompleteProfileForm: React.FC<CompleteProfileFormProps> = ({ initialData, 
         </div>
 
         <div className="w-1/2">
-          <span className="block text-sm font-medium text-gray-700">Personal phone</span>
+          <span className="block text-sm font-medium text-gray-700">Teléfono Personal</span>
           <input
             type="tel"
             name="phone"
@@ -274,10 +274,10 @@ const CompleteProfileForm: React.FC<CompleteProfileFormProps> = ({ initialData, 
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold mb-6">Company data</h2>
+      <h2 className="text-2xl font-bold mb-6">Información de la Empresa</h2>
       <div className='mx-auto w-full flex items-center justify-between gap-10'>
         <div className="w-1/3">
-          <span className="block text-sm font-medium text-gray-700">R.U.C</span>
+          <span className="block text-sm font-medium text-gray-700">RUC</span>
           <input
             type="text"
             name="companyRUC"
@@ -287,7 +287,7 @@ const CompleteProfileForm: React.FC<CompleteProfileFormProps> = ({ initialData, 
           />
         </div>
         <div className="w-2/3">
-          <span className="block text-sm font-medium text-gray-700">Legal name</span>
+          <span className="block text-sm font-medium text-gray-700">Razón Social</span>
           <input
             type="text"
             name="companyName"
@@ -300,7 +300,7 @@ const CompleteProfileForm: React.FC<CompleteProfileFormProps> = ({ initialData, 
 
       <div className="mx-auto w-full flex items-center justify-between gap-10">
         <div className="w-2/3">
-          <span className="block text-sm font-medium text-gray-700">Commercial name</span>
+          <span className="block text-sm font-medium text-gray-700">Nombre Comercial</span>
           <input
             type="text"
             name="commercialName"
@@ -310,7 +310,7 @@ const CompleteProfileForm: React.FC<CompleteProfileFormProps> = ({ initialData, 
           />
         </div>
         <div className="w-1/3">
-          <span className="block text-sm font-medium text-gray-700">Company phone</span>
+          <span className="block text-sm font-medium text-gray-700">Teléfono de la Empresa</span>
           <input
             type="tel"
             name="companyPhone"
@@ -323,7 +323,7 @@ const CompleteProfileForm: React.FC<CompleteProfileFormProps> = ({ initialData, 
 
       <div className="mx-auto w-full flex items-center justify-between gap-10">
         <div className="w-2/3">
-          <span className="block text-sm font-medium text-gray-700">Company address</span>
+          <span className="block text-sm font-medium text-gray-700">Dirección de la Empresa</span>
           <input
             type="tel"
             name="companyAddress"

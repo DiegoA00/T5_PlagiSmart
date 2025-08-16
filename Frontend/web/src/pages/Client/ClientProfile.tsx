@@ -182,12 +182,8 @@ function ProfileView({ profileData }: ProfileViewProps) {
               <p className="text-gray-800">{profileData.lastName}</p>
             </div>
             <div>
-              <span className="block text-sm font-medium text-gray-600">Email</span>
-              <p className="text-gray-800">{profileData.email}</p>
-            </div>
-            <div>
-              <span className="block text-sm font-medium text-gray-600">Teléfono</span>
-              <p className="text-gray-800">{profileData.phone || 'No especificado'}</p>
+              <span className="block text-sm font-medium text-gray-600">Cédula</span>
+              <p className="text-gray-800">{profileData.nationalId || 'No especificado'}</p>
             </div>
             <div>
               <span className="block text-sm font-medium text-gray-600">Fecha de Nacimiento</span>
@@ -209,8 +205,12 @@ function ProfileView({ profileData }: ProfileViewProps) {
               <p className="text-gray-800">{profileData.city || 'No especificado'}</p>
             </div>
             <div>
-              <span className="block text-sm font-medium text-gray-600">Teléfono</span>
+              <span className="block text-sm font-medium text-gray-600">Teléfono Personal</span>
               <p className="text-gray-800">{profileData.phone || 'No especificado'}</p>
+            </div>
+            <div>
+              <span className="block text-sm font-medium text-gray-600">Email</span>
+              <p className="text-gray-800">{profileData.email}</p>
             </div>
           </div>
         </div>
@@ -225,7 +225,7 @@ function ProfileView({ profileData }: ProfileViewProps) {
                 <p className="text-gray-800">{profileData.commercialName || 'No especificado'}</p>
               </div>
               <div>
-                <span className="block text-sm font-medium text-gray-600">Nombre Legal</span>
+                <span className="block text-sm font-medium text-gray-600">Razón Social</span>
                 <p className="text-gray-800">{profileData.companyName || 'No especificado'}</p>
               </div>
               <div>
