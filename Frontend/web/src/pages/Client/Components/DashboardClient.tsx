@@ -2,6 +2,7 @@ import TableReservations, { SortConfig } from "./TableReservations";
 import NewReservationForm from "./NewReservationForm";
 import { useState } from 'react';
 import { useMyFumigationApplications } from '@/hooks/useMyFumigationApplications';
+import { useProfile } from '@/hooks/useProfile';
 
 type TableCategory = 'pendientes' | 'enCurso' | 'finalizadas';
 
@@ -19,6 +20,7 @@ function DashboardClient({
   title = "Gestión de Reservas"
 }: DashboardClientProps) {
   const [showForm, setShowForm] = useState(false);
+  const { profileData } = useProfile();
   const { 
     applications, 
     loading, 
@@ -41,6 +43,10 @@ function DashboardClient({
     // Refrescar los datos después de crear una nueva aplicación
     refetch();
   };
+
+  // Debug logs para verificar el estado del perfil
+  console.log('DashboardClient - profileData:', profileData);
+  console.log('DashboardClient - hasCompletedProfile:', profileData?.hasCompletedProfile);
 
   const handleTableSort = (category: TableCategory) => (sortConfig: SortConfig) => {
     if (sortConfig.direction) {
@@ -91,11 +97,24 @@ function DashboardClient({
 
         {showNewButton && (
           <div className="flex justify-end mb-6">
-            <button
-              onClick={handleNewReservationClick}
-              className="bg-[#003595] text-white px-4 py-2 rounded-lg font-bold shadow-md">
-              + Nueva Reserva
-            </button>
+            <div className="flex flex-col items-end">
+              <button
+                onClick={handleNewReservationClick}
+                disabled={!profileData?.hasCompletedProfile}
+                className={`px-4 py-2 rounded-lg font-bold shadow-md ${
+                  profileData?.hasCompletedProfile
+                    ? 'bg-[#003595] text-white hover:bg-[#002080] cursor-pointer'
+                    : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                }`}
+              >
+                + Nueva Reserva
+              </button>
+              {!profileData?.hasCompletedProfile && (
+                <p className="text-sm text-red-600 mt-2 max-w-xs text-right">
+                  Completa tu perfil para poder realizar una reserva
+                </p>
+              )}
+            </div>
           </div>
         )}
 

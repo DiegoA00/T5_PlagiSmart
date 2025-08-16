@@ -63,7 +63,7 @@ export const useProfile = (): UseProfileReturn => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        hasCompletedProfile: user.has_completed_profile,
+        hasCompletedProfile: user.hasCompletedProfile,
         phone: user.personalPhone,
         country: user.country,
         city: user.city,

@@ -38,7 +38,7 @@ export interface UserMeResponse {
   firstName: string;
   lastName: string;
   email: string;
-  has_completed_profile: boolean;
+  hasCompletedProfile: boolean;
   country?: string;
   city?: string;
   personalPhone?: string;

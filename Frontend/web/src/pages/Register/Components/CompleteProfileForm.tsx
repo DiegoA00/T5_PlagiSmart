@@ -377,7 +377,7 @@ const CompleteProfileForm: React.FC<CompleteProfileFormProps> = ({ initialData, 
               : 'bg-blue-600 hover:bg-blue-700'
           } text-white`}
         >
-          {loading ? 'Guardando...' : 'Save changes'}
+          {loading ? 'Guardando...' : 'Guardar cambios'}
         </button>
       </div>
     </form>
