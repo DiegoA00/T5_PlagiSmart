@@ -144,7 +144,7 @@ public class ReportsServiceImpl implements ReportsService {
         return cleanupReportRepository.findByFumigationId(fumigation.getId())
                 .map(existing -> {
                     mapper.updateCleanupReportFromDTO(dto, existing);
-                    existingReport.setLocation(existingReport.getLocation());
+                    existing.setLocation(existingReport.getLocation());
                     return existing;
                 })
                 .orElseGet(() -> {
