@@ -60,9 +60,10 @@ public class FumigationController {
     @GetMapping
     public ResponseEntity<Page<FumigationDetailDTO>> getFumigationsByStatus(
             @RequestParam(name = "status") String status,
+            @RequestHeader("Authorization") String token,
             Pageable pageable
     ) {
-        Page<FumigationDetailDTO> fumigations = fumigationService.getFumigationsByStatus(status, pageable);
+        Page<FumigationDetailDTO> fumigations = fumigationService.getFumigationsByStatus(status, token, pageable);
         return ResponseEntity.ok(fumigations);
     }
 }

@@ -33,6 +33,8 @@ public class CleanupReportMapper {
 
         // Basic fields
         dto.setId(report.getId());
+        dto.setLocation(report.getLocation());
+        dto.setSupervisor(report.getSupervisor());
         dto.setDate(report.getDate());
         dto.setStartTime(report.getStartTime());
         dto.setEndTime(report.getEndTime());

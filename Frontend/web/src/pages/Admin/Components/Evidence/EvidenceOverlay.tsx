@@ -1,6 +1,5 @@
 import { FC, useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FumigationDetailResponse, ApiUser, FumigationReportResponse, CleanupReportResponse } from "@/types/request";
 import { usersService } from "@/services/usersService";
@@ -9,12 +8,13 @@ import { FumigationForm } from "../../../Technician/FumigationForm";
 import { UncoveringForm } from "../../../Technician/UncoveringForm";
 import { FumigationReportView } from "./components/FumigationReportView";
 import { CleanupReportView } from "./components/CleanupReportView";
-import { useFumigationEvidence } from "../../../../hooks/useFumigationEvidence";
-import { useUncoveringEvidence } from "../../../../hooks/useUncoveringEvidence";
+import { useFumigationEvidence } from "@/hooks/useFumigationEvidence";
+import { useUncoveringEvidence } from "@/hooks/useUncoveringEvidence";
 
 interface EvidenceOverlayProps {
   fumigationDetails: FumigationDetailResponse | null;
   isEditable?: boolean;
+  fumigationStatus?: string; // Agregar esta prop para el status
   onClose?: () => void;
   onSave?: (data: any) => void;
   loading?: boolean;
@@ -23,6 +23,7 @@ interface EvidenceOverlayProps {
 export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
   fumigationDetails,
   isEditable = false,
+  fumigationStatus, // Agregar esta prop
   onClose,
   onSave,
   loading = false
@@ -84,39 +85,40 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
   }, [isEditable]);
 
   useEffect(() => {
-    if (fumigationDetails?.lot?.id) {
-      console.log('Tab changed to:', activeTab, 'isEditable:', isEditable, 'lotId:', fumigationDetails.lot.id);
+    if (fumigationDetails?.lot?.id && !isEditable) {
+      console.log('Loading reports based on fumigation status:', fumigationStatus);
       
       if (activeTab === "fumigation") {
-        if (!isEditable) {
+        // Solo cargar reporte de fumigación si el status es FUMIGATED o FINISHED
+        if (fumigationStatus === "FUMIGATED" || fumigationStatus === "FINISHED") {
           loadFumigationReport();
+        } else {
+          // Si está APPROVED, mostrar mensaje indicando que no hay reporte aún
+          setFumigationViewError("No se ha registrado un reporte de fumigación para este lote aún.");
         }
       } else if (activeTab === "cleanup") {
-        if (!isEditable) {
+        // Solo cargar reporte de cleanup si el status es FINISHED
+        if (fumigationStatus === "FINISHED") {
           loadCleanupReport();
+        } else {
+          // Si está APPROVED o FUMIGATED, mostrar mensaje indicando que no hay reporte aún
+          setCleanupViewError("No se ha registrado un reporte de descarpe para este lote aún.");
         }
       }
     }
-  }, [activeTab, isEditable, fumigationDetails?.lot?.id]);
+  }, [activeTab, fumigationDetails?.lot?.id, fumigationStatus, isEditable]);
 
   const getErrorMessage = (error: any): string => {
-    const errorType = error.message;
-    const originalMessage = (error as any).originalMessage || "";
-    
-    switch (errorType) {
-      case "REPORT_NOT_FOUND":
-        return "No se ha registrado un reporte para este lote aún.";
-      case "NO_AUTH":
-        return "Problema de autenticación. Si el problema persiste, intenta iniciar sesión nuevamente.";
-      case "NO_PERMISSION":
-        return "No tienes permisos para ver este reporte.";
-      case "SERVER_ERROR":
-        return "Error interno del servidor. Intenta nuevamente más tarde.";
-      case "UNKNOWN_ERROR":
-        return `Error: ${originalMessage}`;
-      default:
-        return error.message || "Error al cargar el reporte.";
+    if (error.response?.status === 404) {
+      return activeTab === "fumigation" 
+        ? "No se ha registrado un reporte de fumigación para este lote aún."
+        : "No se ha registrado un reporte de descarpe para este lote aún.";
+    } else if (error.response?.status === 403) {
+      return "No tienes permisos para ver este reporte.";
+    } else if (error.response?.status === 500) {
+      return "Error interno del servidor. Intenta nuevamente más tarde.";
     }
+    return error.message || "Error desconocido al cargar el reporte.";
   };
 
   const loadFumigationReport = async () => {
@@ -194,6 +196,7 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
         date: formatDateForBackend(fumigationData.date),
         startTime: fumigationData.startTime,
         endTime: fumigationData.endTime,
+        supervisor: fumigationData.supervisor.trim(),
         technicians: fumigationData.technicians.map(t => ({ id: t.id })),
         supplies: fumigationData.supplies.map(supply => ({
           name: supply.name.trim(),
@@ -244,7 +247,7 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
     try {
       const formatDateForBackend = (dateString: string) => {
         const [year, month, day] = dateString.split('-');
-        return `${day}-${month}-${year}`;
+        return `${day}-${month}-${day}`;
       };
 
       const reportData = {
@@ -331,19 +334,17 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
     <>
       <div className="flex flex-col h-full">
         <div className="bg-[#003595] text-white rounded-t-lg px-8 py-5 text-lg font-semibold">
-          {isEditable ? "Evidencias de Fumigación - Lote " : "Visualizar Evidencias - Lote "}{fumigationDetails.lot.lotNumber}
+          Evidencias - Lote {fumigationDetails.lot.lotNumber}
         </div>
 
-        <div className="overflow-y-auto px-8 py-6" style={{ maxHeight: "70vh" }}>
+        <div className="px-8 py-6 flex-1">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="fumigation">Registro de Fumigación</TabsTrigger>
-              <TabsTrigger value="cleanup">
-                Registro de Descarpe
-              </TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="fumigation">Fumigación</TabsTrigger>
+              <TabsTrigger value="cleanup">Descarpe</TabsTrigger>
             </TabsList>
-
-            <TabsContent value="fumigation" className="mt-0">
+            
+            <TabsContent value="fumigation" className="mt-6">
               {isEditable ? (
                 <FumigationForm
                   fumigationData={fumigationData}
@@ -364,19 +365,16 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
                 />
               )}
             </TabsContent>
-
-            <TabsContent value="cleanup" className="mt-0">
+            
+            <TabsContent value="cleanup" className="mt-6">
               {isEditable ? (
                 <UncoveringForm
                   fumigationDetails={fumigationDetails}
-                  isEditable={isEditable}
                   availableTechnicians={availableTechnicians}
                   cleanupData={cleanupData}
                   setCleanupData={setCleanupData}
                   validationErrors={cleanupValidationErrors}
                   updateField={updateCleanupField}
-                  // updateLotDescription={updateLotDescription}
-                  // updateSafetyConditions={updateSafetyConditions}
                   addTechnician={addCleanupTechnician}
                   removeTechnician={removeCleanupTechnician}
                 />
@@ -453,8 +451,8 @@ export const EvidenceOverlay: FC<EvidenceOverlayProps> = ({
               </Button>
               <Button 
                 onClick={handleConfirmSubmit} 
-                className={confirmType === "fumigation" ? "bg-[#003595] hover:bg-[#002060] text-white" : "bg-green-600 hover:bg-green-700 text-white"}
                 disabled={isSubmitting}
+                className={confirmType === "fumigation" ? "bg-[#003595] hover:bg-[#002060] text-white" : "bg-green-600 hover:bg-green-700 text-white"}
               >
                 {isSubmitting ? "Enviando..." : "Confirmar"}
               </Button>

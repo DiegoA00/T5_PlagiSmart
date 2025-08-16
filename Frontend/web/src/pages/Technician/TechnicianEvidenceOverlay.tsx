@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { FumigationDetailResponse, ApiUser } from "@/types/request";
 import { usersService } from "@/services/usersService";
 import { reportsService } from "@/services/reportsService";
+import { signatureService } from "@/services/signatureService";
 import { FumigationForm } from "./FumigationForm";
 import { UncoveringForm } from "./UncoveringForm";
+import { SignatureConfirmationModal } from "@/components/SignatureConfirmationModal";
 import { useFumigationEvidence } from "@/hooks/useFumigationEvidence";
 import { useUncoveringEvidence } from "@/hooks/useUncoveringEvidence";
 
@@ -26,10 +28,11 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
   loading = false
 }) => {
   const [availableTechnicians, setAvailableTechnicians] = useState<ApiUser[]>([]);
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showSignatureConfirmation, setShowSignatureConfirmation] = useState(false);
   const [fumigationReportSubmitted, setFumigationReportSubmitted] = useState(false);
   const [cleanupReportSubmitted, setCleanupReportSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reportId, setReportId] = useState<number | null>(null);
   
   const {
     fumigationData,
@@ -83,20 +86,73 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
       }
     }
     
-    setShowConfirmDialog(true);
+    setShowSignatureConfirmation(true);
   };
 
-  const handleSubmitFumigationReport = async () => {
-    if (isSubmitting) return;
-    
+  const handleSignatureConfirmation = async (technicianSignature: string, clientSignature: string) => {
     setIsSubmitting(true);
-
+    
     try {
-      const formatDateForBackend = (dateString: string) => {
-        const [year, month, day] = dateString.split('-');
-        return `${day}-${month}-${year}`;
-      };
+      console.log("🔄 Iniciando proceso completo...");
+      
+      const reportData = await createReport();
+      console.log("✅ Reporte creado exitosamente");
 
+      const createdReport = fumigationStatus === "APPROVED" 
+        ? await reportsService.getFumigationReport(fumigationDetails?.lot.id || 0)
+        : await reportsService.getCleanupReport(fumigationDetails?.lot.id || 0);
+      
+      console.log("📝 Subiendo firmas para reporte ID:", createdReport.id);
+
+      await signatureService.uploadSignature({
+        fumigationId: fumigationStatus === "APPROVED" ? createdReport.id : null,
+        cleanupId: fumigationStatus === "FUMIGATED" ? createdReport.id : null,
+        signatureType: 'technician',
+        signatureData: technicianSignature
+      });
+      console.log("✅ Firma del técnico subida");
+
+      await signatureService.uploadSignature({
+        fumigationId: fumigationStatus === "APPROVED" ? createdReport.id : null,
+        cleanupId: fumigationStatus === "FUMIGATED" ? createdReport.id : null,
+        signatureType: 'client',
+        signatureData: clientSignature
+      });
+      console.log("✅ Firma del cliente subida");
+
+      if (fumigationStatus === "APPROVED") {
+        setFumigationReportSubmitted(true);
+      } else {
+        setCleanupReportSubmitted(true);
+      }
+
+      setShowSignatureConfirmation(false);
+      onSave?.({});
+      
+      if (onClose) {
+        setTimeout(() => {
+          onClose();
+        }, 1500);
+      }
+    } catch (error) {
+      console.error("❌ Error en el proceso:", error);
+      alert(`Error al procesar el registro: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const createReport = async () => {
+    const formatDateForBackend = (dateString: string) => {
+      const [year, month, day] = dateString.split('-');
+      return `${day}-${month}-${year}`;
+    };
+
+    console.log("=== CREATING REPORT ===");
+    console.log("Fumigation Details:", fumigationDetails);
+    console.log("Lot ID being sent:", fumigationDetails?.lot.id);
+
+    if (fumigationStatus === "APPROVED") {
       const reportData = {
         id: fumigationDetails?.lot.id || 0,
         location: fumigationData.location.trim(),
@@ -126,43 +182,13 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
           fallingDanger: fumigationData.hazards.fallingDanger,
           hitDanger: fumigationData.hazards.hitDanger
         },
-        observations: fumigationData.observations.trim() || "",
-        signatures: {
-          technician: fumigationData.technicianSignature,
-          client: fumigationData.clientSignature
-        }
+        observations: fumigationData.observations.trim() || ""
       };
 
+      console.log("Report data being sent:", reportData);
       await reportsService.createFumigationReport(reportData);
-      
-      setFumigationReportSubmitted(true);
-      setShowConfirmDialog(false);
-      
-      onSave?.(reportData);
-      
-      if (onClose) {
-        setTimeout(() => {
-          onClose();
-        }, 1500);
-      }
-    } catch (error) {
-      console.error("Error submitting fumigation report:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleSubmitCleanupReport = async () => {
-    if (isSubmitting) return;
-    
-    setIsSubmitting(true);
-
-    try {
-      const formatDateForBackend = (dateString: string) => {
-        const [year, month, day] = dateString.split('-');
-        return `${day}-${month}-${year}`;
-      };
-
+      return reportData;
+    } else {
       const reportData = {
         id: fumigationDetails?.lot.id || 0,
         date: formatDateForBackend(cleanupData.date),
@@ -180,37 +206,11 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
           fallingDanger: cleanupData.industrialSafetyConditions.fallingDanger,
           hitDanger: cleanupData.industrialSafetyConditions.hitDanger,
           otherDanger: cleanupData.industrialSafetyConditions.otherDanger
-        },
-        signatures: {
-          technician: cleanupData.technicianSignature,
-          client: cleanupData.clientSignature
         }
       };
 
       await reportsService.createCleanupReport(reportData);
-      
-      setCleanupReportSubmitted(true);
-      setShowConfirmDialog(false);
-      
-      onSave?.(reportData);
-      
-      if (onClose) {
-        setTimeout(() => {
-          onClose();
-        }, 1500);
-      }
-    } catch (error) {
-      console.error("Error submitting cleanup report:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleConfirmSubmit = () => {
-    if (fumigationStatus === "APPROVED") {
-      handleSubmitFumigationReport();
-    } else {
-      handleSubmitCleanupReport();
+      return reportData;
     }
   };
 
@@ -343,32 +343,17 @@ export const TechnicianEvidenceOverlay: FC<TechnicianEvidenceOverlayProps> = ({
         </div>
       </div>
 
-      {showConfirmDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Confirmar envío</h3>
-            <p className="text-gray-600 mb-6">
-              ¿Estás seguro de que deseas enviar este registro? Esta acción no se puede deshacer.
-            </p>
-            <div className="flex justify-end gap-4">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowConfirmDialog(false)}
-                disabled={isSubmitting}
-              >
-                Cancelar
-              </Button>
-              <Button 
-                onClick={handleConfirmSubmit}
-                className={fumigationStatus === "APPROVED" ? "bg-[#003595] hover:bg-[#002060] text-white" : "bg-green-600 hover:bg-green-700 text-white"}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Enviando..." : "Confirmar"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <SignatureConfirmationModal
+        isOpen={showSignatureConfirmation}
+        onClose={() => {
+          if (!isSubmitting) {
+            setShowSignatureConfirmation(false);
+          }
+        }}
+        onConfirm={handleSignatureConfirmation}
+        isSubmitting={isSubmitting}
+        reportType={fumigationStatus === "APPROVED" ? 'fumigation' : 'cleanup'}
+      />
     </>
   );
 };

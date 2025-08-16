@@ -24,7 +24,7 @@ public class FumigationCreationRequestDTO {
     private BigDecimal ton;
 
     @NotNull(message = "Port destination must not be null")
-    private PortName portDestination;
+    private String portDestination;
 
     @NotNull(message = "Sacks must not be null")
     @Min(value = 1, message = "Sacks must be at least 1")

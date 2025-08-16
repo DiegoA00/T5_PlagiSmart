@@ -24,14 +24,6 @@ export const GeneralInfoSection: FC<GeneralInfoSectionProps> = ({
     <CollapsibleSection title="Información General" defaultOpen>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-2">Número de Registro</label>
-          <Input 
-            value={fumigationData.registrationNumber}
-            disabled
-            className="bg-gray-100"
-          />
-        </div>
-        <div>
           <label className="block text-sm font-medium mb-2">Empresa</label>
           <Input 
             value={fumigationData.company}
@@ -84,7 +76,7 @@ export const GeneralInfoSection: FC<GeneralInfoSectionProps> = ({
             <p className="text-red-500 text-xs mt-1">{validationErrors.timeRange}</p>
           )}
         </div>
-        <div className="col-span-2">
+        <div>
           <label className="block text-sm font-medium mb-2 required-field">Supervisor</label>
           <Input 
             value={fumigationData.supervisor}

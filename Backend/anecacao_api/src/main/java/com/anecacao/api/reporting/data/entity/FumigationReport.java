@@ -44,6 +44,7 @@ public class FumigationReport {
     @Column(nullable = false)
     private Dimensions dimensions;
 
+    @Column(nullable = false)
     private String supervisor;
 
     private String observations;
