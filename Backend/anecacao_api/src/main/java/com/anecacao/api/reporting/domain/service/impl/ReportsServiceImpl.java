@@ -137,14 +137,20 @@ public class ReportsServiceImpl implements ReportsService {
     }
 
     private CleanupReport getOrCreateCleanupReport(CleanupReportDTO dto, Fumigation fumigation) {
+        FumigationReport existingReport = fumigationReportRepository.findByFumigationId(fumigation.getId())
+                .orElseThrow(() -> new FumigationReportNotFoundException("No fumigation report found for fumigation ID: " + fumigation.getId()));
+
+
         return cleanupReportRepository.findByFumigationId(fumigation.getId())
                 .map(existing -> {
                     mapper.updateCleanupReportFromDTO(dto, existing);
+                    existingReport.setLocation(existingReport.getLocation());
                     return existing;
                 })
                 .orElseGet(() -> {
                     CleanupReport newReport = mapper.toCleanupReport(dto);
                     newReport.setFumigation(fumigation);
+                    newReport.setLocation(existingReport.getLocation());
                     return newReport;
                 });
     }
