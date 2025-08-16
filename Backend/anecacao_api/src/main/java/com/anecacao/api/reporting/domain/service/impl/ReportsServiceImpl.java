@@ -3,6 +3,8 @@ package com.anecacao.api.reporting.domain.service.impl;
 import com.anecacao.api.auth.data.entity.RoleName;
 import com.anecacao.api.auth.domain.service.UserService;
 import com.anecacao.api.common.data.dto.MessageDTO;
+import com.anecacao.api.email.data.dto.ProcessCompletedEmailData;
+import com.anecacao.api.email.domain.service.EmailService;
 import com.anecacao.api.reporting.data.dto.*;
 import com.anecacao.api.reporting.data.dto.response.CertificateDTO;
 import com.anecacao.api.reporting.data.dto.response.CleanupReportResponseDTO;
@@ -44,6 +46,7 @@ public class ReportsServiceImpl implements ReportsService {
     private final FumigationReportMapper fumigationReportMapper;
     private final CleanupReportMapper cleanupReportMapper;
     private final CertificateMapper certificateMapper;
+    private final EmailService emailService;
 
     @Transactional
     @Override
@@ -176,6 +179,17 @@ public class ReportsServiceImpl implements ReportsService {
             fumigationReportRepository.save((FumigationReport) report);
         } else {
             cleanupReportRepository.save((CleanupReport) report);
+        }
+
+        if (!conditions.hasAnyDanger() && status == Status.FINISHED) {
+            ProcessCompletedEmailData emailData = ProcessCompletedEmailData.builder()
+                    .recipientEmail(fumigation.getFumigationApplication().getCompany().getLegalRepresentative().getEmail())
+                    .clientName(fumigation.getFumigationApplication().getCompany().getLegalRepresentative().getFirstName() + " " + fumigation.getFumigationApplication().getCompany().getLegalRepresentative().getLastName())
+                    .lotNumber(fumigation.getLotNumber())
+                    .processedTons(fumigation.getTon().doubleValue())
+                    .build();
+
+            emailService.sendProcessCompletedEmail(emailData);
         }
 
         return conditions.hasAnyDanger() ? null : new MessageDTO("Fumigation report created successfully");

@@ -2,6 +2,9 @@ package com.anecacao.api.request.creation.domain.service.impl;
 
 import com.anecacao.api.auth.data.entity.RoleName;
 import com.anecacao.api.auth.data.entity.User;
+import com.anecacao.api.email.data.dto.InfoUpdateEmailData;
+import com.anecacao.api.email.data.dto.StatusUpdateEmailData;
+import com.anecacao.api.email.domain.service.EmailService;
 import com.anecacao.api.request.creation.data.dto.request.FumigationCreationRequestDTO;
 import com.anecacao.api.request.creation.data.dto.request.UpdateStatusRequestDTO;
 import com.anecacao.api.request.creation.data.dto.response.FumigationDetailDTO;
@@ -25,10 +28,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.List;
 import java.time.format.DateTimeFormatter;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,11 +41,13 @@ public class FumigationServiceImpl implements FumigationService {
     private final UserService userService;
     private final FumigationApplicationMapper mapper;
     private final FumigationDetailMapper detailMapper;
+    private final EmailService emailService;
 
     @Override
     public void updateFumigationStatus(Long id, UpdateStatusRequestDTO updateStatusRequestDTO) {
         Fumigation fumigation = getFumigationOrThrow(id);
         validateStatusUpdate(updateStatusRequestDTO);
+        String previousStatus = fumigation.getStatus().toString();
 
         Status status = updateStatusRequestDTO.getStatus();
         fumigation.setStatus(status);
@@ -53,6 +59,25 @@ public class FumigationServiceImpl implements FumigationService {
         }
 
         repository.save(fumigation);
+
+        User client = fumigation
+                .getFumigationApplication()
+                .getCompany()
+                .getLegalRepresentative();
+
+        String name = client.getFirstName() + " " + client.getLastName();
+
+        StatusUpdateEmailData emailData = new StatusUpdateEmailData(
+                fumigation.getLotNumber(),
+                name,
+                previousStatus,
+                status.toString(),
+                LocalDate.now(),
+                fumigation.getMessage(),
+                client.getEmail()
+        );
+
+        emailService.sendStatusUpdateEmail(emailData);
     }
 
     @Override
@@ -61,9 +86,34 @@ public class FumigationServiceImpl implements FumigationService {
                 .orElseThrow(() -> new FumigationNotFoundException(fumigationId));
 
         validateUserPermission(fumigation, token);
+
+        BigDecimal previousTons = fumigation.getTon();
+        String previousPort = fumigation.getPortDestination();
+        LocalDateTime previousDate = fumigation.getDateTime();
+        Long previousSacks = fumigation.getSacks();
+
         updateFumigationData(fumigation, fumigationDTO);
 
-        return mapper.toFumigationResponseDTO(repository.save(fumigation));
+        Fumigation updatedFumigation = repository.save(fumigation);
+
+        InfoUpdateEmailData emailData = InfoUpdateEmailData.builder()
+                .recipientEmail(fumigation.getFumigationApplication().getCompany().getLegalRepresentative().getEmail())
+                .lotNumber(fumigation.getLotNumber())
+                .clientName(fumigation.getFumigationApplication().getCompany().getLegalRepresentative().getFirstName() + " " +
+                        fumigation.getFumigationApplication().getCompany().getLegalRepresentative().getLastName())
+                .previousTons(previousTons)
+                .newTons(fumigation.getTon().doubleValue())
+                .previousPort(previousPort)
+                .newPort(fumigation.getPortDestination())
+                .previousDate(previousDate.toLocalDate())
+                .newDate(fumigation.getDateTime().toLocalDate())
+                .previousSacks(previousSacks)
+                .newSacks(fumigation.getSacks())
+                .build();
+
+        emailService.sendInfoUpdateEmail(emailData);
+
+        return mapper.toFumigationResponseDTO(updatedFumigation);
     }
 
     @Override
