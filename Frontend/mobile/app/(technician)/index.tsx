@@ -35,6 +35,8 @@ export default function TechnicianLotsScreen() {
   const [showLotDetails, setShowLotDetails] = useState(false);
   const [showEvidenceOverlay, setShowEvidenceOverlay] = useState(false);
   const [selectedFumigationStatus, setSelectedFumigationStatus] = useState<string | null>(null);
+  const [lotDetails, setLotDetails] = useState<FumigationDetailResponse | null>(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
 
   const { fumigationDetails, loading: detailsLoading, loadFumigationDetails, clearDetails } = useFumigationDetails();
 
@@ -91,6 +93,19 @@ export default function TechnicianLotsScreen() {
     }
   };
 
+  const loadLotDetails = async (lotId: number) => {
+    try {
+      setLoadingDetails(true);
+      const details = await fumigationService.getFumigationDetails(lotId);
+      setLotDetails(details);
+    } catch (error: any) {
+      console.error('Error loading lot details:', error);
+      Alert.alert('Error', 'No se pudieron cargar los detalles del lote');
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
   const filteredFumigations = fumigations.filter((fumigation) =>
     fumigation.companyName && fumigation.companyName.toLowerCase().includes(search.toLowerCase())
   );
@@ -130,7 +145,7 @@ export default function TechnicianLotsScreen() {
   const handleViewDetails = async (fumigation: ExtendedFumigationListItem) => {
     setSelectedLot(fumigation);
     setShowLotDetails(true);
-    await loadFumigationDetails(fumigation.id);
+    await loadLotDetails(fumigation.id);
   };
 
   const handleUploadEvidence = async (fumigation: ExtendedFumigationListItem) => {
@@ -145,6 +160,7 @@ export default function TechnicianLotsScreen() {
     setShowLotDetails(false);
     setShowEvidenceOverlay(false);
     setSelectedFumigationStatus(null);
+    setLotDetails(null);
     clearDetails();
   };
 
@@ -310,60 +326,111 @@ export default function TechnicianLotsScreen() {
     >
       <View style={styles.modalOverlay}>
         <View style={styles.detailsModalContent}>
-          <ScrollView>
-            <Text style={styles.modalTitle}>
-              Detalles del Lote {selectedLot?.lotNumber}
+          {/* Header */}
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalHeaderTitle}>
+              Información del Lote a Fumigar
             </Text>
-            
-            {selectedLot && (
+          </View>
+
+          <ScrollView style={styles.modalScrollView}>
+            {loadingDetails ? (
+              <View style={styles.loadingDetailsContainer}>
+                <ActivityIndicator size="large" color="#003595" />
+                <Text style={styles.loadingDetailsText}>Cargando detalles del lote...</Text>
+              </View>
+            ) : lotDetails ? (
               <>
+                {/* Datos Generales del Cliente */}
                 <View style={styles.detailsSection}>
-                  <Text style={styles.sectionTitle}>Información General</Text>
+                  <Text style={styles.sectionTitle}>Datos Generales del Cliente</Text>
                   
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Empresa:</Text>
-                    <Text style={styles.detailValue}>{selectedLot.companyName}</Text>
-                  </View>
+                  <View style={styles.detailsGrid}>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Nombre de la Empresa:</Text>
+                      <Text style={styles.detailValue}>{lotDetails.company.businessName}</Text>
+                    </View>
 
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Representante:</Text>
-                    <Text style={styles.detailValue}>{selectedLot.representative}</Text>
-                  </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Razón Social:</Text>
+                      <Text style={styles.detailValue}>{lotDetails.company.businessName}</Text>
+                    </View>
 
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Teléfono:</Text>
-                    <Text style={styles.detailValue}>{selectedLot.phoneNumber}</Text>
-                  </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>RUC:</Text>
+                      <Text style={styles.detailValue}>{lotDetails.company.id || '-'}</Text>
+                    </View>
 
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Ubicación:</Text>
-                    <Text style={styles.detailValue}>{selectedLot.location}</Text>
-                  </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Dirección:</Text>
+                      <Text style={styles.detailValue}>{lotDetails.company.address}</Text>
+                    </View>
 
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Fecha Planificada:</Text>
-                    <Text style={styles.detailValue}>{formatDate(selectedLot.plannedDate)}</Text>
-                  </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Teléfono:</Text>
+                      <Text style={styles.detailValue}>{lotDetails.company.phone || '-'}</Text>
+                    </View>
 
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Estado:</Text>
-                    <View style={[styles.statusBadge, getStatusColor(selectedLot.status)]}>
-                      <Text style={[styles.statusText, { color: getStatusColor(selectedLot.status).color }]}>
-                        {getStatusLabel(selectedLot.status)}
-                      </Text>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Representante:</Text>
+                      <Text style={styles.detailValue}>{selectedLot?.representative || '-'}</Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Información del Lote */}
+                <View style={styles.detailsSection}>
+                  <Text style={styles.sectionTitle}>Información del Lote</Text>
+                  
+                  <View style={styles.detailsGrid}>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Número de Lote:</Text>
+                      <Text style={styles.detailValue}>{lotDetails.lot.lotNumber}</Text>
+                    </View>
+
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Toneladas:</Text>
+                      <Text style={styles.detailValue}>{lotDetails.lot.tons}</Text>
+                    </View>
+
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Calidad:</Text>
+                      <Text style={styles.detailValue}>{lotDetails.lot.quality}</Text>
+                    </View>
+
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Número de Sacos:</Text>
+                      <Text style={styles.detailValue}>{lotDetails.lot.sacks}</Text>
+                    </View>
+
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Puerto de Destino:</Text>
+                      <Text style={styles.detailValue}>{lotDetails.lot.portDestination}</Text>
+                    </View>
+
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Fecha Planificada:</Text>
+                      <Text style={styles.detailValue}>{formatDate(lotDetails.plannedDate)}</Text>
                     </View>
                   </View>
                 </View>
               </>
+            ) : (
+              <View style={styles.errorDetailsContainer}>
+                <Text style={styles.errorDetailsText}>No se pudieron cargar los detalles del lote</Text>
+              </View>
             )}
           </ScrollView>
 
-          <TouchableOpacity
-            style={styles.closeModalButton}
-            onPress={() => setShowLotDetails(false)}
-          >
-            <Text style={styles.closeModalButtonText}>Cerrar</Text>
-          </TouchableOpacity>
+          {/* Footer */}
+          <View style={styles.modalFooter}>
+            <TouchableOpacity
+              style={styles.closeModalButton}
+              onPress={() => setShowLotDetails(false)}
+            >
+              <Text style={styles.closeModalButtonText}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>
@@ -617,17 +684,36 @@ const styles = StyleSheet.create({
   detailsModalContent: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 20,
-    width: '90%',
-    maxWidth: 400,
-    maxHeight: '80%',
+    width: '95%',
+    maxWidth: 500,
+    maxHeight: '90%',
+    overflow: 'hidden',
   },
-  modalTitle: {
+  modalHeader: {
+    backgroundColor: '#003595',
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  modalHeaderTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 20,
+    fontWeight: '600',
+    color: '#ffffff',
     textAlign: 'center',
+  },
+  modalScrollView: {
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+  },
+  modalFooter: {
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#003595',
+    backgroundColor: '#ffffff',
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
   },
   filterOption: {
     paddingVertical: 12,
@@ -647,12 +733,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   closeModalButton: {
-    backgroundColor: '#6b7280',
+    backgroundColor: '#003595',
     paddingVertical: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 12,
+    alignSelf: 'flex-end',
   },
   closeModalButtonText: {
     color: '#ffffff',
@@ -660,28 +746,59 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   detailsSection: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#1f2937',
-    marginBottom: 12,
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#003595',
+    paddingBottom: 8,
+  },
+  detailsGrid: {
+    marginTop: 12,
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
+    paddingVertical: 4,
   },
   detailLabel: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
     color: '#374151',
-    width: 120,
+    width: '50%',
   },
   detailValue: {
     fontSize: 14,
     color: '#6b7280',
     flex: 1,
+    textAlign: 'right',
+  },
+  loadingDetailsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingDetailsText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+  },
+  errorDetailsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  errorDetailsText: {
+    fontSize: 16,
+    color: '#dc2626',
+    textAlign: 'center',
   },
 });

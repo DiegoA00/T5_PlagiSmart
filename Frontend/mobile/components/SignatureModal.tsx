@@ -170,15 +170,6 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
             <Text style={styles.statusText}>
               {hasSignature ? '✓ Firma detectada' : '○ Sin firma'}
             </Text>
-            <TouchableOpacity
-              style={styles.debugButton}
-              onPress={() => {
-                console.log('Debug: Forcing signature state');
-                setHasSignature(true);
-              }}
-            >
-              <Text style={styles.debugButtonText}>Debug: Forzar Firma</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </View>

@@ -102,7 +102,7 @@ export default function LoginScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.content}>
-          <Text style={styles.title}>PlagiSmart Admin</Text>
+          <Text style={styles.title}>PlagiSmart Administrativo</Text>
           <Text style={styles.subtitle}>Iniciar Sesión</Text>
 
           <View style={styles.form}>
