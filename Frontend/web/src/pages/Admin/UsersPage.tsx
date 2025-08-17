@@ -18,6 +18,16 @@ export default function UsersPage() {
   const [totalUsers, setTotalUsers] = useState(0);
 
   const roles = ["all", "admin", "client", "technician"];
+  
+  const getRoleDisplayName = (role: string): string => {
+    const roleMap: Record<string, string> = {
+      "all": "Todos los roles",
+      "admin": "Administrador",
+      "client": "Cliente", 
+      "technician": "Técnico"
+    };
+    return roleMap[role] || role;
+  };
 
   useEffect(() => {
     if (selectedRole === "all") {
@@ -47,7 +57,7 @@ export default function UsersPage() {
     firstName: apiUser.firstName,
     lastName: apiUser.lastName,
     email: apiUser.email,
-    roles: apiUser.role,
+    roles: getRoleDisplayName(apiUser.role),
     companies: []
   });
 
@@ -95,9 +105,9 @@ export default function UsersPage() {
     }
   };
 
-  const handleChangeRole = async (email: string) => {
+  const handleChangeRole = async (email: string, newRole: string) => {
     try {
-      await usersService.changeUserRole(email);
+      await usersService.changeUserRole(email, newRole);
       
       if (selectedRole === "all") {
         fetchAllUsers();
@@ -135,7 +145,7 @@ export default function UsersPage() {
           >
             {roles.map((role) => (
               <option key={role} value={role}>
-                {role === "all" ? "Todos los roles" : role}
+                {getRoleDisplayName(role)}
               </option>
             ))}
           </select>
@@ -153,7 +163,7 @@ export default function UsersPage() {
           <div className="text-center py-12">
             <div className="text-lg">Cargando usuarios...</div>
             <div className="text-gray-500 text-sm mt-2">
-              {selectedRole === "all" ? "Cargando todos los usuarios" : `Cargando usuarios con rol ${selectedRole}`}
+              {selectedRole === "all" ? "Cargando todos los usuarios" : `Cargando usuarios con rol ${getRoleDisplayName(selectedRole)}`}
             </div>
           </div>
         ) : users.length === 0 && !error ? (
@@ -161,7 +171,7 @@ export default function UsersPage() {
             <div className="text-gray-500 text-lg">
               {selectedRole === "all" 
                 ? "No hay usuarios en el sistema" 
-                : `No hay usuarios con rol ${selectedRole}`
+                : `No hay usuarios con rol ${getRoleDisplayName(selectedRole)}`
               }
             </div>
             <div className="text-gray-400 text-sm mt-2">
