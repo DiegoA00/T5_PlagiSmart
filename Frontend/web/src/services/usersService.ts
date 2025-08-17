@@ -101,9 +101,9 @@ export const usersService = {
     }
   },
 
-  changeUserRole: async (email: string): Promise<void> => {
+  changeUserRole: async (email: string, role: string): Promise<void> => {
     try {
-      await apiClient.put('/users/role', { email });
+      await apiClient.put('/users/role', { email, role });
     } catch (error: any) {
       throw new Error(error.response?.data?.message || "Error al cambiar el rol");
     }
