@@ -1,34 +1,44 @@
 import { useState, useEffect } from 'react';
-import { usersService, UpdateUserDTO } from '@/services/usersService';
-import { companyService, CreateCompanyDTO, CompanyResponse, UpdateCompanyDTO } from '@/services/companyService';
-import { ApiUser } from '@/types/request';
-
-// Extender ApiUser para incluir información de perfil completa
-interface ExtendedApiUser extends ApiUser {
-  phone?: string;
-  address?: string;
-  country?: string;
-  city?: string;
-  gender?: string;
-}
+import { 
+  usersService, 
+  UpdateUserDTO, 
+  UserProfileSetUpRequestDTO, 
+  CompanyCreationDTO,
+  UserMeResponse
+} from '@/services/usersService';
+import { companyService, UpdateCompanyDTO } from '@/services/companyService';
 
 interface UserProfileData {
+  nationalId: string;
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
-  address: string;
-  country: string;
-  city: string;
-  gender: string;
-  company?: CompanyResponse | null;
+  hasCompletedProfile: boolean;
+  phone?: string;
+  country?: string;
+  city?: string;
+  birthday?: string;
+  company?: {
+    id: number;
+    name: string;
+    businessName: string;
+    phoneNumber: string;
+    ruc: string;
+    address: string;
+    legalRepresentative?: {
+      id: number;
+      firstName: string;
+      lastName: string;
+    };
+  } | null;
 }
 
 interface UseProfileReturn {
   profileData: UserProfileData | null;
   loading: boolean;
   error: string | null;
-  updateProfile: (userData: UpdateUserDTO, companyData?: CreateCompanyDTO | UpdateCompanyDTO) => Promise<void>;
+  updateProfile: (userData: UpdateUserDTO, companyData?: CompanyCreationDTO | UpdateCompanyDTO) => Promise<void>;
+  setupProfile: (profileData: UserProfileSetUpRequestDTO) => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -42,21 +52,22 @@ export const useProfile = (): UseProfileReturn => {
       setLoading(true);
       setError(null);
 
-      // Cargar datos del usuario
-      const user = await usersService.getCurrentUser() as ExtendedApiUser;
+      // Cargar datos del usuario desde /users/me
+      const user: UserMeResponse = await usersService.getCurrentUser();
       
-      // Cargar datos de la compañía (si existe)
-      const company = await companyService.getUserCompany();
+      // Extraer la primera compañía si existe
+      const company = user.companies && user.companies.length > 0 ? user.companies[0] : null;
 
       setProfileData({
+        nationalId: user.nationalId,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        phone: user.phone || '',
-        address: user.address || '',
-        country: user.country || '',
-        city: user.city || '',
-        gender: user.gender || '',
+        hasCompletedProfile: user.hasCompletedProfile,
+        phone: user.personalPhone,
+        country: user.country,
+        city: user.city,
+        birthday: user.birthday,
         company
       });
     } catch (err: any) {
@@ -68,7 +79,7 @@ export const useProfile = (): UseProfileReturn => {
 
   const updateProfile = async (
     userData: UpdateUserDTO, 
-    companyData?: CreateCompanyDTO | UpdateCompanyDTO
+    companyData?: CompanyCreationDTO | UpdateCompanyDTO
   ) => {
     try {
       setLoading(true);
@@ -85,8 +96,15 @@ export const useProfile = (): UseProfileReturn => {
           // Actualizar compañía existente
           await companyService.updateUserCompany(companyData as UpdateCompanyDTO);
         } else {
-          // Crear nueva compañía
-          await companyService.createCompany(companyData as CreateCompanyDTO);
+          // Crear nueva compañía (usando el servicio de compañía con el formato correcto)
+          const companyCreateData = {
+            name: (companyData as CompanyCreationDTO).companyName,
+            businessName: (companyData as CompanyCreationDTO).businessName,
+            phoneNumber: (companyData as CompanyCreationDTO).phoneNumber,
+            ruc: (companyData as CompanyCreationDTO).ruc,
+            address: (companyData as CompanyCreationDTO).address,
+          };
+          await companyService.createCompany(companyCreateData);
         }
       }
 
@@ -94,6 +112,24 @@ export const useProfile = (): UseProfileReturn => {
       await loadProfile();
     } catch (err: any) {
       setError(err.message || 'Error al actualizar el perfil');
+      throw err; // Re-throw para que el componente pueda manejarlo
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setupProfile = async (profileSetupData: UserProfileSetUpRequestDTO) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Enviar datos completos de setup al backend
+      await usersService.setupUserProfile(profileSetupData);
+
+      // Recargar el perfil actualizado
+      await loadProfile();
+    } catch (err: any) {
+      setError(err.message || 'Error al configurar el perfil');
       throw err; // Re-throw para que el componente pueda manejarlo
     } finally {
       setLoading(false);
@@ -109,6 +145,7 @@ export const useProfile = (): UseProfileReturn => {
     loading,
     error,
     updateProfile,
+    setupProfile,
     refreshProfile: loadProfile
   };
 };

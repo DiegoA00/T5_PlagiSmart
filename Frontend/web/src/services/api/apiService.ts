@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = (import.meta as any).env.VITE_API_URL;
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -50,7 +50,7 @@ apiClient.interceptors.request.use(
         return config;
     },
     (error) => {
-        return Promise.reject(error);
+        return Promise.reject(error instanceof Error ? error : new Error(error?.message || 'Request failed'));
     }
 );
 
@@ -69,11 +69,32 @@ apiClient.interceptors.response.use(
             url,
             message,
             isReportNotFound,
+            statusText: error.response?.statusText,
             fullResponse: error.response?.data
         });
 
-        if (status === 401 && !isReportNotFound) {
-            console.log('Clearing session due to 401 error (not a report not found error)');
+        // Manejo de errores 401
+        if (status === 401) {
+            // Lista de endpoints donde un 401 no debería cerrar sesión automáticamente
+            const nonAuthEndpoints = [
+                '/reports/fumigations/by-fumigation',
+                '/reports/',
+                '/documents/'
+            ];
+            
+            // Verificar si el error 401 viene de un endpoint de reportes/documentos
+            const isNonAuthEndpoint = nonAuthEndpoints.some(endpoint => url.includes(endpoint));
+            
+            // No cerrar sesión si:
+            // 1. Es un error de reporte no encontrado (lógica más inteligente)
+            // 2. O es un endpoint específico de la lista (compatibilidad con lógica anterior)
+            if (isReportNotFound || isNonAuthEndpoint) {
+                const reason = isReportNotFound ? 'report not found error' : `non-auth endpoint (${url})`;
+                console.warn(`401 error detected but NOT clearing session - reason: ${reason}`);
+                return Promise.reject(error instanceof Error ? error : new Error(error?.message || 'API Error'));
+            }
+            
+            console.log('401 Unauthorized - Clearing tokens and redirecting to login');
             localStorage.removeItem('auth_token');
             localStorage.removeItem('token_type');
             localStorage.removeItem('user_data');
@@ -86,10 +107,10 @@ apiClient.interceptors.response.use(
                 window.location.href = '/login';
             }
         } else if (isReportNotFound) {
-            console.log('Report not found error detected, NOT clearing session');
+            console.log('Report not found error detected (non-401), NOT clearing session');
         }
         
-        return Promise.reject(error);
+        return Promise.reject(error instanceof Error ? error : new Error(error?.message || 'API Error'));
     }
 );
 
