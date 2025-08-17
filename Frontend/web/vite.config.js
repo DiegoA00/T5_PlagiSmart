@@ -21,5 +21,12 @@ export default defineConfig({
         main: path.resolve(__dirname, 'index.html')
       }
     }
+  },
+  server: {
+    historyApiFallback: true,
+  },
+  preview: {
+    port: 5000,
+    strictPort: true,
   }
 })
