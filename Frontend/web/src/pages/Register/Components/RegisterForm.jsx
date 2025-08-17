@@ -24,6 +24,7 @@ const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
 
   // Añadir estado para validación de contraseña
   const [passwordValidation, setPasswordValidation] = useState({
@@ -59,6 +60,16 @@ const RegisterForm = () => {
     }
     
     if (error) setError("");
+  };
+
+  const handlePasswordFocus = () => {
+    setPasswordFocused(true);
+  };
+
+  const handlePasswordBlur = () => {
+    if (form.password === "") {
+      setPasswordFocused(false);
+    }
   };
 
   const validateForm = () => {
@@ -201,6 +212,8 @@ const RegisterForm = () => {
               placeholder="Ingrese una contraseña"
               value={form.password}
               onChange={handleChange}
+              onFocus={handlePasswordFocus}
+              onBlur={handlePasswordBlur}
               disabled={isLoading}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-[#003595] disabled:opacity-50"
@@ -217,32 +230,34 @@ const RegisterForm = () => {
             </button>
           </div>
           
-          {/* Requisitos de la contraseña */}
-          <div id="password-requirements" className="text-sm space-y-1 bg-gray-50 p-3 rounded-md">
-            <h4 className="font-medium text-gray-700 mb-2">La contraseña debe tener:</h4>
-            <ul className="space-y-1">
-              <li className={`flex items-center gap-2 ${
-                passwordValidation.length ? 'text-green-600' : 'text-gray-600'
-              }`}>
-                {passwordValidation.length ? '✓' : '○'} Mínimo 8 caracteres
-              </li>
-              <li className={`flex items-center gap-2 ${
-                passwordValidation.upperCase ? 'text-green-600' : 'text-gray-600'
-              }`}>
-                {passwordValidation.upperCase ? '✓' : '○'} Al menos una mayúscula
-              </li>
-              <li className={`flex items-center gap-2 ${
-                passwordValidation.lowerCase ? 'text-green-600' : 'text-gray-600'
-              }`}>
-                {passwordValidation.lowerCase ? '✓' : '○'} Al menos una minúscula
-              </li>
-              <li className={`flex items-center gap-2 ${
-                passwordValidation.number ? 'text-green-600' : 'text-gray-600'
-              }`}>
-                {passwordValidation.number ? '✓' : '○'} Al menos un número
-              </li>
-            </ul>
-          </div>
+          {/* Requisitos de la contraseña - solo aparecen cuando el campo está enfocado o tiene contenido */}
+          {(passwordFocused || form.password) && (
+            <div id="password-requirements" className="text-sm space-y-1 bg-gray-50 p-3 rounded-md">
+              <h4 className="font-medium text-gray-700 mb-2">La contraseña debe tener:</h4>
+              <ul className="space-y-1">
+                <li className={`flex items-center gap-2 ${
+                  passwordValidation.length ? 'text-green-600' : 'text-gray-600'
+                }`}>
+                  {passwordValidation.length ? '✓' : '○'} Mínimo 8 caracteres
+                </li>
+                <li className={`flex items-center gap-2 ${
+                  passwordValidation.upperCase ? 'text-green-600' : 'text-gray-600'
+                }`}>
+                  {passwordValidation.upperCase ? '✓' : '○'} Al menos una mayúscula
+                </li>
+                <li className={`flex items-center gap-2 ${
+                  passwordValidation.lowerCase ? 'text-green-600' : 'text-gray-600'
+                }`}>
+                  {passwordValidation.lowerCase ? '✓' : '○'} Al menos una minúscula
+                </li>
+                <li className={`flex items-center gap-2 ${
+                  passwordValidation.number ? 'text-green-600' : 'text-gray-600'
+                }`}>
+                  {passwordValidation.number ? '✓' : '○'} Al menos un número
+                </li>
+              </ul>
+            </div>
+          )}
         </div>
       </div>
 

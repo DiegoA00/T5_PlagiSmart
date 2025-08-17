@@ -4,109 +4,109 @@ const TermsAndConditions = () => {
   return (
     <div className="flex bg-white px-10 py-6 gap-10">
       <div className="w-full max-w-2xl mx-auto p-10 bg-white rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold mb-4">Terms and Conditions</h1>
-        <p className="text-gray-700 mb-4">Last updated: June 12, 2025</p>
-        <p className="text-gray-700 mb-4">Please read these terms and conditions carefully before using Our Service.</p>
+        <h1 className="text-3xl font-bold mb-4">Términos y Condiciones</h1>
+        <p className="text-gray-700 mb-4">Última actualización: 12 de junio, 2025</p>
+        <p className="text-gray-700 mb-4">Por favor lea estos términos y condiciones cuidadosamente antes de usar Nuestro Servicio.</p>
         <ul className="list-disc pl-5 text-gray-700">
-          <li>By using this service, you agree to the terms outlined here.</li>
-          <li>You must be at least 18 years old to use this service.</li>
+          <li>Al usar este servicio, usted acepta los términos descritos aquí.</li>
+          <li>Debe tener al menos 18 años para usar este servicio.</li>
           <li>
-            We reserve the right to modify these terms at any time without
-            notice.
+            Nos reservamos el derecho de modificar estos términos en cualquier momento sin
+            previo aviso.
           </li>
           <li>
-            Your continued use of the service constitutes acceptance of any
-            changes.
+            Su uso continuo del servicio constituye la aceptación de cualquier
+            cambio.
           </li>
         </ul>
-        <h2>Interpretation and Definitions</h2>
-        <h3>Interpretation</h3>
-        <p className="text-gray-700 mb-4">The words of which the initial letter is capitalized have meanings defined under the following conditions. The following definitions shall have the same meaning regardless of whether they appear in singular or in plural.</p>
-        <h3>Definitions</h3>
-        <p className="text-gray-700 mb-4">For the purposes of these Terms and Conditions:</p>
+        <h2>Interpretación y Definiciones</h2>
+        <h3>Interpretación</h3>
+        <p className="text-gray-700 mb-4">Las palabras cuya letra inicial está en mayúscula tienen significados definidos bajo las siguientes condiciones. Las siguientes definiciones tendrán el mismo significado independientemente de si aparecen en singular o en plural.</p>
+        <h3>Definiciones</h3>
+        <p className="text-gray-700 mb-4">Para los propósitos de estos Términos y Condiciones:</p>
         <ul>
         <li>
-        <p className="text-gray-700 mb-4"><strong>Application</strong> means the software program provided by the Company downloaded by You on any electronic device, named Plagismart</p>
+        <p className="text-gray-700 mb-4"><strong>Aplicación</strong> significa el programa de software proporcionado por la Empresa descargado por Usted en cualquier dispositivo electrónico, llamado Plagismart</p>
         </li>
         <li>
-        <p className="text-gray-700 mb-4"><strong>Application Store</strong> means the digital distribution service operated and developed by Apple Inc. (Apple App Store) or Google Inc. (Google Play Store) in which the Application has been downloaded.</p>
+        <p className="text-gray-700 mb-4"><strong>Tienda de Aplicaciones</strong> significa el servicio de distribución digital operado y desarrollado por Apple Inc. (Apple App Store) o Google Inc. (Google Play Store) en el cual la Aplicación ha sido descargada.</p>
         </li>
         <li>
-        <p className="text-gray-700 mb-4"><strong>Affiliate</strong> means an entity that controls, is controlled by or is under common control with a party, where &quot;control&quot; means ownership of 50% or more of the shares, equity interest or other securities entitled to vote for election of directors or other managing authority.</p>
+        <p className="text-gray-700 mb-4"><strong>Afiliado</strong> significa una entidad que controla, es controlada por o está bajo control común con una parte, donde "control" significa la propiedad del 50% o más de las acciones, participación accionaria u otros valores con derecho a voto para la elección de directores u otra autoridad de gestión.</p>
         </li>
         <li>
-        <p className="text-gray-700 mb-4"><strong>Country</strong> refers to:  Ecuador</p>
+        <p className="text-gray-700 mb-4"><strong>País</strong> se refiere a: Ecuador</p>
         </li>
         <li>
-        <p className="text-gray-700 mb-4"><strong>Company</strong> (referred to as either &quot;the Company&quot;, &quot;We&quot;, &quot;Us&quot; or &quot;Our&quot; in this Agreement) refers to Anecacao, Km 1.5 vía Samborondón, Edificio de Negocios Xima, piso 3, oficina 303 – Samborondón, Ecuador.</p>
+        <p className="text-gray-700 mb-4"><strong>Empresa</strong> (referida como "la Empresa", "Nosotros", "Nos" o "Nuestro" en este Acuerdo) se refiere a Anecacao, Km 1.5 vía Samborondón, Edificio de Negocios Xima, piso 3, oficina 303 – Samborondón, Ecuador.</p>
         </li>
         <li>
-        <p className="text-gray-700 mb-4"><strong>Device</strong> means any device that can access the Service such as a computer, a cellphone or a digital tablet.</p>
+        <p className="text-gray-700 mb-4"><strong>Dispositivo</strong> significa cualquier dispositivo que pueda acceder al Servicio como una computadora, un teléfono celular o una tableta digital.</p>
         </li>
         <li>
-        <p className="text-gray-700 mb-4"><strong>Service</strong> refers to the Application or the Website or both.</p>
+        <p className="text-gray-700 mb-4"><strong>Servicio</strong> se refiere a la Aplicación o el Sitio Web o ambos.</p>
         </li>
         <li>
-        <p className="text-gray-700 mb-4"><strong>Terms and Conditions</strong> (also referred as &quot;Terms&quot;) mean these Terms and Conditions that form the entire agreement between You and the Company regarding the use of the Service. This Terms and Conditions agreement has been created with the help of the <a href="https://www.termsfeed.com/terms-conditions-generator/" target="_blank">Terms and Conditions Generator</a>.</p>
+        <p className="text-gray-700 mb-4"><strong>Términos y Condiciones</strong> (también referidos como "Términos") significan estos Términos y Condiciones que forman el acuerdo completo entre Usted y la Empresa con respecto al uso del Servicio.</p>
         </li>
         <li>
-        <p className="text-gray-700 mb-4"><strong>Third-party Social Media Service</strong> means any services or content (including data, information, products or services) provided by a third-party that may be displayed, included or made available by the Service.</p>
+        <p className="text-gray-700 mb-4"><strong>Servicio de Redes Sociales de Terceros</strong> significa cualquier servicio o contenido (incluyendo datos, información, productos o servicios) proporcionado por un tercero que puede ser mostrado, incluido o puesto a disposición por el Servicio.</p>
         </li>
         <li>
-        <p className="text-gray-700 mb-4"><strong>Website</strong> refers to Anecacao - Asociación Nacional de Exportadores de Cacao, accessible from <a href="https://anecacao.com/" rel="external nofollow noopener" target="_blank">https://anecacao.com/</a></p>
+        <p className="text-gray-700 mb-4"><strong>Sitio Web</strong> se refiere a Anecacao - Asociación Nacional de Exportadores de Cacao, accesible desde <a href="https://anecacao.com/" rel="external nofollow noopener" target="_blank">https://anecacao.com/</a></p>
         </li>
         <li>
-        <p className="text-gray-700 mb-4"><strong>You</strong> means the individual accessing or using the Service, or the company, or other legal entity on behalf of which such individual is accessing or using the Service, as applicable.</p>
+        <p className="text-gray-700 mb-4"><strong>Usted</strong> significa el individuo que accede o usa el Servicio, o la empresa, u otra entidad legal en nombre de la cual dicho individuo está accediendo o usando el Servicio, según sea aplicable.</p>
         </li>
         </ul>
-        <h2>Acknowledgment</h2>
-        <p className="text-gray-700 mb-4">These are the Terms and Conditions governing the use of this Service and the agreement that operates between You and the Company. These Terms and Conditions set out the rights and obligations of all users regarding the use of the Service.</p>
-        <p className="text-gray-700 mb-4">Your access to and use of the Service is conditioned on Your acceptance of and compliance with these Terms and Conditions. These Terms and Conditions apply to all visitors, users and others who access or use the Service.</p>
-        <p className="text-gray-700 mb-4">By accessing or using the Service You agree to be bound by these Terms and Conditions. If You disagree with any part of these Terms and Conditions then You may not access the Service.</p>
-        <p className="text-gray-700 mb-4">You represent that you are over the age of 18. The Company does not permit those under 18 to use the Service.</p>
-        <p className="text-gray-700 mb-4">Your access to and use of the Service is also conditioned on Your acceptance of and compliance with the Privacy Policy of the Company. Our Privacy Policy describes Our policies and procedures on the collection, use and disclosure of Your personal information when You use the Application or the Website and tells You about Your privacy rights and how the law protects You. Please read Our Privacy Policy carefully before using Our Service.</p>
-        <h2>Links to Other Websites</h2>
-        <p className="text-gray-700 mb-4">Our Service may contain links to third-party web sites or services that are not owned or controlled by the Company.</p>
-        <p className="text-gray-700 mb-4">The Company has no control over, and assumes no responsibility for, the content, privacy policies, or practices of any third party web sites or services. You further acknowledge and agree that the Company shall not be responsible or liable, directly or indirectly, for any damage or loss caused or alleged to be caused by or in connection with the use of or reliance on any such content, goods or services available on or through any such web sites or services.</p>
-        <p className="text-gray-700 mb-4">We strongly advise You to read the terms and conditions and privacy policies of any third-party web sites or services that You visit.</p>
-        <h2>Termination</h2>
-        <p className="text-gray-700 mb-4">We may terminate or suspend Your access immediately, without prior notice or liability, for any reason whatsoever, including without limitation if You breach these Terms and Conditions.</p>
-        <p className="text-gray-700 mb-4">Upon termination, Your right to use the Service will cease immediately.</p>
-        <h2>Limitation of Liability</h2>
-        <p className="text-gray-700 mb-4">Notwithstanding any damages that You might incur, the entire liability of the Company and any of its suppliers under any provision of this Terms and Your exclusive remedy for all of the foregoing shall be limited to the amount actually paid by You through the Service or 100 USD if You haven't purchased anything through the Service.</p>
-        <p className="text-gray-700 mb-4">To the maximum extent permitted by applicable law, in no event shall the Company or its suppliers be liable for any special, incidental, indirect, or consequential damages whatsoever (including, but not limited to, damages for loss of profits, loss of data or other information, for business interruption, for personal injury, loss of privacy arising out of or in any way related to the use of or inability to use the Service, third-party software and/or third-party hardware used with the Service, or otherwise in connection with any provision of this Terms), even if the Company or any supplier has been advised of the possibility of such damages and even if the remedy fails of its essential purpose.</p>
-        <p className="text-gray-700 mb-4">Some states do not allow the exclusion of implied warranties or limitation of liability for incidental or consequential damages, which means that some of the above limitations may not apply. In these states, each party's liability will be limited to the greatest extent permitted by law.</p>
-        <h2>&quot;AS IS&quot; and &quot;AS AVAILABLE&quot; Disclaimer</h2>
-        <p className="text-gray-700 mb-4">The Service is provided to You &quot;AS IS&quot; and &quot;AS AVAILABLE&quot; and with all faults and defects without warranty of any kind. To the maximum extent permitted under applicable law, the Company, on its own behalf and on behalf of its Affiliates and its and their respective licensors and service providers, expressly disclaims all warranties, whether express, implied, statutory or otherwise, with respect to the Service, including all implied warranties of merchantability, fitness for a particular purpose, title and non-infringement, and warranties that may arise out of course of dealing, course of performance, usage or trade practice. Without limitation to the foregoing, the Company provides no warranty or undertaking, and makes no representation of any kind that the Service will meet Your requirements, achieve any intended results, be compatible or work with any other software, applications, systems or services, operate without interruption, meet any performance or reliability standards or be error free or that any errors or defects can or will be corrected.</p>
-        <p className="text-gray-700 mb-4">Without limiting the foregoing, neither the Company nor any of the company's provider makes any representation or warranty of any kind, express or implied: (i) as to the operation or availability of the Service, or the information, content, and materials or products included thereon; (ii) that the Service will be uninterrupted or error-free; (iii) as to the accuracy, reliability, or currency of any information or content provided through the Service; or (iv) that the Service, its servers, the content, or e-mails sent from or on behalf of the Company are free of viruses, scripts, trojan horses, worms, malware, timebombs or other harmful components.</p>
-        <p className="text-gray-700 mb-4">Some jurisdictions do not allow the exclusion of certain types of warranties or limitations on applicable statutory rights of a consumer, so some or all of the above exclusions and limitations may not apply to You. But in such a case the exclusions and limitations set forth in this section shall be applied to the greatest extent enforceable under applicable law.</p>
-        <h2>Governing Law</h2>
-        <p className="text-gray-700 mb-4">The laws of the Country, excluding its conflicts of law rules, shall govern this Terms and Your use of the Service. Your use of the Application may also be subject to other local, state, national, or international laws.</p>
-        <h2>Disputes Resolution</h2>
-        <p className="text-gray-700 mb-4">If You have any concern or dispute about the Service, You agree to first try to resolve the dispute informally by contacting the Company.</p>
-        <h2>For European Union (EU) Users</h2>
-        <p className="text-gray-700 mb-4">If You are a European Union consumer, you will benefit from any mandatory provisions of the law of the country in which You are resident.</p>
-        <h2>United States Legal Compliance</h2>
-        <p className="text-gray-700 mb-4">You represent and warrant that (i) You are not located in a country that is subject to the United States government embargo, or that has been designated by the United States government as a &quot;terrorist supporting&quot; country, and (ii) You are not listed on any United States government list of prohibited or restricted parties.</p>
-        <h2>Severability and Waiver</h2>
-        <h3>Severability</h3>
-        <p className="text-gray-700 mb-4">If any provision of these Terms is held to be unenforceable or invalid, such provision will be changed and interpreted to accomplish the objectives of such provision to the greatest extent possible under applicable law and the remaining provisions will continue in full force and effect.</p>
-        <h3>Waiver</h3>
-        <p className="text-gray-700 mb-4">Except as provided herein, the failure to exercise a right or to require performance of an obligation under these Terms shall not affect a party's ability to exercise such right or require such performance at any time thereafter nor shall the waiver of a breach constitute a waiver of any subsequent breach.</p>
-        <h2>Translation Interpretation</h2>
-        <p className="text-gray-700 mb-4">These Terms and Conditions may have been translated if We have made them available to You on our Service.
-        You agree that the original English text shall prevail in the case of a dispute.</p>
-        <h2>Changes to These Terms and Conditions</h2>
-        <p className="text-gray-700 mb-4">We reserve the right, at Our sole discretion, to modify or replace these Terms at any time. If a revision is material We will make reasonable efforts to provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at Our sole discretion.</p>
-        <p className="text-gray-700 mb-4">By continuing to access or use Our Service after those revisions become effective, You agree to be bound by the revised terms. If You do not agree to the new terms, in whole or in part, please stop using the website and the Service.</p>
-        <h2>Contact Us</h2>
-        <p className="text-gray-700 mb-4">If you have any questions about these Terms and Conditions, You can contact us:</p>
+        <h2>Reconocimiento</h2>
+        <p className="text-gray-700 mb-4">Estos son los Términos y Condiciones que rigen el uso de este Servicio y el acuerdo que opera entre Usted y la Empresa. Estos Términos y Condiciones establecen los derechos y obligaciones de todos los usuarios con respecto al uso del Servicio.</p>
+        <p className="text-gray-700 mb-4">Su acceso y uso del Servicio está condicionado a Su aceptación y cumplimiento de estos Términos y Condiciones. Estos Términos y Condiciones se aplican a todos los visitantes, usuarios y otros que accedan o usen el Servicio.</p>
+        <p className="text-gray-700 mb-4">Al acceder o usar el Servicio, Usted acepta estar sujeto a estos Términos y Condiciones. Si no está de acuerdo con alguna parte de estos Términos y Condiciones, entonces no puede acceder al Servicio.</p>
+        <p className="text-gray-700 mb-4">Usted declara que es mayor de 18 años. La Empresa no permite que los menores de 18 años usen el Servicio.</p>
+        <p className="text-gray-700 mb-4">Su acceso y uso del Servicio también está condicionado a Su aceptación y cumplimiento de la Política de Privacidad de la Empresa. Nuestra Política de Privacidad describe Nuestras políticas y procedimientos sobre la recopilación, uso y divulgación de Su información personal cuando Usted usa la Aplicación o el Sitio Web y le informa sobre Sus derechos de privacidad y cómo la ley lo protege. Por favor lea Nuestra Política de Privacidad cuidadosamente antes de usar Nuestro Servicio.</p>
+        <h2>Enlaces a Otros Sitios Web</h2>
+        <p className="text-gray-700 mb-4">Nuestro Servicio puede contener enlaces a sitios web o servicios de terceros que no son propiedad o están controlados por la Empresa.</p>
+        <p className="text-gray-700 mb-4">La Empresa no tiene control sobre, y no asume responsabilidad por, el contenido, políticas de privacidad o prácticas de cualquier sitio web o servicio de terceros. Usted además reconoce y acepta que la Empresa no será responsable, directa o indirectamente, por cualquier daño o pérdida causada o supuestamente causada por o en conexión con el uso o dependencia de cualquier contenido, bienes o servicios disponibles en o a través de dichos sitios web o servicios.</p>
+        <p className="text-gray-700 mb-4">Le recomendamos encarecidamente que lea los términos y condiciones y políticas de privacidad de cualquier sitio web o servicio de terceros que visite.</p>
+        <h2>Terminación</h2>
+        <p className="text-gray-700 mb-4">Podemos terminar o suspender Su acceso inmediatamente, sin previo aviso o responsabilidad, por cualquier razón, incluyendo sin limitación si Usted incumple estos Términos y Condiciones.</p>
+        <p className="text-gray-700 mb-4">Al terminar, Su derecho a usar el Servicio cesará inmediatamente.</p>
+        <h2>Limitación de Responsabilidad</h2>
+        <p className="text-gray-700 mb-4">Sin perjuicio de cualquier daño que pueda incurrir, la responsabilidad total de la Empresa y cualquiera de sus proveedores bajo cualquier disposición de estos Términos y Su recurso exclusivo para todo lo anterior se limitará a la cantidad realmente pagada por Usted a través del Servicio o 100 USD si no ha comprado nada a través del Servicio.</p>
+        <p className="text-gray-700 mb-4">En la máxima medida permitida por la ley aplicable, en ningún caso la Empresa o sus proveedores serán responsables de cualquier daño especial, incidental, indirecto o consecuencial (incluyendo, pero no limitado a, daños por pérdida de ganancias, pérdida de datos u otra información, por interrupción del negocio, por lesiones personales, pérdida de privacidad que surja de o esté relacionada de alguna manera con el uso o la incapacidad de usar el Servicio, software de terceros y/o hardware de terceros usado con el Servicio, o de otra manera en conexión con cualquier disposición de estos Términos), incluso si la Empresa o cualquier proveedor ha sido advertido de la posibilidad de tales daños y incluso si el remedio falla en su propósito esencial.</p>
+        <p className="text-gray-700 mb-4">Algunos estados no permiten la exclusión de garantías implícitas o limitación de responsabilidad por daños incidentales o consecuenciales, lo que significa que algunas de las limitaciones anteriores pueden no aplicar. En estos estados, la responsabilidad de cada parte se limitará en la mayor medida permitida por la ley.</p>
+        <h2>Descargo de Responsabilidad "TAL COMO ESTÁ" y "SEGÚN DISPONIBILIDAD"</h2>
+        <p className="text-gray-700 mb-4">El Servicio se le proporciona "TAL COMO ESTÁ" y "SEGÚN DISPONIBILIDAD" y con todas las fallas y defectos sin garantía de ningún tipo. En la máxima medida permitida bajo la ley aplicable, la Empresa, en su propio nombre y en nombre de sus Afiliados y sus respectivos licenciantes y proveedores de servicios, renuncia expresamente a todas las garantías, ya sean expresas, implícitas, estatutarias o de otro tipo, con respecto al Servicio.</p>
+        <p className="text-gray-700 mb-4">Sin limitar lo anterior, ni la Empresa ni ninguno de los proveedores de la empresa hace ninguna representación o garantía de ningún tipo, expresa o implícita: (i) en cuanto a la operación o disponibilidad del Servicio, o la información, contenido y materiales o productos incluidos en el mismo; (ii) que el Servicio será ininterrumpido o libre de errores; (iii) en cuanto a la precisión, confiabilidad o actualidad de cualquier información o contenido proporcionado a través del Servicio; o (iv) que el Servicio, sus servidores, el contenido o correos electrónicos enviados desde o en nombre de la Empresa están libres de virus, scripts, caballos de troya, gusanos, malware, bombas de tiempo u otros componentes dañinos.</p>
+        <p className="text-gray-700 mb-4">Algunas jurisdicciones no permiten la exclusión de ciertos tipos de garantías o limitaciones en los derechos estatutarios aplicables de un consumidor, por lo que algunas o todas las exclusiones y limitaciones anteriores pueden no aplicar a Usted. Pero en tal caso, las exclusiones y limitaciones establecidas en esta sección se aplicarán en la mayor medida ejecutable bajo la ley aplicable.</p>
+        <h2>Ley Aplicable</h2>
+        <p className="text-gray-700 mb-4">Las leyes del País, excluyendo sus reglas de conflicto de leyes, regirán estos Términos y Su uso del Servicio. Su uso de la Aplicación también puede estar sujeto a otras leyes locales, estatales, nacionales o internacionales.</p>
+        <h2>Resolución de Disputas</h2>
+        <p className="text-gray-700 mb-4">Si tiene alguna preocupación o disputa sobre el Servicio, acepta intentar primero resolver la disputa informalmente contactando a la Empresa.</p>
+        <h2>Para Usuarios de la Unión Europea (UE)</h2>
+        <p className="text-gray-700 mb-4">Si es un consumidor de la Unión Europea, se beneficiará de cualquier disposición obligatoria de la ley del país en el que reside.</p>
+        <h2>Cumplimiento Legal de Estados Unidos</h2>
+        <p className="text-gray-700 mb-4">Usted declara y garantiza que (i) no se encuentra en un país que esté sujeto al embargo del gobierno de Estados Unidos, o que haya sido designado por el gobierno de Estados Unidos como un país "que apoya el terrorismo", y (ii) no está listado en ninguna lista del gobierno de Estados Unidos de partes prohibidas o restringidas.</p>
+        <h2>Divisibilidad y Renuncia</h2>
+        <h3>Divisibilidad</h3>
+        <p className="text-gray-700 mb-4">Si alguna disposición de estos Términos se considera inaplicable o inválida, dicha disposición será cambiada e interpretada para lograr los objetivos de dicha disposición en la mayor medida posible bajo la ley aplicable y las disposiciones restantes continuarán en pleno vigor y efecto.</p>
+        <h3>Renuncia</h3>
+        <p className="text-gray-700 mb-4">Excepto como se establece en este documento, la falta de ejercer un derecho o requerir el cumplimiento de una obligación bajo estos Términos no afectará la capacidad de una parte de ejercer dicho derecho o requerir dicho cumplimiento en cualquier momento posterior, ni la renuncia a un incumplimiento constituirá una renuncia a cualquier incumplimiento posterior.</p>
+        <h2>Interpretación de Traducción</h2>
+        <p className="text-gray-700 mb-4">Estos Términos y Condiciones pueden haber sido traducidos si los hemos puesto a Su disposición en nuestro Servicio.
+        Usted acepta que el texto original en inglés prevalecerá en caso de una disputa.</p>
+        <h2>Cambios a Estos Términos y Condiciones</h2>
+        <p className="text-gray-700 mb-4">Nos reservamos el derecho, a Nuestra sola discreción, de modificar o reemplazar estos Términos en cualquier momento. Si una revisión es material, haremos esfuerzos razonables para proporcionar al menos 30 días de aviso antes de que cualquier nuevo término entre en vigencia. Lo que constituye un cambio material será determinado a Nuestra sola discreción.</p>
+        <p className="text-gray-700 mb-4">Al continuar accediendo o usando Nuestro Servicio después de que esas revisiones entren en vigencia, Usted acepta estar sujeto a los términos revisados. Si no está de acuerdo con los nuevos términos, en todo o en parte, por favor deje de usar el sitio web y el Servicio.</p>
+        <h2>Contáctanos</h2>
+        <p className="text-gray-700 mb-4">Si tiene alguna pregunta sobre estos Términos y Condiciones, puede contactarnos:</p>
         <ul>
         <li>
-        <p className="text-gray-700 mb-4">By email: administrativo@anecacao.com</p>
+        <p className="text-gray-700 mb-4">Por correo electrónico: administrativo@anecacao.com</p>
         </li>
         <li>
-        <p className="text-gray-700 mb-4">By visiting this page on our website: <a href="https://anecacao.com/terms-and-conditions/" rel="external nofollow noopener" target="_blank">https://anecacao.com/terms-and-conditions/</a></p>
+        <p className="text-gray-700 mb-4">Visitando esta página en nuestro sitio web: <a href="https://anecacao.com/terms-and-conditions/" rel="external nofollow noopener" target="_blank">https://anecacao.com/terms-and-conditions/</a></p>
         </li>
         </ul>
       </div>
