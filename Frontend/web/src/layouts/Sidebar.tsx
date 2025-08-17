@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { useSidebar } from "@/context/SidebarContext";
 
 interface SidebarOption {
   label: string;
@@ -30,6 +31,7 @@ export function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { hasRole } = useAuth();
+  const { isOpen } = useSidebar();
 
   const getMenuOptions = () => {
     if (hasRole(['ROLE_TECHNICIAN'])) {
@@ -43,6 +45,10 @@ export function Sidebar() {
   };
 
   const menuOptions = getMenuOptions();
+
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <aside className="w-64 bg-[#003595] text-white p-6 flex flex-col">
