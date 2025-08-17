@@ -118,14 +118,14 @@ const LoginForm = () => {
           />
           Recuérdame
         </label>
-        <button 
+        {/* <button 
           type="button" 
           onClick={handleForgotPassword}
           disabled={isLoading}
           className="cursor-pointer text-[#003595] hover:underline disabled:opacity-50"
         >
           ¿Olvidaste tu contraseña?
-        </button>
+        </button> */}
       </div>
 
       <div className="text-right">

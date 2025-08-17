@@ -102,13 +102,13 @@ export default function CompletedServicesPage() {
         ) : fumigations.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-gray-500 text-lg">No hay servicios completados</div>
-            <div className="text-gray-400 text-sm mt-2">
+            {/* <div className="text-gray-400 text-sm mt-2">
               No se encontraron fumigaciones con estado FINISHED. 
               {fumigationsResponse?.totalElements === 0 
                 ? " La base de datos parece estar vacía después del reinicio."
                 : " Puede que no haya servicios completados aún."
               }
-            </div>
+            </div> */}
           </div>
         ) : (
           <>

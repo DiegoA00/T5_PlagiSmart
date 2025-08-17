@@ -1,22 +1,24 @@
-import { FC, ReactNode } from 'react';
-import { TopBar } from '@/layouts/TopBar';
+import { ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
+import { TopBar } from './TopBar';
+import { SidebarProvider } from '@/context/SidebarContext';
 
 interface LayoutProps {
   children: ReactNode;
-  userImage?: string;
 }
 
-export const Layout: FC<LayoutProps> = ({ children, userImage }) => {
+export function Layout({ children }: LayoutProps) {
   return (
-    <div className="h-screen flex flex-col">
-      <TopBar userImage={userImage} />
-      <div className="flex flex-1">
-        <Sidebar />
-        <main className="flex-1 overflow-auto">
-          {children}
-        </main>
+    <SidebarProvider>
+      <div className="flex flex-col h-screen bg-gray-50">
+        <TopBar />
+        <div className="flex flex-1 overflow-hidden">
+          <Sidebar />
+          <main className="flex-1 overflow-y-auto p-6">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
-};
+}
