@@ -12,6 +12,8 @@ import java.util.List;
 @Data
 public class CleanupReportResponseDTO {
     private Long id;
+    private String location;
+    private String supervisor;
     private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;

@@ -19,6 +19,9 @@ public class CleanupReport {
     private Long id;
 
     @Column(nullable = false)
+    private String location;
+
+    @Column(nullable = false)
     private LocalDate date;
 
     @Column(nullable = false)
@@ -35,6 +38,9 @@ public class CleanupReport {
 
     @Column(nullable = false)
     private BigDecimal ppmFosfina;
+
+    @Column(nullable = false)
+    private String supervisor;
 
     @Embedded
     @Column(nullable = false)
