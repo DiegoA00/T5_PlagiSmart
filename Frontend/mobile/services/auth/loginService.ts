@@ -150,7 +150,7 @@ export const authService = {
       console.error('Login error:', error);
       return {
         success: false,
-        message: error.message || 'Error de conexión'
+        message: 'Error de conexión'
       };
     }
   }

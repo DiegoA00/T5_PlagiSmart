@@ -94,8 +94,24 @@ class ApiService {
       
       if (!response.ok) {
         const errorText = await response.text();
+        
+        // Manejar específicamente el error 401 (credenciales incorrectas)
+        if (response.status === 401) {
+          // No loggear errores de credenciales incorrectas para evitar spam en consola
+          return {
+            success: false,
+            message: 'Contraseña o usuario incorrecto',
+            error: '401 - Credenciales incorrectas'
+          };
+        }
+        
+        // Solo loggear otros tipos de errores
         console.error('API Error response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+        return {
+          success: false,
+          message: `Error del servidor: ${response.status}`,
+          error: `HTTP error! status: ${response.status} - ${errorText}`
+        };
       }
 
       const data = await response.json();
@@ -209,8 +225,24 @@ class ApiService {
       
       if (!response.ok) {
         const errorText = await response.text();
+        
+        // Manejar específicamente el error 401 (credenciales incorrectas)
+        if (response.status === 401) {
+          // No loggear errores de credenciales incorrectas para evitar spam en consola
+          return {
+            success: false,
+            message: 'Contraseña o usuario incorrecto',
+            error: '401 - Credenciales incorrectas'
+          };
+        }
+        
+        // Solo loggear otros tipos de errores
         console.error('API Error response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+        return {
+          success: false,
+          message: `Error del servidor: ${response.status}`,
+          error: `HTTP error! status: ${response.status} - ${errorText}`
+        };
       }
 
       const responseData = await response.json();

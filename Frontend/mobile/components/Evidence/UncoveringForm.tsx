@@ -171,7 +171,6 @@ export const UncoveringForm: React.FC<UncoveringFormProps> = ({
 
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorTitle}>Errores de validación:</Text>
         {errorMessages.map((error, index) => (
           <Text key={index} style={styles.errorItem}>• {error}</Text>
         ))}

@@ -89,7 +89,7 @@ export default function LoginScreen() {
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      Alert.alert('Error', error.message || 'Error de conexión');
+      Alert.alert('Error', 'Error de conexión');
     } finally {
       setLoading(false);
     }
