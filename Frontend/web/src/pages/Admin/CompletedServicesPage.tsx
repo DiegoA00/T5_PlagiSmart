@@ -6,12 +6,14 @@ import { BaseTable } from "./Components/BaseTable";
 import { FumigationListItem } from "@/types/request";
 import { LotOverlayContent } from "./Components/LotOverlayContent";
 import { EvidenceOverlay } from "./Components/Evidence/EvidenceOverlay";
+import { CertificateOverlay } from "@/components/Certificate/CertificateOverlay";
 import { useFumigationData, useFumigationDetails } from "@/hooks/useFumigationData";
 
 export default function CompletedServicesPage() {
   const [search, setSearch] = useState("");
   const [selectedLotId, setSelectedLotId] = useState<number | null>(null);
   const [showingEvidence, setShowingEvidence] = useState(false);
+  const [showingCertificate, setShowingCertificate] = useState(false);
   const [selectedFumigationStatus, setSelectedFumigationStatus] = useState<string | null>(null);
 
   const { fumigations, fumigationsResponse, loading, error } = useFumigationData("FINISHED");
@@ -31,6 +33,7 @@ export default function CompletedServicesPage() {
   const handleViewDetails = async (fumigation: FumigationListItem) => {
     setSelectedLotId(fumigation.id);
     setShowingEvidence(false);
+    setShowingCertificate(false);
     setSelectedFumigationStatus(null);
     await loadFumigationDetails(fumigation.id);
   };
@@ -38,17 +41,22 @@ export default function CompletedServicesPage() {
   const handleViewEvidence = async (fumigation: FumigationListItem) => {
     setSelectedLotId(fumigation.id);
     setShowingEvidence(true);
+    setShowingCertificate(false);
     setSelectedFumigationStatus("FINISHED");
     await loadFumigationDetails(fumigation.id);
   };
 
   const handleGenerateCertificate = (fumigation: FumigationListItem) => {
-    alert(`Generando certificado para el lote ${fumigation.lotNumber || fumigation.id}`);
+    setSelectedLotId(fumigation.id);
+    setShowingEvidence(false);
+    setShowingCertificate(true);
+    setSelectedFumigationStatus(null);
   };
 
   const handleCloseDetails = () => {
     setSelectedLotId(null);
     setShowingEvidence(false);
+    setShowingCertificate(false);
     setSelectedFumigationStatus(null);
     clearDetails();
   };
@@ -102,13 +110,6 @@ export default function CompletedServicesPage() {
         ) : fumigations.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-gray-500 text-lg">No hay servicios completados</div>
-            {/* <div className="text-gray-400 text-sm mt-2">
-              No se encontraron fumigaciones con estado FINISHED. 
-              {fumigationsResponse?.totalElements === 0 
-                ? " La base de datos parece estar vacía después del reinicio."
-                : " Puede que no haya servicios completados aún."
-              }
-            </div> */}
           </div>
         ) : (
           <>
@@ -140,7 +141,7 @@ export default function CompletedServicesPage() {
         )}
 
         <Overlay
-          open={!!selectedLotId && !showingEvidence}
+          open={!!selectedLotId && !showingEvidence && !showingCertificate}
           onClose={handleCloseDetails}
         >
           <LotOverlayContent 
@@ -159,6 +160,16 @@ export default function CompletedServicesPage() {
             loading={detailsLoading}
             isEditable={false}
             fumigationStatus={selectedFumigationStatus}
+            onClose={handleCloseDetails}
+          />
+        </Overlay>
+
+        <Overlay
+          open={!!selectedLotId && showingCertificate}
+          onClose={handleCloseDetails}
+        >
+          <CertificateOverlay
+            fumigationId={selectedLotId!}
             onClose={handleCloseDetails}
           />
         </Overlay>
