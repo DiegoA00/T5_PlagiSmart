@@ -55,6 +55,7 @@ function TableReservations({
   const totalLotPages = Math.max(1, Math.ceil(totalLots / localPageSize));
 
   const handleLotDocumentosClick = (lotId: number) => {
+    console.log('Navegando a documentos del lote:', lotId);
     navigate(`/client/documentos/lote/${lotId}`);
   };
 

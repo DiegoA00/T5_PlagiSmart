@@ -50,8 +50,21 @@ interface GridData {
   value: string;
 }
 
+// Interface para la solicitud de fumigación
+interface FumigationRequest {
+  id: number;
+  lotNumber: string;
+  ton: number;
+  portDestination: string;
+  sacks: number;
+  quality: string;
+  status: "APPROVED" | "REJECTED" | "PENDING" | "FAILED" | "FINISHED";
+  message: string;
+  dateTime: string;
+}
+
 interface DocumentSection {
-  type: 'header' | 'personal-info' | 'request-details' | 'fumigation-conditions' | 'cleanup-conditions' | 'supplies-details' | 'lot-details' | 'signatures' | 'single-signature' | 'text' | 'grid' | 'footer';
+  type: 'company-info' | 'header' | 'lot-request-details' | 'info' | 'personal-info' | 'request-details' | 'fumigation-conditions' | 'cleanup-conditions' | 'supplies-details' | 'lot-details' | 'signatures' | 'single-signature' | 'text' | 'grid' | 'footer';
   data?: any[];
   signatures?: (string | { name: string; imageUrl?: string; signature?: Signature })[];
   signature?: string;
@@ -77,8 +90,8 @@ type DocumentsData = Record<string, Document[]>;
 
 function ReservationDocuments() {
   console.log('ReservationDocuments component renderizando...');
-  const { lotId } = useParams<{ lotId?: string }>();
-  console.log('Parámetro recibidos:', { lotId });
+  const { lotId } = useParams<{ lotId: string }>();
+  console.log('Parámetro recibido lotId:', lotId);
 
   // Estados para manejar las URLs de las firmas
   const [signatureUrls, setSignatureUrls] = useState<Record<string, string>>({});
@@ -176,6 +189,7 @@ function ReservationDocuments() {
   const { profileData } = useProfile();
   const [fumigationReport, setFumigationReport] = useState<FumigationReport | null>(null);
   const [cleanupReport, setCleanupReport] = useState<CleanupReport | null>(null);
+  const [fumigationRequest, setFumigationRequest] = useState<FumigationRequest | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [noDataFound, setNoDataFound] = useState(false);
@@ -203,7 +217,7 @@ function ReservationDocuments() {
   useEffect(() => {
     // Limpiar estados anteriores cuando cambien los reportes
     clearSignatureStates();
-  }, [fumigationReport?.id, cleanupReport?.id, clearSignatureStates]);
+  }, [fumigationReport?.id, cleanupReport?.id, fumigationRequest?.id, clearSignatureStates]);
 
   // Función auxiliar para convertir blob URL a data URL (más compatible con html2canvas)
   const convertBlobToDataUrl = useCallback(async (blobUrl: string): Promise<string> => {
@@ -661,10 +675,11 @@ function ReservationDocuments() {
         setError(null);
         setNoDataFound(false);
         
-        // Cargar ambos reportes en paralelo
-        const [fumigationReportResult, cleanupReportResult] = await Promise.allSettled([
+        // Cargar reportes y solicitud de fumigación en paralelo
+        const [fumigationReportResult, cleanupReportResult, fumigationRequestResult] = await Promise.allSettled([
           fumigationReportsService.getFumigationReport(parseInt(lotId)),
-          fumigationReportsService.getCleanupReportByFumigationId(parseInt(lotId))
+          fumigationReportsService.getCleanupReportByFumigationId(parseInt(lotId)),
+          apiClient.get(`/fumigations/${lotId}`)
         ]);
 
         // Procesar resultado del reporte de fumigación
@@ -683,8 +698,18 @@ function ReservationDocuments() {
           console.log('Error al cargar reporte de cleanup:', cleanupReportResult.reason);
         }
 
-        // Verificar si al menos uno de los reportes se cargó exitosamente
-        const hasAnyReport = fumigationReportResult.status === 'fulfilled' || cleanupReportResult.status === 'fulfilled';
+        // Procesar resultado de la solicitud de fumigación
+        if (fumigationRequestResult.status === 'fulfilled') {
+          console.log('Solicitud de fumigación cargada exitosamente:', fumigationRequestResult.value.data);
+          setFumigationRequest(fumigationRequestResult.value.data);
+        } else {
+          console.log('Error al cargar solicitud de fumigación:', fumigationRequestResult.reason);
+        }
+
+        // Verificar si al menos uno de los reportes/solicitud se cargó exitosamente
+        const hasAnyReport = fumigationReportResult.status === 'fulfilled' || 
+                             cleanupReportResult.status === 'fulfilled' ||
+                             fumigationRequestResult.status === 'fulfilled';
         
         if (!hasAnyReport) {
           // Si ninguno de los reportes se pudo cargar, mostrar mensaje de "no encontrado"
@@ -860,12 +885,188 @@ function ReservationDocuments() {
     }
   };
 
+  // Función para crear documentos desde solicitud de fumigación
+  const createDocumentsFromFumigationRequest = (requestData: FumigationRequest): Document[] => {
+    const companyName = profileData?.company?.businessName || "[Nombre de la Empresa]";
+    
+    // Función para obtener la etiqueta del estado en español (similar a TableReservations)
+    const getStatusLabel = (status: string): string => {
+      const statusLabels: { [key: string]: string } = {
+        'PENDING': 'Pendiente',
+        'APPROVED': 'Aprobado',
+        'REJECTED': 'Rechazado',
+        'FAILED': 'Falló',
+        'FINISHED': 'Finalizado',
+        'IN_PROGRESS': 'En Progreso',
+        'COMPLETED': 'Completado',
+        'CANCELLED': 'Cancelado',
+        'SCHEDULED': 'Programado'
+      };
+      return statusLabels[status] || status;
+    };
+    
+    // Función para generar mensaje por defecto basado en el estado
+    const getDefaultMessage = (status: string): string => {
+      const statusMessages: { [key: string]: string } = {
+        'PENDING': 'Solicitud en espera de revisión por parte del equipo técnico.',
+        'APPROVED': 'Solicitud aprobada. Se procederá con la programación del servicio.',
+        'FAILED': 'Solicitud fallida. Por favor, revise los detalles.',
+        'REJECTED': 'Solicitud rechazada. Por favor, revise los campos requeridos.',
+        'FINISHED': 'Solicitud completada exitosamente. Gracias por confiar en nosotros.',
+      };
+      
+      return statusMessages[status] || 'Solicitud recibida y en proceso de evaluación.';
+    };
+    
+    try {
+      return [
+        {
+          type: "solicitud-fumigacion",
+          title: "Solicitud de Fumigación",
+          fileName: "Solicitud_Fumigacion",
+          content: {
+            mainTitle: "SOLICITUD DE FUMIGACIÓN",
+            subtitle: `Código de Reserva: ${requestData.id}`,
+            sections: [
+              {
+                type: "company-info",
+                data: [
+                  { label: "Empresa", value: companyName },
+                  { label: "Razón Social", value: profileData?.company?.name || "[Razón Social]" },
+                  { label: "RUC", value: profileData?.company?.ruc || "[RUC]" },
+                  { label: "Dirección", value: profileData?.company?.address || "[Dirección]" },
+                  { label: "Teléfono", value: profileData?.company?.phoneNumber || "[Teléfono]" },
+                  { label: "Representante Legal", value: `${profileData?.firstName || ''} ${profileData?.lastName || ''}`.trim() || "[Representante Legal]" }
+                ]
+              },
+              {
+                type: "lot-request-details",
+                data: [
+                  {
+                    date: new Date(requestData.dateTime).toLocaleString() || "[Fecha]",
+                    destination: requestData.portDestination || "[Destino]",
+                    tons: requestData.ton?.toString() || "[Toneladas]",
+                    quality: requestData.quality || "[Calidad]",
+                    sacks: requestData.sacks?.toString() || "[Sacos]",
+                    lot: requestData.lotNumber || "[Número de Lote]"
+                  }
+                ]
+              },
+              {
+                type: "info",
+                data: [
+                  { label: "Estado", value: getStatusLabel(requestData.status || '') || "[Estado]" },
+                  { label: "Mensaje", value: requestData.message || getDefaultMessage(requestData.status || '') }
+                ]
+              },
+            ]
+          }
+        }
+      ];
+    } catch (error) {
+      console.error('Error creando documentos desde solicitud de fumigación:', error);
+      return [];
+    }
+  };
+
   // Simulación de datos de documentos por reserva - esto vendría de una API
   const getDocumentsByReservation = (codigoReserva: string | undefined): Document[] => {
     if (!codigoReserva) return [];
     
     const allDocuments: DocumentsData = {
       "1": [
+        {
+          type: "solicitud-fumigacion",
+          title: "Solicitud de Fumigación",
+          fileName: "Solicitud_Fumigacion",
+          content: {
+            mainTitle: "SOLICITUD DE FUMIGACIÓN",
+            subtitle: `Código de Reserva: ${codigoReserva}`,
+            sections: [
+              {
+                type: "company-info",
+                data: [
+                  { label: "Empresa", value: "[Nombre de la Empresa]" },
+                  { label: "Razón Social", value: "[Razón Social de la Empresa]" },
+                  { label: "RUC", value: "[RUC de la Empresa]" },
+                  { label: "Dirección", value: "[Dirección de la Empresa]" },
+                  { label: "Teléfono", value: "[Teléfono de la Empresa]" },
+                  { label: "Nombre Representante Legal", value: "[Nombre del Representante Legal]" }
+                ]
+              },
+              {
+                type: "lot-request-details",
+                data: [
+                  {
+                    fecha: "[Fecha de Fumigación Lote 1]",
+                    destination: "[Destino de Lote 1]",
+                    tons: "[Toneladas de Lote 1]",
+                    quality: "[calidad de Lote 1]",
+                    sacks: "[Número de sacos de Lote 1]",
+                    lot: "[Número de Lote 1]"
+                  },
+                  {
+                    fecha: "[Fecha de Fumigación Lote 2]",
+                    destination: "[Destino de Lote 2]",
+                    tons: "[Toneladas de Lote 2]",
+                    quality: "[calidad de Lote 2]",
+                    sacks: "[Número de sacos de Lote 2]",
+                    lot: "[Número de Lote 2]"
+                  },
+                  {
+                    fecha: "[Fecha de Fumigación Lote 3]",
+                    destination: "[Destino de Lote 3]",
+                    tons: "[Toneladas de Lote 3]",
+                    quality: "[calidad de Lote 3]",
+                    sacks: "[Número de sacos de Lote 3]",
+                    lot: "[Número de Lote 3]"
+                  },
+                  {
+                    fecha: "[Fecha de Fumigación Lote 4]",
+                    destination: "[Destino de Lote 4]",
+                    tons: "[Toneladas de Lote 4]",
+                    quality: "[calidad de Lote 4]",
+                    sacks: "[Número de sacos de Lote 4]",
+                    lot: "[Número de Lote 4]",
+                  },
+                  {
+                    fecha: "[Fecha de Fumigación Lote 5]",
+                    destination: "[Destino de Lote 5]",
+                    tons: "[Toneladas de Lote 5]",
+                    quality: "[calidad de Lote 5]",
+                    sacks: "[Número de sacos de Lote 5]",
+                    lot: "[Número de Lote 5]"
+                  }
+                ]
+              },
+              {
+                type: "info",
+                data: [
+                  {
+                    status: "[Estado de Lote 1]",
+                    message: "[Mensaje de Lote 1]"
+                  },
+                  {
+                    status: "[Estado de Lote 2]",
+                    message: "[Mensaje de Lote 2]"
+                  },
+                  {
+                    status: "[Estado de Lote 3]",
+                    message: "[Mensaje de Lote 3]"
+                  },
+                  {
+                    status: "[Estado de Lote 4]",
+                    message: "[Mensaje de Lote 4]"
+                  },
+                  {
+                    status: "[Estado de Lote 5]",
+                    message: "[Mensaje de Lote 5]"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         {
           type: "registro-fumigacion",
           title: "Registro de Fumigación",
@@ -1602,6 +1803,18 @@ function ReservationDocuments() {
   // Función para obtener documentos basados en datos del reporte
   const getDocumentsFromReport = useMemo(() => {
     const allDocs: Document[] = [];
+
+    // Documentos de solicitud de fumigación
+    if (fumigationRequest) {
+      console.log('Usando datos de la solicitud de fumigación API para crear documentos');
+      try {
+        const fumigationRequestDocs = createDocumentsFromFumigationRequest(fumigationRequest);
+        allDocs.push(...fumigationRequestDocs);
+      } catch (error) {
+        console.error('Error procesando solicitud de fumigación:', error);
+        setError('Error al procesar los datos de la solicitud de fumigación');
+      }
+    }
     
     // Documentos de fumigación
     if (fumigationReport) {
@@ -1628,10 +1841,10 @@ function ReservationDocuments() {
     }
 
     return allDocs;
-  }, [fumigationReport, cleanupReport, signatureUrls, signaturesLoadedCount]); // Agregar dependencias de firmas
+  }, [fumigationRequest, fumigationReport, cleanupReport, signatureUrls, signaturesLoadedCount]); // Agregar dependencias de firmas
 
   const documents = (() => {
-    if (fumigationReport || cleanupReport) {
+    if (fumigationReport || cleanupReport || fumigationRequest) {
       return getDocumentsFromReport;
     }
     if (noDataFound || error) {
@@ -1645,6 +1858,17 @@ function ReservationDocuments() {
   // Función para renderizar diferentes tipos de secciones
   const renderSection = (section: DocumentSection, index: number) => {
     switch (section.type) {
+      case 'company-info':
+        return (
+          <div>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              {section.data?.map((item: any, i: number) => (
+                <p key={`header-item-${i}-${item.label || i}`}><strong>{item.label}:</strong> {item.value}</p>
+              ))}
+            </div>
+          </div>
+        );
+
       case 'header':
         return (
           <div>
@@ -1664,6 +1888,50 @@ function ReservationDocuments() {
               {section.data?.slice(2).map((item: any, i: number) => (
                 <p key={`header-item-${i}-${item.label || i}`}><strong>{item.label}:</strong> {item.value}</p>
               ))}
+            </div>
+          </div>
+        );
+      
+      case 'lot-request-details':
+        return (
+          <div>
+            <table className="w-full mb-4 border">
+              <thead>
+                <tr>
+                  <th className="p-2" colSpan={6}>Datos de fumigación</th>
+                </tr>
+                <tr className="bg-gray-100">
+                  <th className='p-2'>Fecha</th>
+                  <th className='p-2'>Destino</th>
+                  <th className='p-2'>Toneladas</th>
+                  <th className='p-2'>Calidad</th>
+                  <th className='p-2'># de sacos</th>
+                  <th className='p-2'># Lote</th>
+                </tr>
+              </thead>
+              <tbody>
+                {section.data?.map((value: any, i: number) =>
+                  <tr key={`request-${i}-${value.lot || i}`} className="border-b">
+                    <td className="p-2 text-center">{value.date}</td>
+                    <td className="p-2 text-center">{value.destination}</td>
+                    <td className="p-2 text-center">{value.tons}</td>
+                    <td className="p-2 text-center">{value.quality}</td>
+                    <td className="p-2 text-center">{value.sacks}</td>
+                    <td className="p-2 text-center">{value.lot}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        );
+
+      case 'info':
+        return (
+          <div>
+            <h3 className="font-bold mb-2">Información Adicional</h3>
+            <div className="grid grid-cols-3 gap-4 mb-4">
+                <p className="col-span-1"><strong>{section.data?.[0]?.label}:</strong> {section.data?.[0]?.value}</p>
+                <p className="col-span-2 "><strong>{section.data?.[1]?.label}:</strong> {section.data?.[1]?.value}</p>
             </div>
           </div>
         );
