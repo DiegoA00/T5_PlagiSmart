@@ -6,6 +6,8 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { fumigationReportsService, FumigationReport, CleanupReport, Signature } from "@/services/fumigationReportsService";
 import { useProfile } from "@/hooks/useProfile";
 import apiClient from "@/services/api/apiService";
+import logoAnecacao from '../../assets/logo-anecacao.png';
+import logoBASC from '../../assets/logo_Basc.png';
 
 interface HeaderData {
   label: string;
@@ -2422,6 +2424,24 @@ function ReservationDocuments() {
                 className="rounded-lg p-6 bg-gray-50 document-content"
                 style={{ backgroundColor: 'white', padding: '24px'}}
               >
+                {/* Logos siempre al inicio de todos los documentos */}
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center">
+                    <img 
+                      src={logoAnecacao} 
+                      alt="Logo Anecacao" 
+                      className="h-16 w-auto object-contain"
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <img 
+                      src={logoBASC} 
+                      alt="Logo BASC" 
+                      className="h-16 w-auto object-contain"
+                    />
+                  </div>
+                </div>
+                
                 <div className="text-center mb-6">
                   <h3 className="text-lg font-bold text-gray-800 document-title">
                     {document.content.mainTitle}
