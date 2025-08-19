@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { registerService } from "../../../services/auth/registerService";
+import "../../../styles/Register.css";
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const RegisterForm = () => {
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
@@ -40,7 +42,7 @@ const RegisterForm = () => {
       length: password.length >= 8,
       upperCase: /[A-Z]/.test(password),
       lowerCase: /[a-z]/.test(password),
-      number: /[0-9]/.test(password)
+      number: /\d/.test(password)
     };
     setPasswordValidation(validations);
     return Object.values(validations).every(v => v);
@@ -218,6 +220,10 @@ const RegisterForm = () => {
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-[#003595] disabled:opacity-50"
               aria-describedby="password-requirements"
+              style={{
+                WebkitTextSecurity: showPassword ? 'none' : 'disc',
+              }}
+              autoComplete="new-password"
             />
             <button
               type="button"
@@ -267,7 +273,7 @@ const RegisterForm = () => {
         </label>
         <div className="relative">
           <input
-            type={showPassword ? "text" : "password"}
+            type={showRepeatPassword ? "text" : "password"}
             id="repeatPassword"
             name="repeatPassword"
             placeholder="Repita su contraseña"
@@ -276,7 +282,20 @@ const RegisterForm = () => {
             disabled={isLoading}
             required
             className="w-full px-4 py-2 border border-gray-300 rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-[#003595] disabled:opacity-50"
+            style={{
+              WebkitTextSecurity: showRepeatPassword ? 'none' : 'disc',
+            }}
+            autoComplete="new-password"
           />
+          <button
+            type="button"
+            onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+            disabled={isLoading}
+            className="absolute inset-y-0 right-2 flex items-center text-gray-500 cursor-pointer disabled:opacity-50"
+            aria-label={showRepeatPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+          >
+            {showRepeatPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
         </div>
       </div>
 

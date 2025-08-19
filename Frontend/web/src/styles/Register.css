@@ -158,3 +158,25 @@ input:checked + .slider:before {
 .slider.round:before {
     border-radius: 50%;
 }
+
+/* Desactivar íconos automáticos de contraseña del navegador */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-strong-password-auto-fill-button {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Para Edge y otros navegadores basados en Chromium */
+input[type="password"]::-ms-clear {
+    display: none !important;
+}
+
+/* Desactivar autocompletado visual en algunos navegadores */
+input[type="password"]::-webkit-textfield-decoration-container {
+    display: none !important;
+}
+
+input[type="password"]::-webkit-inner-spin-button {
+    display: none !important;
+}

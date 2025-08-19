@@ -77,27 +77,23 @@ export const TopBar: FC<TopBarProps> = ({ userImage = "/avatar.png" }) => {
               {displayName && (
                 <span className="text-sm text-gray-700">{displayName}</span>
               )}
-              <div className="w-10 h-10 rounded-full overflow-hidden">
-                <img
-                  src={userImage}
-                  alt="User"
-                  className="w-full h-full object-cover"
-                />
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                <User className="w-6 h-6 text-gray-600" />
               </div>
             </div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-200 shadow-lg">
             <div className="px-2 py-1.5 text-sm font-medium text-gray-900 border-b">
               {displayName}
             </div>
             <DropdownMenuItem 
-              className="cursor-pointer"
+              className="cursor-pointer hover:bg-gray-100 transition-colors"
               onClick={handleProfileClick}
             >
               Perfil
             </DropdownMenuItem>
             <DropdownMenuItem 
-              className="cursor-pointer text-red-600"
+              className="cursor-pointer text-red-600 hover:bg-red-50 transition-colors"
               onClick={handleLogout}
             >
               Cerrar sesión
