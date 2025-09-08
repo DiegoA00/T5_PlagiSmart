@@ -1,0 +1,38 @@
+name: CI Workflow
+
+on:
+  push:
+    branches:
+      - feature/frontend-client-view
+  pull_request:
+    branches:
+      - feature/frontend-client-view
+
+jobs:
+  # Frontend job (React + Vite)
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '22.16'
+
+      - name: Clean npm cache and node_modules
+        run: |
+          cd Frontend/web
+          rm -rf node_modules
+          rm package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd Frontend/web
+          npm install
+
+      - name: Build frontend
+        run: |
+          cd Frontend/web
+          npm run build

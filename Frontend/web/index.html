@@ -1,10 +1,19 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PlagiSmart</title>
+    <script>
+      (function() {
+        var redirectUrl = sessionStorage.getItem('redirectUrl');
+        if (redirectUrl && redirectUrl !== window.location.href) {
+          sessionStorage.removeItem('redirectUrl');
+          history.replaceState(null, null, redirectUrl);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

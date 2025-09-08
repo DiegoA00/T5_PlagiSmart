@@ -1,24 +1,59 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
+import { useSidebar } from "@/context/SidebarContext";
 
-const adminOptions = [
+interface SidebarOption {
+  label: string;
+  path: string;
+}
+
+const adminOptions: SidebarOption[] = [
   { label: "Dashboard", path: "/admin/dashboard" },
   { label: "Solicitudes", path: "/admin/solicitudes" },
-  { label: "Lotes a fumigar", path: "/admin/lotes" },
-  { label: "Servicios finalizados", path: "/admin/servicios" },
-  { label: "Clientes", path: "/admin/clientes" },
-  { label: "Configuración", path: "/admin/configuracion" },
+  { label: "Lotes de fumigación", path: "/admin/lotes" },
+  { label: "Servicios completados", path: "/admin/servicios" },
+  { label: "Usuarios", path: "/admin/usuarios" },
+];
+
+const technicianOptions: SidebarOption[] = [
+  { label: "Lotes Asignados", path: "/tecnico/lotes" },
+];
+
+const clientOptions: SidebarOption[] = [
+  { label: "Inicio", path: "/client" },
+  { label: "Solicitudes Pendientes", path: "/client/solicitudes-pendientes" },
+  { label: "Solicitudes en Curso", path: "/client/solicitudes-en-curso" },
+  { label: "Solicitudes Finalizadas", path: "/client/solicitudes-finalizadas" },
 ];
 
 export function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { hasRole } = useAuth();
+  const { isOpen } = useSidebar();
+
+  const getMenuOptions = () => {
+    if (hasRole(['ROLE_TECHNICIAN'])) {
+      return technicianOptions;
+    } else if (hasRole(['ROLE_ADMIN'])) {
+      return adminOptions;
+    } else if (hasRole(['ROLE_CLIENT'])) {
+      return clientOptions;
+    }
+    return [];
+  };
+
+  const menuOptions = getMenuOptions();
+
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <aside className="w-64 bg-[#003595] text-white p-6 flex flex-col">
-      <h1 className="text-2xl font-bold mb-12">PLAGISMART</h1>
       <nav className="flex flex-col gap-4">
-        {adminOptions.map((opt) => (
+        {menuOptions.map((opt) => (
           <Button
             key={opt.path}
             variant={

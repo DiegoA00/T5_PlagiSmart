@@ -1,5 +1,7 @@
 package com.anecacao.api.request.creation.data.entity;
 
+import com.anecacao.api.reporting.data.entity.CleanupReport;
+import com.anecacao.api.reporting.data.entity.FumigationReport;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
@@ -15,18 +17,19 @@ public class Fumigation {
     private Long id;
 
     @Column(nullable = false)
+    private String lotNumber;
+
+    @Column(nullable = false)
     private BigDecimal ton;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PortName portDestination;
+    private String portDestination;
 
     @Column(nullable = false)
     private Long sacks;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Grade grade;
+    private String quality;
 
     @Column(nullable = false)
     private LocalDateTime dateTime;
@@ -42,4 +45,9 @@ public class Fumigation {
     @ToString.Exclude
     private FumigationApplication fumigationApplication;
 
+    @OneToOne(mappedBy = "fumigation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private FumigationReport fumigationReport;
+
+    @OneToOne(mappedBy = "fumigation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private CleanupReport cleanupReport;
 }

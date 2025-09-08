@@ -1,0 +1,111 @@
+/* Estilos para impresión de documentos */
+@media print {
+  /* Ocultar elementos de navegación al imprimir */
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Configuración de página */
+  @page {
+    margin: 2cm;
+    size: A4;
+  }
+  
+  /* Estilos generales para impresión */
+  body {
+    font-size: 12pt;
+    line-height: 1.4;
+    color: black;
+    background: white;
+  }
+  
+  /* Evitar saltos de página dentro de documentos */
+  .document-section {
+    page-break-inside: avoid;
+    margin-bottom: 2cm;
+  }
+  
+  /* Títulos de documentos */
+  .document-title {
+    font-size: 16pt;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1cm;
+  }
+  
+  /* Contenido del documento */
+  .document-content {
+    border: 2px solid black;
+    padding: 1cm;
+    background: white;
+  }
+  
+  /* Firmas */
+  .signature-section {
+    margin-top: 3cm;
+  }
+  
+  .signature-line {
+    border-top: 1px solid black;
+    margin-top: 2cm;
+    padding-top: 0.5cm;
+    text-align: center;
+  }
+  
+  /* Imágenes de firmas - estilos específicos para PDF */
+  img[alt*="Firma de"] {
+    max-height: 80px !important;
+    max-width: 280px !important;
+    object-fit: contain !important;
+    display: block !important;
+    margin: 0 auto !important;
+    border-bottom: 1px solid #666 !important;
+    padding-bottom: 5px !important;
+    /* Forzar visibilidad para html2canvas */
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    /* Asegurar que no se oculten */
+    position: relative !important;
+    z-index: 999 !important;
+  }
+  
+  /* Contenedores de firma */
+  .signature-section > div {
+    page-break-inside: avoid;
+    min-height: 100px;
+    /* Asegurar visibilidad del contenedor */
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Forzar carga de firmas durante captura */
+  .signature-section img[alt*="Firma de"] {
+    image-rendering: -webkit-optimize-contrast !important;
+    image-rendering: crisp-edges !important;
+  }
+  
+  /* Ocultar botones y elementos interactivos */
+  button, .btn, .button {
+    display: none !important;
+  }
+  
+  /* Asegurar que el texto sea negro */
+  * {
+    color: black !important;
+    background: white !important;
+  }
+  
+  /* Espaciado para tablas */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+  }
+}

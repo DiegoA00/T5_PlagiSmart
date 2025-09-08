@@ -1,6 +1,5 @@
 package com.anecacao.api.request.creation.data.dto.response;
 
-import com.anecacao.api.request.creation.data.entity.Grade;
 import com.anecacao.api.request.creation.data.entity.PortName;
 import com.anecacao.api.request.creation.data.entity.Status;
 import lombok.AllArgsConstructor;
@@ -15,10 +14,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class FumigationResponseDTO {
     private Long id;
+    private String lotNumber;
     private BigDecimal ton;
-    private PortName portDestination;
+    private String portDestination;
     private Long sacks;
-    private Grade grade;
+    private String quality;
     private Status status;
     private String message;
     private LocalDateTime dateTime;

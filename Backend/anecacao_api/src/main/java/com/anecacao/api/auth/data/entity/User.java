@@ -27,8 +27,15 @@ public class User {
     @Column(unique = true)
     private String email;
 
-    private String location;
     private LocalDate birthday;
+
+    private String country;
+
+    private String city;
+
+    private String personalPhone;
+
+    private boolean hasCompletedProfile;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(

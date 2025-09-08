@@ -16,3 +16,10 @@
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch !important;
 }
+
+/* Estilo para asteriscos requeridos em formularios */
+.required-field::after {
+  content: " *";
+  color: #ef4444; /* red-500 */
+  font-weight: bold;
+}
